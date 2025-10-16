@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback System Demo - NU Lipa</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --nu-blue: #003399;
+            --nu-yellow: #FFD700;
+            --nu-white: #ffffff;
+            --nu-gray: #6c757d;
+            --nu-light-gray: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--nu-blue) 0%, #0056cc 100%);
+            min-height: 100vh;
+        }
+
+        .demo-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            margin: 2rem auto;
+            max-width: 900px;
+        }
+
+        .feature-box {
+            background: var(--nu-light-gray);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 1rem 0;
+            border-left: 5px solid var(--nu-blue);
+        }
+
+        .rating-display {
+            font-size: 1.5rem;
+            color: #ffc107;
+        }
+
+        .screenshot {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        .step-number {
+            background: var(--nu-blue);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 1rem;
+        }
+
+        .code-snippet {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="demo-container">
+            <div class="text-center mb-5">
+                <i class="bi bi-chat-heart text-primary" style="font-size: 4rem;"></i>
+                <h1 class="mt-3">Onsite Request Feedback System</h1>
+                <p class="lead text-muted">Enhancing service quality through client feedback</p>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <h3>✨ New Feature Overview</h3>
+                    <p>After completing an onsite request, clients can now provide optional feedback to help improve our services.</p>
+
+                    <div class="feature-box">
+                        <h5><i class="bi bi-star-fill text-warning"></i> Key Features</h5>
+                        <ul class="mb-0">
+                            <li><strong>Star Rating System:</strong> 1-5 star rating scale</li>
+                            <li><strong>Optional Comments:</strong> Text feedback up to 1000 characters</li>
+                            <li><strong>One Feedback Per Request:</strong> Prevents duplicate submissions</li>
+                            <li><strong>Registrar Dashboard:</strong> View feedback statistics and comments</li>
+                            <li><strong>Non-Intrusive:</strong> Feedback is optional, with extended redirect timer</li>
+                        </ul>
+                    </div>
+
+                    <h3 class="mt-5">🔄 User Flow</h3>
+                    
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="step-number">1</div>
+                        <div>
+                            <h6>Request Completion</h6>
+                            <p class="text-muted mb-0">When an onsite request reaches "completed" status</p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="step-number">2</div>
+                        <div>
+                            <h6>Feedback Invitation</h6>
+                            <p class="text-muted mb-0">Client sees optional feedback button with 10-second redirect timer</p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="step-number">3</div>
+                        <div>
+                            <h6>Feedback Submission</h6>
+                            <p class="text-muted mb-0">Client provides rating (1-5 stars) and optional comments</p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="step-number">4</div>
+                        <div>
+                            <h6>Registrar View</h6>
+                            <p class="text-muted mb-0">Registrars can see feedback ratings and comments in their dashboard</p>
+                        </div>
+                    </div>
+
+                    <h3 class="mt-5">🛠️ Technical Implementation</h3>
+
+                    <div class="feature-box">
+                        <h6>Database Schema</h6>
+                        <div class="code-snippet">
+feedbacks table:
+- id (primary key)
+- onsite_request_id (foreign key)
+- rating (1-5 integer)
+- comment (optional text, max 1000 chars)
+- full_name (requester name)
+- created_at, updated_at
+                        </div>
+                    </div>
+
+                    <div class="feature-box">
+                        <h6>New Routes Added</h6>
+                        <div class="code-snippet">
+GET  /onsite-request/{id}/feedback (show feedback form)
+POST /onsite-request/{id}/feedback (store feedback)
+                        </div>
+                    </div>
+
+                    <div class="feature-box">
+                        <h6>Models & Relationships</h6>
+                        <div class="code-snippet">
+OnsiteRequest -> hasOne(Feedback)
+Feedback -> belongsTo(OnsiteRequest)
+                        </div>
+                    </div>
+
+                    <h3 class="mt-5">📱 User Interface Changes</h3>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Timeline Completion View</h6>
+                            <div class="screenshot">
+                                <i class="bi bi-browser-chrome" style="font-size: 2rem; color: #6c757d;"></i>
+                                <p class="mt-2 mb-0">Enhanced completion view with feedback option</p>
+                                <small class="text-muted">10-second redirect timer with skip option</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Feedback Form</h6>
+                            <div class="screenshot">
+                                <i class="bi bi-star-half" style="font-size: 2rem; color: #ffc107;"></i>
+                                <p class="mt-2 mb-0">Interactive star rating system</p>
+                                <small class="text-muted">Optional comment field</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <h6>Registrar Dashboard</h6>
+                            <div class="screenshot">
+                                <i class="bi bi-graph-up" style="font-size: 2rem; color: #28a745;"></i>
+                                <p class="mt-2 mb-0">Feedback display in completed requests</p>
+                                <small class="text-muted">Star ratings and comment previews</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Feedback Display</h6>
+                            <div class="screenshot">
+                                <div class="rating-display">⭐⭐⭐⭐⭐</div>
+                                <p class="mt-2 mb-0">"Great service, very helpful staff!"</p>
+                                <small class="text-muted">Sample feedback display</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 class="mt-5">🎯 Benefits</h3>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="feature-box">
+                                <h6><i class="bi bi-people text-primary"></i> For Clients</h6>
+                                <ul class="mb-0">
+                                    <li>Express satisfaction or concerns</li>
+                                    <li>Help improve services</li>
+                                    <li>Optional participation</li>
+                                    <li>Quick and easy process</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-box">
+                                <h6><i class="bi bi-graph-up text-success"></i> For Staff</h6>
+                                <ul class="mb-0">
+                                    <li>Monitor service quality</li>
+                                    <li>Identify improvement areas</li>
+                                    <li>Track client satisfaction</li>
+                                    <li>Performance insights</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-5">
+                        <div class="alert alert-success">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            <strong>Feature Successfully Implemented!</strong><br>
+                            The feedback system is now integrated into the onsite request workflow.
+                        </div>
+
+                        <p class="text-muted">
+                            <small>To see the feedback system in action, complete an onsite request and navigate to the completion step.</small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
