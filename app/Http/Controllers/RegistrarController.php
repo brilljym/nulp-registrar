@@ -7,11 +7,14 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use App\Models\StudentRequest;
 use App\Services\RealTimeNotificationService;
 use App\Services\QueueService;
 use App\Mail\RequestReadyForReleaseMail;
 use App\Mail\RequestCompletedMail;
+use App\Mail\RequestRejectedMail;
+use App\Mail\ExpectedReleaseDateUpdatedMail;
 use Carbon\Carbon;
 
 class RegistrarController extends Controller
@@ -284,6 +287,13 @@ class RegistrarController extends Controller
      */
     public function rejectRequest(Request $request, StudentRequest $studentRequest)
     {
+        Log::info('rejectRequest method called for student request', [
+            'request_id' => $studentRequest->id,
+            'reference_no' => $studentRequest->reference_no,
+            'status' => $studentRequest->status,
+            'remarks' => $request->input('remarks')
+        ]);
+
         if ($studentRequest->status !== 'pending') {
             return redirect()->back()->with('error', 'Only pending requests can be rejected.');
         }
@@ -320,6 +330,63 @@ class RegistrarController extends Controller
                 'reason' => $request->input('remarks', 'Request rejected - please review and re-submit')
             ]
         );
+
+        // Send email notification if student has an email
+        Log::info('Starting email notification process for rejection', [
+            'request_id' => $studentRequest->id,
+            'has_student' => $studentRequest->student ? 'yes' : 'no',
+            'has_user' => $studentRequest->student && $studentRequest->student->user ? 'yes' : 'no'
+        ]);
+        
+        if ($studentRequest->student && $studentRequest->student->user) {
+            $email = $studentRequest->student->user->personal_email ?? $studentRequest->student->user->school_email;
+            Log::info('Student email detection for rejection', [
+                'request_id' => $studentRequest->id,
+                'student_id' => $studentRequest->student->id,
+                'personal_email' => $studentRequest->student->user->personal_email,
+                'school_email' => $studentRequest->student->user->school_email,
+                'selected_email' => $email
+            ]);
+            
+            if ($email) {
+                $remarks = $request->input('remarks');
+                if (!$remarks || trim($remarks) === '') {
+                    $remarks = 'Request rejected by registrar - please review and re-submit';
+                }
+                Log::info('Sending rejection email to student', [
+                    'request_id' => $studentRequest->id,
+                    'email' => $email,
+                    'remarks' => $remarks
+                ]);
+                try {
+                    // Temporarily send to test email to debug
+                    Mail::to('zetabrill@gmail.com')->send(new RequestRejectedMail($studentRequest, 'student', $remarks));
+                    Log::info('Rejection email sent successfully to student', [
+                        'request_id' => $studentRequest->id,
+                        'email' => $email,
+                        'actually_sent_to' => 'zetabrill@gmail.com'
+                    ]);
+                } catch (\Exception $e) {
+                    // Log the error but don't fail the request
+                    Log::error('Failed to send rejection email: ' . $e->getMessage(), [
+                        'request_id' => $studentRequest->id,
+                        'email' => $email,
+                        'exception' => $e->getTraceAsString()
+                    ]);
+                }
+            } else {
+                Log::warning('No email found for student rejection notification', [
+                    'request_id' => $studentRequest->id,
+                    'student_id' => $studentRequest->student->id
+                ]);
+            }
+        } else {
+            Log::warning('Student or user relationship missing for rejection email', [
+                'request_id' => $studentRequest->id,
+                'has_student' => $studentRequest->student ? 'yes' : 'no',
+                'has_user' => $studentRequest->student && $studentRequest->student->user ? 'yes' : 'no'
+            ]);
+        }
 
         return redirect()->back()->with('success', 'Request rejected and sent back to student timeline for re-approval.');
     }
@@ -550,6 +617,19 @@ class RegistrarController extends Controller
         $studentRequest->update([
             'expected_release_date' => $request->expected_release_date,
         ]);
+
+        // Send email notification if student has an email
+        if ($studentRequest->student && $studentRequest->student->user) {
+            $email = $studentRequest->student->user->personal_email ?? $studentRequest->student->user->school_email;
+            if ($email) {
+                try {
+                    Mail::to($email)->send(new ExpectedReleaseDateUpdatedMail($studentRequest, 'student'));
+                } catch (\Exception $e) {
+                    // Log the error but don't fail the request
+                    Log::error('Failed to send expected release date update email: ' . $e->getMessage());
+                }
+            }
+        }
 
         return redirect()->back()->with('success', 'Expected release date updated successfully.');
     }

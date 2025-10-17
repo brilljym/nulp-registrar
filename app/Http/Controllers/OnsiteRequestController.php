@@ -44,6 +44,7 @@ class OnsiteRequestController extends Controller
             'course'       => 'required|string|max:100',
             'year_level'   => 'required|string|max:50',
             'department'   => 'required|string|max:100',
+            'email'        => 'nullable|email|max:255',
             'documents'    => 'required|array|min:1',
             'documents.*.document_id' => 'required|exists:documents,id',
             'documents.*.quantity' => 'required|integer|min:1|max:150',
@@ -756,15 +757,19 @@ class OnsiteRequestController extends Controller
         ]);
 
         // Send email notification if student has an email
+        $email = null;
         if ($onsiteRequest->student && $onsiteRequest->student->user) {
             $email = $onsiteRequest->student->user->personal_email ?? $onsiteRequest->student->user->school_email;
-            if ($email) {
-                try {
-                    Mail::to($email)->send(new ExpectedReleaseDateUpdatedMail($onsiteRequest));
-                } catch (\Exception $e) {
-                    // Log the error but don't fail the request
-                    Log::error('Failed to send expected release date update email: ' . $e->getMessage());
-                }
+        } elseif ($onsiteRequest->email) {
+            $email = $onsiteRequest->email;
+        }
+
+        if ($email) {
+            try {
+                Mail::to($email)->send(new ExpectedReleaseDateUpdatedMail($onsiteRequest, 'onsite'));
+            } catch (\Exception $e) {
+                // Log the error but don't fail the request
+                Log::error('Failed to send expected release date update email: ' . $e->getMessage());
             }
         }
 

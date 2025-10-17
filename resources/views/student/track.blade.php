@@ -489,6 +489,21 @@
                             </div>
                         </div>
                         @endif
+
+                        {{-- Registrar Remarks --}}
+                        @if($studentRequest->remarks)
+                        <div class="col-12">
+                            <div class="d-flex align-items-start">
+                                <div class="text-info me-3">
+                                    <i class="bi bi-chat-dots" style="font-size: 1.5rem;"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <small class="text-muted text-uppercase fw-medium">Registrar Remarks</small>
+                                    <div class="fw-semibold text-info">{{ $studentRequest->remarks }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
                     </div>
 
                     {{-- Documents List --}}

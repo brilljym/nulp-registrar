@@ -181,6 +181,21 @@
                     </div>
                 </div>
                 
+                {{-- Remarks Section --}}
+                @if($request->remarks)
+                <div class="border-top pt-3 mt-3">
+                    <div class="d-flex align-items-start">
+                        <div class="text-secondary me-3">
+                            <i class="bi bi-chat-dots" style="font-size: 1.5rem;"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <small class="text-muted text-uppercase fw-medium">Remarks</small>
+                            <div class="fw-semibold">{{ $request->remarks }}</div>
+                        </div>
+                    </div>
+                </div>
+                @endif
+                
                 <!-- Documents List -->
                 <div class="border-top pt-3 mt-3">
                     <h6 class="mb-2 fw-bold">Requested Documents</h6>

@@ -813,6 +813,12 @@
                                            readonly style="background-color: #f8f9fa;"
                                            placeholder="Auto-filled from student data" required>
                                 </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="email" class="form-label">Email Address</label>
+                                    <input type="email" id="email" name="email" class="form-control" 
+                                           placeholder="your.email@example.com">
+                                    <div class="form-text">Optional: We'll use this to send you updates about your request.</div>
+                                </div>
                             </div>
                         </div>
 

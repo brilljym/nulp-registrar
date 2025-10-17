@@ -16,6 +16,7 @@ class OnsiteRequest extends Model
         'course',
         'year_level',
         'department',
+        'email',
         'quantity',
         'reason',           // Added reason field
         'remarks',          // Added remarks field

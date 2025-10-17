@@ -357,8 +357,8 @@
                         <h2>Queue Confirmed!</h2>
                         <p class="text-muted" style="font-size: 0.85rem;">You are in the waiting queue</p>
                     @else
-                        <h2>Pickup Completed!</h2>
-                        <p class="text-muted" style="font-size: 0.85rem;">Your documents have been successfully collected</p>
+                        <h2>Queue Confirmed!</h2>
+                        <p class="text-muted" style="font-size: 0.85rem;">Queue placement confirmed. Please wait to be called to your assigned window.</p>
                     @endif
                 </div>
 

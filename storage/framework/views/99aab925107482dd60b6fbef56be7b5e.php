@@ -261,11 +261,9 @@
                                 </button>
                             </form>
                         <?php elseif($request->status === 'ready_for_release'): ?>
-                            <form action="<?php echo e(route('registrar.ready-pickup', $request->id)); ?>" method="POST" class="d-inline">
+                            <form action="<?php echo e(route('registrar.close', $request->id)); ?>" method="POST" class="d-inline">
                                 <?php echo csrf_field(); ?>
-                                <button type="submit" class="btn btn-warning action-btn">
-                                    Ready for Pickup
-                                </button>
+                                <button class="btn btn-success action-btn">Mark as Completed</button>
                             </form>
                         <?php elseif($request->status === 'in_queue'): ?>
                             <small class="text-muted">Kiosk Processing</small><br>
@@ -353,6 +351,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Set up rejection button
         rejectRequestBtn.onclick = function() {
+            console.log('Reject button clicked for student request:', requestId);
             if (confirm('Are you sure you want to reject this request? The student will be able to re-approve it from their timeline.')) {
                 // Create a rejection form
                 const rejectForm = document.createElement('form');
@@ -375,6 +374,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     rejectForm.appendChild(remarksInput);
                 }
                 
+                console.log('Submitting rejection form with data:', {
+                    requestId: requestId,
+                    remarks: remarksTextarea.value.trim(),
+                    csrfToken: csrfInput.value ? 'present' : 'missing'
+                });
                 document.body.appendChild(rejectForm);
                 rejectForm.submit();
             }

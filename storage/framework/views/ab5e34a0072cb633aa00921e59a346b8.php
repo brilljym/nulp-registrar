@@ -1,1 +1,0 @@
-<?php /**PATH D:\Nu-Regisv2\resources\views\emails\request-approved.blade.php ENDPATH**/ ?>

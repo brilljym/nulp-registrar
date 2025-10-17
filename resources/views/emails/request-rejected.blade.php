@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NU Lipa - Updated Expected Release Date</title>
+    <title>NU Lipa - Request Rejected</title>
     <style>
         * {
             margin: 0;
@@ -31,7 +31,7 @@
         }
 
         .header {
-            background: linear-gradient(135deg, #2c2f92 0%, #1e2461 100%);
+            background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);
             padding: 40px 30px;
             text-align: center;
             color: white;
@@ -80,7 +80,7 @@
         .greeting {
             font-size: 20px;
             font-weight: 600;
-            color: #2c2f92;
+            color: #dc3545;
             margin-bottom: 20px;
         }
 
@@ -96,7 +96,7 @@
             border-radius: 12px;
             padding: 25px;
             margin: 25px 0;
-            border-left: 4px solid #2c2f92;
+            border-left: 4px solid #dc3545;
         }
 
         .detail-row {
@@ -115,7 +115,7 @@
 
         .detail-label {
             font-weight: 600;
-            color: #2c2f92;
+            color: #dc3545;
             min-width: 140px;
         }
 
@@ -125,25 +125,53 @@
             flex: 1;
         }
 
-        .highlight-box {
+        .remarks-box {
             background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
             border: 2px solid #ffc107;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+
+        .remarks-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #856404;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .remarks-content {
+            font-size: 14px;
+            color: #856404;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ffeaa7;
+            font-style: italic;
+        }
+
+        .action-box {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+            border: 2px solid #17a2b8;
             border-radius: 12px;
             padding: 20px;
             margin: 25px 0;
             text-align: center;
         }
 
-        .highlight-text {
-            font-size: 18px;
-            font-weight: 700;
-            color: #856404;
+        .action-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: #0c5460;
             margin-bottom: 8px;
         }
 
-        .highlight-subtext {
+        .action-subtext {
             font-size: 14px;
-            color: #856404;
+            color: #0c5460;
             opacity: 0.8;
         }
 
@@ -162,11 +190,11 @@
 
         .footer .signature {
             font-weight: 600;
-            color: #2c2f92;
+            color: #dc3545;
         }
 
         .ticket-number {
-            background: #2c2f92;
+            background: #dc3545;
             color: white;
             padding: 8px 16px;
             border-radius: 20px;
@@ -186,9 +214,9 @@
             letter-spacing: 0.5px;
         }
 
-        .status-completed {
-            background: #d4edda;
-            color: #155724;
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
         }
 
         @media (max-width: 600px) {
@@ -208,8 +236,8 @@
     <div class="email-container">
         <div class="header">
             <img src="{{ asset('images/NU_shield.svg.png') }}" alt="NU Logo" class="logo">
-            <h1>📅 Release Date Updated</h1>
-            <p>Your {{ $requestType === 'student' ? 'document' : 'on-site' }} request has been updated</p>
+            <h1>❌ Request Rejected</h1>
+            <p>Your {{ $requestType === 'student' ? 'document' : 'on-site' }} request has been rejected</p>
         </div>
 
         <div class="content">
@@ -218,7 +246,16 @@
             </div>
 
             <div class="message">
-                <p>We have updated the expected release date for your {{ $requestType === 'student' ? 'document' : 'on-site' }} request. Please find the updated details below:</p>
+                <p>We regret to inform you that your {{ $requestType === 'student' ? 'document' : 'on-site' }} request has been rejected by the registrar. Please review the details below and the remarks from the registrar.</p>
+            </div>
+
+            <div class="remarks-box">
+                <div class="remarks-title">
+                    <span>💬</span> Registrar Remarks
+                </div>
+                <div class="remarks-content">
+                    {{ $remarks }}
+                </div>
             </div>
 
             <div class="request-details">
@@ -253,7 +290,7 @@
                 <div class="detail-row">
                     <span class="detail-label">Status:</span>
                     <span class="detail-value">
-                        <span class="status-badge status-completed">{{ ucfirst($request->status) }}</span>
+                        <span class="status-badge status-rejected">{{ ucfirst($request->status) }}</span>
                     </span>
                 </div>
                 <div class="detail-row">
@@ -269,24 +306,23 @@
                         @endif
                     </span>
                 </div>
+                <div class="detail-row">
+                    <span class="detail-label">Request Date:</span>
+                    <span class="detail-value">{{ $request->created_at->format('M d, Y') }}</span>
+                </div>
             </div>
 
-            <div class="highlight-box">
-                <div class="highlight-text">
-                    📅 New Expected Release Date
+            <div class="action-box">
+                <div class="action-text">
+                    🔄 Next Steps
                 </div>
-                <div class="highlight-text">
-                    {{ \Carbon\Carbon::parse($onsiteRequest->expected_release_date)->format('l, F j, Y') }}
-                </div>
-                <div class="highlight-subtext">
-                    at {{ \Carbon\Carbon::parse($onsiteRequest->expected_release_date)->format('g:i A') }}
+                <div class="action-subtext">
+                    Please review the registrar's remarks and re-submit your request with the necessary corrections. You can access your request timeline to make changes and re-approve.
                 </div>
             </div>
 
             <div class="message">
-                <p><strong>Important:</strong> Please arrive at the registrar's office at the specified date and time to pick up your documents. Bring your ticket number and any required identification.</p>
-
-                <p>If you have any questions or need to make changes to your request, please contact the registrar's office immediately.</p>
+                <p>If you have any questions about this rejection or need assistance with re-submitting your request, please contact the registrar's office.</p>
             </div>
         </div>
 

@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\OnsiteRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use App\Services\RealTimeNotificationService;
+use App\Mail\RequestRejectedMail;
 
 class RegistrarOnsiteController extends Controller
 {
@@ -320,7 +323,7 @@ class RegistrarOnsiteController extends Controller
         // Get current registrar
         $currentUser = Auth::user();
         $currentRegistrar = $currentUser->registrar;
-        
+
         if (!$currentRegistrar) {
             return redirect()->back()->with('error', 'Access denied. You are not assigned as a registrar.');
         }
@@ -350,6 +353,28 @@ class RegistrarOnsiteController extends Controller
                 'reason' => $request->input('remarks', 'Request rejected - please review and re-submit')
             ]
         );
+
+        // Send email notification if student has an email
+        $email = null;
+        if ($onsiteRequest->student && $onsiteRequest->student->user) {
+            $email = $onsiteRequest->student->user->personal_email ?? $onsiteRequest->student->user->school_email;
+        } elseif ($onsiteRequest->email) {
+            $email = $onsiteRequest->email;
+        }
+
+        $remarks = $request->input('remarks');
+        if (!$remarks || trim($remarks) === '') {
+            $remarks = 'Request rejected by registrar - please review and re-submit';
+        }
+
+        if ($email) {
+            try {
+                Mail::to($email)->send(new RequestRejectedMail($onsiteRequest, 'onsite', $remarks));
+            } catch (\Exception $e) {
+                // Log the error but don't fail the request
+                Log::error('Failed to send onsite rejection email: ' . $e->getMessage());
+            }
+        }
 
         return redirect()->back()->with('success', 'Onsite request rejected and sent back to student timeline for re-approval.');
     }

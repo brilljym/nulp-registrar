@@ -8,23 +8,26 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use App\Models\OnsiteRequest;
+use Illuminate\Support\Facades\Log;
 use App\Models\StudentRequest;
+use App\Models\OnsiteRequest;
 
-class ExpectedReleaseDateUpdatedMail extends Mailable
+class RequestRejectedMail extends Mailable
 {
     use Queueable, SerializesModels;
 
     public $request;
     public $requestType; // 'student' or 'onsite'
+    public $remarks;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($request, string $requestType = 'onsite')
+    public function __construct($request, string $requestType, string $remarks)
     {
         $this->request = $request;
         $this->requestType = $requestType;
+        $this->remarks = $remarks;
     }
 
     /**
@@ -33,8 +36,8 @@ class ExpectedReleaseDateUpdatedMail extends Mailable
     public function envelope(): Envelope
     {
         $subject = $this->requestType === 'student'
-            ? 'NU Lipa - Updated Expected Release Date for Your Document Request'
-            : 'NU Lipa - Updated Expected Release Date for Your On-site Request';
+            ? 'NU Lipa - Document Request Rejected'
+            : 'NU Lipa - On-site Request Rejected';
 
         return new Envelope(
             subject: $subject,
@@ -47,10 +50,11 @@ class ExpectedReleaseDateUpdatedMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.expected-release-date-updated',
+            view: 'emails.request-rejected',
             with: [
                 'request' => $this->request,
                 'requestType' => $this->requestType,
+                'remarks' => $this->remarks,
             ],
         );
     }

@@ -334,9 +334,9 @@
                                 <button class="btn btn-warning action-btn">Mark as Ready</button>
                             </form>
                         <?php elseif($request->status === 'ready_for_release'): ?>
-                            <form action="<?php echo e(route('registrar.ready-pickup', $request->id)); ?>" method="POST" class="d-inline">
+                            <form action="<?php echo e(route('registrar.close', $request->id)); ?>" method="POST" class="d-inline">
                                 <?php echo csrf_field(); ?>
-                                <button class="btn btn-warning action-btn">Ready for Pickup</button>
+                                <button class="btn btn-success action-btn">Mark as Completed</button>
                             </form>
                         <?php elseif($request->status === 'in_queue'): ?>
                             <small class="text-muted">Kiosk Processing</small><br>
@@ -461,6 +461,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger me-auto" id="rejectRequestBtn">
+                        <i class="bi bi-x-circle"></i> Reject Request
+                    </button>
                     <button type="submit" class="btn btn-success">Approve & Take Request</button>
                 </div>
             </form>
@@ -474,6 +477,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const approveRequestForm = document.getElementById('approveRequestForm');
     const studentNameInput = document.getElementById('student_name');
     const remarksTextarea = document.getElementById('remarks');
+    const rejectRequestBtn = document.getElementById('rejectRequestBtn');
 
     approveRequestModal.addEventListener('show.bs.modal', function(event) {
         const button = event.relatedTarget;
@@ -488,6 +492,41 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Clear remarks
         remarksTextarea.value = '';
+        
+        // Set up rejection button
+        rejectRequestBtn.onclick = function() {
+            console.log('Reject button clicked for student request:', requestId);
+            if (confirm('Are you sure you want to reject this request? The student will be able to re-approve it from their timeline.')) {
+                // Create a rejection form
+                const rejectForm = document.createElement('form');
+                rejectForm.method = 'POST';
+                rejectForm.action = `/registrar/reject/${requestId}`;
+                
+                // Add CSRF token
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_token';
+                csrfInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content') || '<?php echo e(csrf_token()); ?>';
+                rejectForm.appendChild(csrfInput);
+                
+                // Add remarks if any
+                if (remarksTextarea.value.trim()) {
+                    const remarksInput = document.createElement('input');
+                    remarksInput.type = 'hidden';
+                    remarksInput.name = 'remarks';
+                    remarksInput.value = remarksTextarea.value.trim();
+                    rejectForm.appendChild(remarksInput);
+                }
+                
+                console.log('Submitting rejection form with data:', {
+                    requestId: requestId,
+                    remarks: remarksTextarea.value.trim(),
+                    csrfToken: csrfInput.value ? 'present' : 'missing'
+                });
+                document.body.appendChild(rejectForm);
+                rejectForm.submit();
+            }
+        };
     });
 });
 </script>

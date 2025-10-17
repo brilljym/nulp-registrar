@@ -412,11 +412,17 @@
                                 @csrf
                                 <button class="btn btn-success action-btn">Mark as Completed</button>
                             </form>
+                        @elseif ($req->status === 'ready_for_release')
+                            <small class="text-muted">Onsite Processing</small><br>
+                            <form method="POST" action="{{ route('registrar.onsite.complete', $req->id) }}" class="d-inline">
+                                @csrf
+                                <button class="btn btn-success action-btn">Mark as Completed</button>
+                            </form>
                         @elseif ($req->status === 'in_queue' && (!$req->assigned_registrar_id || $req->assigned_registrar_id === Auth::id()))
                             <small class="text-muted">Kiosk Processing</small><br>
                             @if(!isset($isWindowOccupied) || !$isWindowOccupied || (isset($currentRequest) && $currentRequest->id === $req->id))
                                 @if($req->assigned_registrar_id === Auth::id())
-                                    {{-- Request is assigned to current registrar, show ready for pickup button --}}
+                                    {{-- Request is assigned to current registrar --}}
                                     <form method="POST" action="{{ route('registrar.onsite.ready-pickup', $req->id) }}" class="d-inline">
                                         @csrf
                                         <button class="btn btn-warning action-btn">Ready for Pickup</button>
@@ -675,14 +681,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 csrfInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content') || '{{ csrf_token() }}';
                 rejectForm.appendChild(csrfInput);
                 
-                // Add remarks if any
-                if (remarksTextarea.value.trim()) {
-                    const remarksInput = document.createElement('input');
-                    remarksInput.type = 'hidden';
-                    remarksInput.name = 'remarks';
-                    remarksInput.value = remarksTextarea.value.trim();
-                    rejectForm.appendChild(remarksInput);
-                }
+                // Add remarks (always include the field, even if empty)
+                const remarksInput = document.createElement('input');
+                remarksInput.type = 'hidden';
+                remarksInput.name = 'remarks';
+                remarksInput.value = remarksTextarea.value.trim();
+                rejectForm.appendChild(remarksInput);
                 
                 document.body.appendChild(rejectForm);
                 rejectForm.submit();

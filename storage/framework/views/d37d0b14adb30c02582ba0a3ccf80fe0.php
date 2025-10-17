@@ -416,6 +416,12 @@
                                 <?php echo csrf_field(); ?>
                                 <button class="btn btn-success action-btn">Mark as Completed</button>
                             </form>
+                        <?php elseif($req->status === 'ready_for_release'): ?>
+                            <small class="text-muted">Onsite Processing</small><br>
+                            <form method="POST" action="<?php echo e(route('registrar.onsite.complete', $req->id)); ?>" class="d-inline">
+                                <?php echo csrf_field(); ?>
+                                <button class="btn btn-success action-btn">Mark as Completed</button>
+                            </form>
                         <?php elseif($req->status === 'in_queue' && (!$req->assigned_registrar_id || $req->assigned_registrar_id === Auth::id())): ?>
                             <small class="text-muted">Kiosk Processing</small><br>
                             <?php if(!isset($isWindowOccupied) || !$isWindowOccupied || (isset($currentRequest) && $currentRequest->id === $req->id)): ?>
@@ -680,14 +686,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 csrfInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content') || '<?php echo e(csrf_token()); ?>';
                 rejectForm.appendChild(csrfInput);
                 
-                // Add remarks if any
-                if (remarksTextarea.value.trim()) {
-                    const remarksInput = document.createElement('input');
-                    remarksInput.type = 'hidden';
-                    remarksInput.name = 'remarks';
-                    remarksInput.value = remarksTextarea.value.trim();
-                    rejectForm.appendChild(remarksInput);
-                }
+                // Add remarks (always include the field, even if empty)
+                const remarksInput = document.createElement('input');
+                remarksInput.type = 'hidden';
+                remarksInput.name = 'remarks';
+                remarksInput.value = remarksTextarea.value.trim();
+                rejectForm.appendChild(remarksInput);
                 
                 document.body.appendChild(rejectForm);
                 rejectForm.submit();
