@@ -315,12 +315,7 @@ Route::prefix('kiosk')->name('kiosk.')->group(function () {
     Route::get('/queue-status', [App\Http\Controllers\KioskController::class, 'queueStatus'])->name('queue-status');
     Route::post('/print-receipt/{type}/{id}', [App\Http\Controllers\KioskController::class, 'printReceipt'])->name('print-receipt');
     Route::post('/test-printer', [App\Http\Controllers\KioskController::class, 'testPrinter'])->name('test-printer');
-    Route::get('/print-test', function() {
-        return view('print-test');
-    })->name('print-test');
-    Route::get('/qr-test', function() {
-        return view('qr-test');
-    })->name('qr-test');
+    Route::get('/status/{queueNumber}', [App\Http\Controllers\KioskController::class, 'status'])->name('status');
 });
 
 // Public Queue Display (No Login Required)
