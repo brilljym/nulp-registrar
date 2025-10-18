@@ -501,9 +501,9 @@
                                 Estimated wait: <?php echo e($statusInfo['estimatedTime']); ?>
 
                             </div>
-                        <?php elseif(in_array($statusInfo['status'], ['ready_for_pickup', 'ready_for_release'])): ?>
+                        <?php elseif(in_array($statusInfo['status'], ['ready_for_pickup', 'ready_for_release', 'in_queue'])): ?>
                             <div class="estimated-time">
-                                <i class="fas fa-check-circle me-1"></i>
+                                <i class="fas fa-info-circle me-1"></i>
                                 <?php echo e($statusInfo['estimatedTime']); ?>
 
                             </div>

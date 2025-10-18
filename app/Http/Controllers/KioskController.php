@@ -94,12 +94,8 @@ class KioskController extends Controller
             $onsiteAhead = OnsiteRequest::where('status', 'waiting')
                 ->where('updated_at', '<', $currentRequest->updated_at)
                 ->count();
-            
-            // Add 1 if someone is currently being served (in_queue), plus the number ahead
-            $currentlyServing = StudentRequest::where('status', 'in_queue')->exists() 
-                || OnsiteRequest::where('status', 'in_queue')->exists() ? 1 : 0;
                 
-            return $currentlyServing + $studentsAhead + $onsiteAhead + 1;
+            return $studentsAhead + $onsiteAhead + 1;
         }
         
         // For other statuses (ready_for_release, ready_for_pickup, completed, released)
