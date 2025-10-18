@@ -145,11 +145,12 @@ class ReferenceController extends Controller
         }
 
         // Get all documents for this request
-        $documents = $studentRequest->requestItems->map(function ($item) {
+        $documents = $studentRequest->requestItems->map(function ($item) use ($studentRequest) {
             return [
                 'name' => $item->document->type_document ?? 'Unknown Document',
                 'quantity' => $item->quantity,
-                'price' => $item->price
+                'price' => $item->price,
+                'queue_number' => $studentRequest->queue_number
             ];
         });
 
@@ -166,6 +167,7 @@ class ReferenceController extends Controller
             'documents' => $documents, // New field with all documents
             'total_cost' => $studentRequest->total_cost,
             'status' => $studentRequest->status,
+            'queue_number' => $studentRequest->queue_number,
             'registrar_name' => $studentRequest->assignedRegistrar ? 
                 trim(($studentRequest->assignedRegistrar->first_name ?? '') . ' ' . ($studentRequest->assignedRegistrar->last_name ?? '')) : null,
             'expected_release_date' => $studentRequest->expected_release_date ? 
@@ -196,11 +198,17 @@ class ReferenceController extends Controller
             'course' => $request->course,
             'year_level' => $request->year_level,
             'department' => $request->department,
-            'document_name' => $request->document->type_document ?? null,
+            'document_name' => $request->document->type_document ?? null, // For backward compatibility
+            'documents' => [[ // New field with documents array
+                'name' => $request->document->type_document ?? 'Unknown Document',
+                'quantity' => $request->quantity,
+                'queue_number' => $request->queue_number
+            ]],
             'quantity' => $request->quantity,
             'reason' => $request->reason,
             'status' => $request->status,
             'current_step' => $request->current_step,
+            'queue_number' => $request->queue_number,
             'window_name' => $request->window->name ?? null,
             'registrar_name' => $request->registrar ? 
                 trim(($request->registrar->first_name ?? '') . ' ' . ($request->registrar->last_name ?? '')) : null,
