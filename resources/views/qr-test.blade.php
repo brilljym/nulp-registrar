@@ -73,18 +73,18 @@
         </div>
 
         <div class="qr-section">
-            <h3>🔗 Sample Verification URLs</h3>
+            <h3>🔗 Sample Status Page URLs</h3>
             <p>These URLs simulate what the QR codes contain:</p>
             
             <div class="test-url">
                 <strong>Sample URL:</strong><br>
-                http://127.0.0.1:8000/verify/NU6D9D30
+                http://127.0.0.1:8000/kiosk/status/A001
             </div>
-            <a href="/verify/NU6D9D30" class="btn" target="_blank">Test Verification</a>
+            <a href="/kiosk/status/A001" class="btn" target="_blank">Test Status Page</a>
             
             <div class="test-url">
                 <strong>Template:</strong><br>
-                http://127.0.0.1:8000/verify/{REFERENCE_CODE}
+                http://127.0.0.1:8000/kiosk/status/{QUEUE_NUMBER}
             </div>
         </div>
 

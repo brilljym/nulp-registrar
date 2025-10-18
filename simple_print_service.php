@@ -191,33 +191,60 @@ class SimplePrintService
         }
 
         // ===========================
-        // QR CODE
+        // QR CODE - PROFESSIONAL VERIFICATION
         // ===========================
         if (!empty($job['qr_code_data'])) {
             try {
                 $printer->setJustification(Printer::JUSTIFY_CENTER);
-                
-                // Create QR data with receipt details
-                $qrData = "Queue No: " . $job['queue_number'] . "\n";
+
+                // Create professional QR data with structured format
+                $qrData = [
+                    "NU REGISTRAR VERIFICATION",
+                    "==============================",
+                    "Queue Number: " . $job['queue_number'],
+                    "Date/Time: " . date("Y-m-d H:i:s"),
+                    "Service: " . $job['service_type'],
+                    "Window: " . $job['window_name'],
+                    "Status: " . (isset($job['status']) ? $job['status'] : 'Pending'),
+                    "Position: " . (isset($job['queue_position']) ? $job['queue_position'] : 'N/A')
+                ];
+
                 if (!empty($job['customer_name'])) {
-                    $qrData .= "Name: " . $job['customer_name'] . "\n";
+                    $qrData[] = "Student: " . $job['customer_name'];
                 }
-                $qrData .= "Service: " . $job['service_type'] . "\n";
+
                 if ($totalCost > 0) {
-                    $qrData .= "Total: ₱" . number_format($totalCost, 2) . "\n";
+                    $qrData[] = "Total Amount: ₱" . number_format($totalCost, 2);
                 }
-                $qrData .= "Verify: " . $job['qr_code_data'];
-                
-                // Use built-in QR code function (more reliable than external library)
-                $printer->qrCode($qrData, Printer::QR_ECLEVEL_M, 6);
-                $printer->text("\nScan to Verify Request\n\n");
-                
-                $this->log("✅ QR code printed successfully");
+
+                $qrData[] = "==============================";
+                $qrData[] = "Status URL: " . $job['qr_code_data'];
+                $qrData[] = "==============================";
+                $qrData[] = "Scan to check your queue status";
+
+                // Join with newlines for clean formatting
+                $qrContent = implode("\n", $qrData);
+
+                // Print decorative border above QR
+                $printer->text("╔══════════════════════════════╗\n");
+                $printer->text("║        SCAN TO VERIFY        ║\n");
+                $printer->text("╚══════════════════════════════╝\n\n");
+
+                // Generate QR code with higher quality settings
+                $printer->qrCode($qrContent, Printer::QR_ECLEVEL_H, 8);
+                $printer->text("\nScan to Check Status\n\n");
+
+                $this->log("✅ Professional QR code printed successfully");
             } catch (Exception $e) {
                 $this->log("⚠️ QR code generation failed: " . $e->getMessage());
-                // Fallback to text URL
+                // Professional fallback with decorative elements
                 $printer->setJustification(Printer::JUSTIFY_CENTER);
-                $printer->text("Verify at: " . $job['qr_code_data'] . "\n\n");
+                $printer->text("╔══════════════════════════════╗\n");
+                $printer->text("║      STATUS CHECK LINK       ║\n");
+                $printer->text("╚══════════════════════════════╝\n");
+                $printer->text("Check status at:\n");
+                $printer->text($job['qr_code_data'] . "\n");
+                $printer->text("└──────────────────────────────┘\n\n");
             }
         }
 

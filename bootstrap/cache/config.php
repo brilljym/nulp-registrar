@@ -6,9 +6,9 @@
   'app' => 
   array (
     'name' => 'NU-Registrar',
-    'env' => 'local',
+    'env' => 'production',
     'debug' => true,
-    'url' => 'http://localhost:8000',
+    'url' => 'http://nu-registrar-v2.com',
     'frontend_url' => 'http://localhost:3000',
     'asset_url' => NULL,
     'timezone' => 'UTC',
@@ -16,7 +16,7 @@
     'fallback_locale' => 'en',
     'faker_locale' => 'en_US',
     'cipher' => 'AES-256-CBC',
-    'key' => 'base64:wo6vBifQges1ZvXZ47HtsplmPfu4sIBKIHs/o0buuvw=',
+    'key' => 'base64:7GvhCRoAWmGUvJO+XD/pJrfSswL0rUx4SC42LdAc8cM=',
     'previous_keys' => 
     array (
     ),
@@ -194,7 +194,7 @@
   ),
   'cache' => 
   array (
-    'default' => 'file',
+    'default' => 'database',
     'stores' => 
     array (
       'array' => 
@@ -262,14 +262,14 @@
   ),
   'database' => 
   array (
-    'default' => 'mysql',
+    'default' => 'sqlite',
     'connections' => 
     array (
       'sqlite' => 
       array (
         'driver' => 'sqlite',
         'url' => NULL,
-        'database' => 'registrar_db',
+        'database' => 'database/database.sqlite',
         'prefix' => '',
         'foreign_key_constraints' => true,
         'busy_timeout' => NULL,
@@ -282,7 +282,7 @@
         'url' => NULL,
         'host' => '127.0.0.1',
         'port' => '3306',
-        'database' => 'registrar_db',
+        'database' => 'database/database.sqlite',
         'username' => 'root',
         'password' => '',
         'unix_socket' => '',
@@ -302,7 +302,7 @@
         'url' => NULL,
         'host' => '127.0.0.1',
         'port' => '3306',
-        'database' => 'registrar_db',
+        'database' => 'database/database.sqlite',
         'username' => 'root',
         'password' => '',
         'unix_socket' => '',
@@ -321,8 +321,8 @@
         'driver' => 'pgsql',
         'url' => NULL,
         'host' => '127.0.0.1',
-        'port' => '3306',
-        'database' => 'registrar_db',
+        'port' => '5432',
+        'database' => 'database/database.sqlite',
         'username' => 'root',
         'password' => '',
         'charset' => 'utf8',
@@ -335,9 +335,9 @@
       array (
         'driver' => 'sqlsrv',
         'url' => NULL,
-        'host' => '127.0.0.1',
-        'port' => '3306',
-        'database' => 'registrar_db',
+        'host' => 'localhost',
+        'port' => '1433',
+        'database' => 'database/database.sqlite',
         'username' => 'root',
         'password' => '',
         'charset' => 'utf8',
@@ -396,7 +396,7 @@
       array (
         'driver' => 'local',
         'root' => 'D:\\Nu-Regisv2\\storage\\app/public',
-        'url' => 'http://localhost:8000/storage',
+        'url' => 'http://nu-registrar-v2.com/storage',
         'visibility' => 'public',
         'throw' => false,
         'report' => false,
@@ -533,7 +533,7 @@
         'username' => 'nu-registrar@nu-registrar-v2.com',
         'password' => 'Brillqwerty@0218',
         'timeout' => NULL,
-        'local_domain' => 'localhost',
+        'local_domain' => 'nu-registrar-v2.com',
         'verify_peer' => false,
         'verify_peer_name' => false,
         'allow_self_signed' => true,
@@ -601,7 +601,7 @@
   ),
   'printing' => 
   array (
-    'local_enabled' => true,
+    'local_enabled' => false,
     'printer_name' => 'POS-58',
     'polling_interval' => '5',
     'max_retry_attempts' => '3',
@@ -609,12 +609,12 @@
     'cleanup_after_days' => '30',
     'remote_database' => 
     array (
-      'enabled' => false,
-      'host' => NULL,
-      'database' => NULL,
-      'username' => NULL,
-      'password' => NULL,
-      'port' => 3306,
+      'enabled' => true,
+      'host' => 'your-hostinger-db-host.com',
+      'database' => 'your_database_name',
+      'username' => 'your_database_user',
+      'password' => 'your_database_password',
+      'port' => '3306',
     ),
   ),
   'queue' => 
@@ -667,13 +667,13 @@
     ),
     'batching' => 
     array (
-      'database' => 'mysql',
+      'database' => 'sqlite',
       'table' => 'job_batches',
     ),
     'failed' => 
     array (
       'driver' => 'database-uuids',
-      'database' => 'mysql',
+      'database' => 'sqlite',
       'table' => 'failed_jobs',
     ),
   ),
