@@ -92,6 +92,9 @@ class HybridPrintingService
 
         $qrData = url('/verify/' . ($type === 'student' ? $request->reference_no : $request->ref_code));
 
+        // Generate status page URL for QR code
+        $statusUrl = config('app.url', 'http://nu-registrar-v2.com') . '/kiosk/status/' . $request->queue_number;
+
         return PrintJob::create([
             'request_type' => $type,
             'request_id' => $request->id,
@@ -99,7 +102,7 @@ class HybridPrintingService
             'customer_name' => $customerName,
             'documents' => $documents,
             'total_cost' => $request->total_cost ?? 0,
-            'qr_data' => $qrData,
+            'qr_data' => $statusUrl,
             'status' => $status,
             'printed_at' => $status === 'completed' ? now() : null
         ]);
