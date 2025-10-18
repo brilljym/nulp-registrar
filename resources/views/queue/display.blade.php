@@ -61,8 +61,7 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: url('{{ asset('images/login-bg.jpg') }}') no-repeat center center fixed;
-            background-size: cover;
+            background: var(--neutral-50);
             min-height: 100vh;
             height: 100vh;
             display: flex;
@@ -75,15 +74,7 @@
 
         /* Background overlay with blur */
         .bg-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--nu-dark-overlay);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            z-index: 1;
+            display: none;
         }
 
         /* Main content wrapper */
@@ -136,27 +127,15 @@
 
         /* Footer */
         .nu-footer {
-            background: var(--nu-blue);
-            color: var(--nu-white);
-            padding: 0.75rem 1.5rem;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            z-index: 10;
-            font-size: 0.8rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            display: none;
         }
 
         .footer-left {
-            font-weight: 600;
+            display: none;
         }
 
         .footer-right {
-            text-align: right;
-            font-weight: 400;
+            display: none;
         }
 
         .main-container {
@@ -586,8 +565,6 @@
     </style>
 </head>
 <body>
-    <!-- Background overlay with blur -->
-    <div class="bg-overlay"></div>
     
     <!-- Main content wrapper -->
     <div class="content-wrapper">
@@ -697,15 +674,7 @@
             </div>
         </main>
 
-        <!-- Footer -->
-        <footer class="nu-footer">
-            <div class="footer-left">
-                NU ONLINE SERVICES • All Rights Reserved • National University
-            </div>
-            <div class="footer-right">
-                NU Bldg, SM City Lipa, JP Laurel Highway, Lipa City, Batangas
-            </div>
-        </footer>
+        
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
