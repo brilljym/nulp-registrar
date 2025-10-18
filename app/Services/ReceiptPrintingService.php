@@ -161,17 +161,18 @@ class ReceiptPrintingService
         $queueNumber = $request->queue_number ?? 'N/A';
         $referenceCode = $type === 'student' ? $request->reference_no : $request->ref_code;
         
-        // Generate status page URL for QR code instead of verification URL
+        // Create a simple, scannable URL that can be easily processed
+        // Use config to get app URL, fallback to localhost if not available
         try {
-            $statusUrl = route('kiosk.status', ['queueNumber' => $queueNumber]);
-        } catch (\Exception $e) {
-            // Fallback if route helper fails
             $baseUrl = config('app.url', 'http://localhost:8000');
-            $statusUrl = $baseUrl . '/kiosk/status/' . $queueNumber;
+        } catch (\Exception $e) {
+            $baseUrl = 'http://localhost:8000';
         }
         
+        $verifyUrl = $baseUrl . '/verify/' . $referenceCode;
+        
         // For maximum QR code compatibility, use the URL format
-        return $statusUrl;
+        return $verifyUrl;
         
         /* Alternative JSON format (comment the line above and uncomment below if you prefer JSON):
         $name = $type === 'student' 
