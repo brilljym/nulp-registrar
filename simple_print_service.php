@@ -12,6 +12,7 @@ require_once 'vendor/autoload.php';
 
 use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
 use Mike42\Escpos\Printer;
+use Mike42\Escpos\CapabilityProfile;
 
 class SimplePrintService
 {
@@ -25,7 +26,10 @@ class SimplePrintService
             // 'remote_api_url' => 'http://127.0.0.1:8000/api',
             
             // For production (pointing to Hostinger deployed website)
-            'remote_api_url' => 'https://nu-registrar-v2.com/api',
+            // 'remote_api_url' => 'https://nu-registrar-v2.com/api',
+            
+            // Use local API since we're running in production environment locally
+            'remote_api_url' => 'http://127.0.0.1:8000/api',
             
             'polling_interval' => 3, // Changed from 10 to 3 seconds for faster response
             'printer_name' => 'POS-58',
@@ -76,7 +80,7 @@ class SimplePrintService
     
     private function fetchPendingJobs()
     {
-        $url = $this->config['remote_api_url'] . '/print-jobs/pending';
+        $url = $this->config['remote_api_url'] . '/print-jobs/pending?force_db=true';
         
         $ch = curl_init();
         curl_setopt_array($ch, [
@@ -133,8 +137,10 @@ class SimplePrintService
     private function printReceipt($job)
     {
         // Connect to printer
+        $this->log("🔌 Connecting to printer: {$this->config['printer_name']}");
         $connector = new WindowsPrintConnector($this->config['printer_name']);
         $printer = new Printer($connector);
+        $this->log("✅ Printer connected successfully");
 
         // ===========================
         // HEADER
@@ -194,8 +200,25 @@ class SimplePrintService
         // QR CODE - PROFESSIONAL VERIFICATION
         // ===========================
         if (!empty($job['qr_code_data'])) {
+            $this->log("📱 Starting QR code generation for job: " . $job['queue_number']);
             try {
                 $printer->setJustification(Printer::JUSTIFY_CENTER);
+
+                // Check printer capabilities first
+                $this->log("🔍 Checking printer capabilities for QR code support");
+                try {
+                    // Try to get printer status or capabilities
+                    $printer->initialize();
+                    $this->log("✅ Printer initialized successfully");
+                } catch (Exception $initError) {
+                    $this->log("⚠️ Printer initialization warning: " . $initError->getMessage());
+                }
+
+                // Test with a simple QR code first
+                $testQr = "TEST";
+                $this->log("🧪 Testing QR code generation with simple data");
+                $printer->qrCode($testQr, Printer::QR_ECLEVEL_M, 4);
+                $this->log("✅ Simple QR test passed");
 
                 // Create professional QR data with structured format
                 $qrData = [
@@ -224,17 +247,45 @@ class SimplePrintService
 
                 // Join with newlines for clean formatting
                 $qrContent = implode("\n", $qrData);
+                $this->log("📝 QR content length: " . strlen($qrContent) . " characters");
 
                 // Print decorative border above QR
                 $printer->text("╔══════════════════════════════╗\n");
                 $printer->text("║        SCAN TO VERIFY        ║\n");
                 $printer->text("╚══════════════════════════════╝\n\n");
 
-                // Generate QR code with higher quality settings
-                $printer->qrCode($qrContent, Printer::QR_ECLEVEL_H, 8);
+                // Initialize printer for QR code (some printers need this)
+                $printer->initialize();
+                $this->log("🔄 Printer initialized for QR code");
+
+                // Generate QR code with different models and shorter content
+                $this->log("🔄 Generating QR code for URL: " . $job['qr_code_data']);
+                
+                // Try with QR Model 1 first (more compatible)
+                try {
+                    $printer->qrCode($job['qr_code_data'], Printer::QR_ECLEVEL_M, 4, Printer::QR_MODEL_1);
+                    $printer->feed(1); // Ensure QR code is printed
+                    $this->log("✅ QR code generated with Model 1");
+                    $printer->text("QR Debug: Model 1 attempted\n");
+                } catch (Exception $model1Error) {
+                    $this->log("⚠️ Model 1 failed: " . $model1Error->getMessage());
+                    // Try with Model 2
+                    try {
+                        $printer->qrCode($job['qr_code_data'], Printer::QR_ECLEVEL_M, 4, Printer::QR_MODEL_2);
+                        $printer->feed(1); // Ensure QR code is printed
+                        $this->log("✅ QR code generated with Model 2");
+                        $printer->text("QR Debug: Model 2 attempted\n");
+                    } catch (Exception $model2Error) {
+                        $this->log("⚠️ Model 2 also failed: " . $model2Error->getMessage());
+                        // Fallback to simple text QR representation
+                        $printer->text("[QR CODE]\n");
+                        $printer->text($job['qr_code_data'] . "\n");
+                        $this->log("📝 Printed QR URL as text fallback");
+                    }
+                }
                 $printer->text("\nScan to Check Status\n\n");
 
-                $this->log("✅ Professional QR code printed successfully");
+                $this->log("✅ Professional QR code section completed");
             } catch (Exception $e) {
                 $this->log("⚠️ QR code generation failed: " . $e->getMessage());
                 // Professional fallback with decorative elements
@@ -263,7 +314,7 @@ class SimplePrintService
     
     private function markJobCompleted($jobId)
     {
-        $url = $this->config['remote_api_url'] . "/print-jobs/{$jobId}/completed";
+        $url = $this->config['remote_api_url'] . "/print-jobs/{$jobId}/completed?force_db=true";
         
         $ch = curl_init();
         curl_setopt_array($ch, [
@@ -271,7 +322,8 @@ class SimplePrintService
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_CUSTOMREQUEST => 'PUT',
             CURLOPT_POSTFIELDS => json_encode([
-                'printer_name' => $this->config['printer_name']
+                'printer_name' => $this->config['printer_name'],
+                'force_db' => true
             ]),
             CURLOPT_TIMEOUT => $this->config['timeout'],
             CURLOPT_HTTPHEADER => [
@@ -285,7 +337,7 @@ class SimplePrintService
         curl_close($ch);
         
         if ($httpCode !== 200) {
-            $this->log("⚠️ Failed to mark job completed: HTTP {$httpCode}");
+            $this->log("⚠️ Failed to mark job completed: HTTP {$httpCode} - {$response}");
         } else {
             $this->log("✅ Job marked as completed");
         }
@@ -293,7 +345,7 @@ class SimplePrintService
     
     private function markJobFailed($jobId, $errorMessage)
     {
-        $url = $this->config['remote_api_url'] . "/print-jobs/{$jobId}/failed";
+        $url = $this->config['remote_api_url'] . "/print-jobs/{$jobId}/failed?force_db=true";
         
         $ch = curl_init();
         curl_setopt_array($ch, [
@@ -301,7 +353,8 @@ class SimplePrintService
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_CUSTOMREQUEST => 'PUT',
             CURLOPT_POSTFIELDS => json_encode([
-                'error_message' => $errorMessage
+                'error_message' => $errorMessage,
+                'force_db' => true
             ]),
             CURLOPT_TIMEOUT => $this->config['timeout'],
             CURLOPT_HTTPHEADER => [

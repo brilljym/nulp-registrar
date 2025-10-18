@@ -88,7 +88,12 @@ class PrintJobController extends Controller
     public function markCompleted(Request $request, $jobId)
     {
         try {
-            if (app()->environment('production')) {
+            $environment = app()->environment();
+            $isProduction = app()->environment('production');
+            $forceDb = $request->get('force_db', false) || $request->query('force_db', false);
+            
+            // Update database if in production OR if force_db is true (from either body or query)
+            if ($isProduction || $forceDb) {
                 $printJob = PrintJob::findOrFail($jobId);
                 
                 $printJob->update([
@@ -99,14 +104,18 @@ class PrintJobController extends Controller
 
                 return response()->json([
                     'success' => true,
-                    'message' => 'Print job marked as completed'
+                    'message' => 'Print job marked as completed',
+                    'environment' => $environment,
+                    'force_db' => $forceDb
                 ]);
             }
             
             return response()->json([
                 'success' => true,
-                'message' => 'Local development mode - job marked as completed',
-                'job_id' => $jobId
+                'message' => 'Local development mode - job marked as completed (no DB update)',
+                'job_id' => $jobId,
+                'environment' => $environment,
+                'force_db' => $forceDb
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -122,7 +131,12 @@ class PrintJobController extends Controller
     public function markFailed(Request $request, $jobId)
     {
         try {
-            if (app()->environment('production')) {
+            $environment = app()->environment();
+            $isProduction = app()->environment('production');
+            $forceDb = $request->get('force_db', false) || $request->query('force_db', false);
+            
+            // Update database if in production OR if force_db is true
+            if ($isProduction || $forceDb) {
                 $printJob = PrintJob::findOrFail($jobId);
                 
                 $printJob->update([
@@ -132,14 +146,18 @@ class PrintJobController extends Controller
 
                 return response()->json([
                     'success' => true,
-                    'message' => 'Print job marked as failed'
+                    'message' => 'Print job marked as failed',
+                    'environment' => $environment,
+                    'force_db' => $forceDb
                 ]);
             }
             
             return response()->json([
                 'success' => true,
-                'message' => 'Local development mode - job marked as failed',
-                'job_id' => $jobId
+                'message' => 'Local development mode - job marked as failed (no DB update)',
+                'job_id' => $jobId,
+                'environment' => $environment,
+                'force_db' => $forceDb
             ]);
         } catch (\Exception $e) {
             return response()->json([

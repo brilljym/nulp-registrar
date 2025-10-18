@@ -84,7 +84,7 @@ class LocalPrintService
     
     private function fetchPendingJobs()
     {
-        $url = $this->config['remote_api_url'] . '/print-jobs/pending';
+        $url = $this->config['remote_api_url'] . '/print-jobs/pending?force_db=true';
         
         $ch = curl_init();
         curl_setopt_array($ch, [
