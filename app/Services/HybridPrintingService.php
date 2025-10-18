@@ -92,9 +92,6 @@ class HybridPrintingService
 
         $qrData = url('/verify/' . ($type === 'student' ? $request->reference_no : $request->ref_code));
 
-        // Generate status page URL for QR code
-        $statusUrl = route('kiosk.status', ['queueNumber' => $request->queue_number]);
-
         return PrintJob::create([
             'request_type' => $type,
             'request_id' => $request->id,
@@ -102,7 +99,7 @@ class HybridPrintingService
             'customer_name' => $customerName,
             'documents' => $documents,
             'total_cost' => $request->total_cost ?? 0,
-            'qr_data' => $statusUrl,
+            'qr_data' => $qrData,
             'status' => $status,
             'printed_at' => $status === 'completed' ? now() : null
         ]);
