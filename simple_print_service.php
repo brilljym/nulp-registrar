@@ -185,13 +185,13 @@ class SimplePrintService
                 $printer->text(
                     str_pad($shortName, 16) . 
                     str_pad($qty, 6) . 
-                    str_pad($itemTotal > 0 ? "₱" . number_format($itemTotal, 2) : "FREE", 10, ' ', STR_PAD_LEFT) . "\n"
+                    str_pad($itemTotal > 0 ? "PHP " . number_format($itemTotal, 2) : "FREE", 10, ' ', STR_PAD_LEFT) . "\n"
                 );
             }
             
             $printer->text("--------------------------------\n");
             $printer->setJustification(Printer::JUSTIFY_RIGHT);
-            $printer->text("TOTAL: " . ($totalCost > 0 ? "₱" . number_format($totalCost, 2) : "FREE") . "\n");
+            $printer->text("TOTAL: " . ($totalCost > 0 ? "PHP " . number_format($totalCost, 2) : "FREE") . "\n");
             $printer->setJustification(Printer::JUSTIFY_LEFT);
             $printer->text("--------------------------------\n\n");
         }
@@ -202,6 +202,8 @@ class SimplePrintService
         if (!empty($job['qr_code_data'])) {
             $this->log("📱 Starting QR code generation for job: " . $job['queue_number']);
             try {
+                // Add spacing before QR section for better centering
+                $printer->text("\n");
                 $printer->setJustification(Printer::JUSTIFY_CENTER);
 
                 // Check printer capabilities first
@@ -231,7 +233,7 @@ class SimplePrintService
                 }
 
                 if ($totalCost > 0) {
-                    $qrData[] = "Total Amount: ₱" . number_format($totalCost, 2);
+                    $qrData[] = "Total Amount: PHP " . number_format($totalCost, 2);
                 }
 
                 $qrData[] = "==============================";
@@ -248,6 +250,9 @@ class SimplePrintService
                 $printer->text("║        SCAN TO VERIFY        ║\n");
                 $printer->text("╚══════════════════════════════╝\n\n");
 
+                // Center the QR code explicitly
+                $printer->setJustification(Printer::JUSTIFY_CENTER);
+                
                 // Initialize printer for QR code (some printers need this)
                 $printer->initialize();
                 $this->log("🔄 Printer initialized for QR code");
@@ -275,6 +280,9 @@ class SimplePrintService
                         $this->log("📝 Printed QR URL as text fallback");
                     }
                 }
+                
+                // Ensure centering is maintained for the text below
+                $printer->setJustification(Printer::JUSTIFY_CENTER);
                 $printer->text("\nScan to Check Status\n\n");
 
                 $this->log("✅ Professional QR code section completed");

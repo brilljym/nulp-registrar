@@ -482,15 +482,20 @@ class RegistrarController extends Controller
         $this->moveNextPersonToQueue();
 
         // Broadcast real-time notification
-        $this->notificationService->sendRequestStatusUpdate(
-            $studentRequest->reference_no,
-            'completed',
+        $this->notificationService->sendSuccess(
             "Request #{$studentRequest->reference_no} has been completed - documents collected",
             [
+                'request_id' => $studentRequest->reference_no,
+                'status' => 'completed',
                 'student_name' => $studentRequest->student->user->first_name . ' ' . $studentRequest->student->user->last_name,
                 'document_type' => $studentRequest->requestItems->first()->document->type_document ?? 'Document',
                 'registrar_name' => Auth::user()->first_name . ' ' . Auth::user()->last_name,
-                'queue_number' => $studentRequest->queue_number
+                'queue_number' => $studentRequest->queue_number,
+                'status_update' => true
+            ],
+            [
+                'registrar-notifications',
+                "request-{$studentRequest->reference_no}"
             ]
         );
 
@@ -517,15 +522,20 @@ class RegistrarController extends Controller
         $this->moveNextPersonToQueue();
 
         // Broadcast real-time notification
-        $this->notificationService->sendRequestStatusUpdate(
-            $studentRequest->reference_no,
-            'ready_for_pickup',
+        $this->notificationService->sendSuccess(
             "Request #{$studentRequest->reference_no} is ready for pickup at the window",
             [
+                'request_id' => $studentRequest->reference_no,
+                'status' => 'ready_for_pickup',
                 'student_name' => $studentRequest->student->user->first_name . ' ' . $studentRequest->student->user->last_name,
                 'document_type' => $studentRequest->requestItems->first()->document->type_document ?? 'Document',
                 'registrar_name' => Auth::user()->first_name . ' ' . Auth::user()->last_name,
-                'queue_number' => $studentRequest->queue_number
+                'queue_number' => $studentRequest->queue_number,
+                'status_update' => true
+            ],
+            [
+                'registrar-notifications',
+                "request-{$studentRequest->reference_no}"
             ]
         );
 

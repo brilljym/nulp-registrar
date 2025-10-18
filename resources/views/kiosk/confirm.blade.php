@@ -412,16 +412,7 @@
                             <div class="alert alert-info p-2" style="border-radius: 8px;">
                                 <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
                                     <i class="fas fa-clock me-2"></i>
-                                    @if($queuePosition === 'Ready' || $queuePosition === 1)
-                                        <div class="position-number me-2">1</div>
-                                        <strong>You are next in line!</strong>
-                                    @elseif(is_numeric($queuePosition))
-                                        <div class="position-number me-2">{{ $queuePosition }}</div>
-                                        <strong class="queue-position">Position in Queue: {{ $queuePosition }}</strong>
-                                    @else
-                                        <div class="position-number me-2">?</div>
-                                        <strong class="queue-position">Position in Queue: Calculating...</strong>
-                                    @endif
+                                    <strong>Please wait to be called</strong>
                                 </div>
                                 <small>Please wait to be called</small>
                             </div>

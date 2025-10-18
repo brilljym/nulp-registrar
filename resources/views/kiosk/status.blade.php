@@ -499,9 +499,9 @@
                                 <i class="fas fa-clock me-1"></i>
                                 Estimated wait: {{ $statusInfo['estimatedTime'] }}
                             </div>
-                        @elseif(in_array($statusInfo['status'], ['ready_for_pickup', 'ready_for_release']))
+                        @elseif(in_array($statusInfo['status'], ['ready_for_pickup', 'ready_for_release', 'in_queue']))
                             <div class="estimated-time">
-                                <i class="fas fa-check-circle me-1"></i>
+                                <i class="fas fa-info-circle me-1"></i>
                                 {{ $statusInfo['estimatedTime'] }}
                             </div>
                         @else
