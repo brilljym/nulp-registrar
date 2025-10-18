@@ -101,11 +101,25 @@ class HybridPrintingService
             'queue_number' => $request->queue_number,
             'customer_name' => $customerName,
             'documents' => $documents,
-            'total_cost' => $request->total_cost ?? 0,
+            'total_cost' => $this->calculateTotalCost($documents),
             'qr_data' => $statusUrl,
             'status' => $status,
             'printed_at' => $status === 'completed' ? now() : null
         ]);
+    }
+
+    /**
+     * Calculate total cost from documents array
+     */
+    private function calculateTotalCost($documents)
+    {
+        $total = 0;
+        foreach ($documents as $doc) {
+            $price = $doc['price'] ?? 0;
+            $quantity = $doc['quantity'] ?? 1;
+            $total += $price * $quantity;
+        }
+        return $total;
     }
 
     /**
@@ -114,8 +128,8 @@ class HybridPrintingService
     private function canPrintLocally()
     {
         // Check environment and system requirements
-        return config('app.env') === 'local' && 
-               PHP_OS_FAMILY === 'Windows' && 
+        return config('app.env') === 'local' &&
+               PHP_OS_FAMILY === 'Windows' &&
                class_exists('Mike42\Escpos\PrintConnectors\WindowsPrintConnector') &&
                config('printing.local_enabled', true);
     }

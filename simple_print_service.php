@@ -26,10 +26,10 @@ class SimplePrintService
             // 'remote_api_url' => 'http://127.0.0.1:8000/api',
             
             // For production (pointing to Hostinger deployed website)
-            // 'remote_api_url' => 'https://nu-registrar-v2.com/api',
+            'remote_api_url' => 'https://nu-registrar-v2.com/api',
             
-            // Use local API since we're running in production environment locally
-            'remote_api_url' => 'http://127.0.0.1:8000/api',
+            // // Use local API since we're running in production environment locally
+            // 'remote_api_url' => 'http://127.0.0.1:8000/api',
             
             'polling_interval' => 3, // Changed from 10 to 3 seconds for faster response
             'printer_name' => 'POS-58',
@@ -214,12 +214,6 @@ class SimplePrintService
                     $this->log("⚠️ Printer initialization warning: " . $initError->getMessage());
                 }
 
-                // Test with a simple QR code first
-                $testQr = "TEST";
-                $this->log("🧪 Testing QR code generation with simple data");
-                $printer->qrCode($testQr, Printer::QR_ECLEVEL_M, 4);
-                $this->log("✅ Simple QR test passed");
-
                 // Create professional QR data with structured format
                 $qrData = [
                     "NU REGISTRAR VERIFICATION",
@@ -263,18 +257,16 @@ class SimplePrintService
                 
                 // Try with QR Model 1 first (more compatible)
                 try {
-                    $printer->qrCode($job['qr_code_data'], Printer::QR_ECLEVEL_M, 4, Printer::QR_MODEL_1);
+                    $printer->qrCode($job['qr_code_data'], Printer::QR_ECLEVEL_M, 8, Printer::QR_MODEL_1);
                     $printer->feed(1); // Ensure QR code is printed
                     $this->log("✅ QR code generated with Model 1");
-                    $printer->text("QR Debug: Model 1 attempted\n");
                 } catch (Exception $model1Error) {
                     $this->log("⚠️ Model 1 failed: " . $model1Error->getMessage());
                     // Try with Model 2
                     try {
-                        $printer->qrCode($job['qr_code_data'], Printer::QR_ECLEVEL_M, 4, Printer::QR_MODEL_2);
+                        $printer->qrCode($job['qr_code_data'], Printer::QR_ECLEVEL_M, 8, Printer::QR_MODEL_2);
                         $printer->feed(1); // Ensure QR code is printed
                         $this->log("✅ QR code generated with Model 2");
-                        $printer->text("QR Debug: Model 2 attempted\n");
                     } catch (Exception $model2Error) {
                         $this->log("⚠️ Model 2 also failed: " . $model2Error->getMessage());
                         // Fallback to simple text QR representation
