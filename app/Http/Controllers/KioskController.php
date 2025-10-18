@@ -506,6 +506,139 @@ class KioskController extends Controller
         return redirect()->route('kiosk.index')->with('error', 'Invalid request type.');
     }
 
+    public function status($queueNumber)
+    {
+        $queueNumber = trim(strtoupper($queueNumber));
+
+        // Find the request
+        $studentRequest = StudentRequest::where('queue_number', $queueNumber)
+            ->whereIn('status', ['in_queue', 'waiting', 'ready_for_pickup', 'ready_for_release', 'processing', 'completed'])
+            ->with(['student.user', 'requestItems.document'])
+            ->first();
+
+        $onsiteRequest = null;
+        if (!$studentRequest) {
+            $onsiteRequest = OnsiteRequest::where('queue_number', $queueNumber)
+                ->whereIn('status', ['in_queue', 'waiting', 'ready_for_pickup', 'ready_for_release', 'processing', 'completed'])
+                ->with(['requestItems.document'])
+                ->first();
+        }
+
+        $request = $studentRequest ?: $onsiteRequest;
+        $type = $studentRequest ? 'student' : 'onsite';
+
+        if (!$request) {
+            return view('kiosk.status', [
+                'error' => 'Queue number not found',
+                'queueNumber' => $queueNumber
+            ]);
+        }
+
+        // Calculate queue position
+        $queuePosition = $this->calculateQueuePosition($queueNumber);
+        $windowAssignment = $this->getWindowAssignment($request);
+        $isReady = $this->isQueueNumberReady($queueNumber);
+
+        // Get status information
+        $statusInfo = $this->getStatusInfo($request, $queuePosition);
+
+        return view('kiosk.status', [
+            'request' => $request,
+            'type' => $type,
+            'queueNumber' => $queueNumber,
+            'queuePosition' => $queuePosition,
+            'windowAssignment' => $windowAssignment,
+            'isReady' => $isReady,
+            'statusInfo' => $statusInfo
+        ]);
+    }
+
+    private function getStatusInfo($request, $queuePosition)
+    {
+        $status = $request->status;
+        $statusText = '';
+        $statusColor = '';
+        $statusIcon = '';
+        $description = '';
+        $estimatedTime = '';
+
+        switch ($status) {
+            case 'waiting':
+                $statusText = 'Waiting in Queue';
+                $statusColor = 'warning';
+                $statusIcon = 'fas fa-clock';
+                $description = "Your request is in the waiting queue. Position: {$queuePosition}";
+                $estimatedTime = $this->estimateWaitTime($queuePosition);
+                break;
+
+            case 'in_queue':
+                $statusText = 'Being Processed';
+                $statusColor = 'primary';
+                $statusIcon = 'fas fa-cog';
+                $description = 'Your request is currently being processed by a registrar.';
+                $estimatedTime = 'Processing now...';
+                break;
+
+            case 'ready_for_pickup':
+                $statusText = 'Ready for Pickup';
+                $statusColor = 'success';
+                $statusIcon = 'fas fa-check-circle';
+                $description = 'Your documents are ready for pickup!';
+                $estimatedTime = 'Ready now';
+                break;
+
+            case 'ready_for_release':
+                $statusText = 'Ready for Release';
+                $statusColor = 'success';
+                $statusIcon = 'fas fa-check-circle';
+                $description = 'Your documents are ready for release!';
+                $estimatedTime = 'Ready now';
+                break;
+
+            case 'processing':
+                $statusText = 'Processing';
+                $statusColor = 'info';
+                $statusIcon = 'fas fa-spinner';
+                $description = 'Your request is being processed.';
+                $estimatedTime = 'In progress...';
+                break;
+
+            case 'completed':
+                $statusText = 'Completed';
+                $statusColor = 'success';
+                $statusIcon = 'fas fa-check-double';
+                $description = 'Your request has been completed.';
+                $estimatedTime = 'Done';
+                break;
+
+            default:
+                $statusText = 'Unknown Status';
+                $statusColor = 'secondary';
+                $statusIcon = 'fas fa-question-circle';
+                $description = 'Status unknown.';
+                $estimatedTime = 'Unknown';
+        }
+
+        return [
+            'status' => $status,
+            'statusText' => $statusText,
+            'statusColor' => $statusColor,
+            'statusIcon' => $statusIcon,
+            'description' => $description,
+            'estimatedTime' => $estimatedTime,
+            'position' => $queuePosition
+        ];
+    }
+
+    private function estimateWaitTime($position)
+    {
+        if ($position <= 1) return 'Next';
+        if ($position <= 3) return '5-10 minutes';
+        if ($position <= 5) return '10-15 minutes';
+        if ($position <= 10) return '15-25 minutes';
+        return '25+ minutes';
+    }
+
     public function queueStatus(Request $request)
     {
         $queueNumber = $request->get('queue_number');
