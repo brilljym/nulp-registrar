@@ -30,27 +30,27 @@ class FixPrintJobTotalCosts extends Command
         $updated = 0;
 
         foreach ($jobs as $job) {
-            $documents = $job->documents;
-            
-            // Handle both array and JSON string formats
-            if (is_string($documents)) {
-                $documents = json_decode($documents, true);
+            // Get the onsite request to access the items with document relationships
+            $onsiteRequest = $job->onsiteRequest;
+
+            if (!$onsiteRequest) {
+                $this->warn("Print job {$job->id} has no associated onsite request, skipping.");
+                continue;
             }
-            
+
             $calculatedTotal = 0;
 
-            if (is_array($documents)) {
-                foreach ($documents as $doc) {
-                    $price = $doc['price'] ?? 0;
-                    $quantity = $doc['quantity'] ?? 1;
-                    $calculatedTotal += $price * $quantity;
-                }
+            // Calculate total from onsite request items using current document prices
+            foreach ($onsiteRequest->items as $item) {
+                $price = $item->document->price ?? 0;
+                $quantity = $item->quantity ?? 1;
+                $calculatedTotal += $price * $quantity;
             }
 
             if ($job->total_cost != $calculatedTotal) {
                 $job->update(['total_cost' => $calculatedTotal]);
                 $updated++;
-                $this->info("Updated job {$job->id}: {$job->total_cost} -> {$calculatedTotal}");
+                $this->info("Updated job {$job->id}: ₱{$job->total_cost} -> ₱{$calculatedTotal}");
             }
         }
 

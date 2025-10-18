@@ -82,7 +82,7 @@ class HybridPrintingService
             return [
                 'name' => $item->document->type_document,
                 'quantity' => $item->quantity,
-                'price' => $item->price ?? 0
+                'price' => $item->document->price ?? 0
             ];
         })->toArray();
 
