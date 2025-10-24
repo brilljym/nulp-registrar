@@ -311,7 +311,7 @@
                         @if($req->expected_release_date)
                             <div><i class="bi bi-calendar-check"></i> {{ \Carbon\Carbon::parse($req->expected_release_date)->format('M j, Y') }}</div>
                             <small class="text-muted">{{ \Carbon\Carbon::parse($req->expected_release_date)->format('l g:i A') }}</small>
-                            @if($req->status === 'completed')
+                            @if(in_array($req->status, ['completed', 'processing']))
                                 <br>
                                 <button class="btn btn-sm btn-outline-primary mt-1" 
                                         data-bs-toggle="modal" 
@@ -323,7 +323,7 @@
                             @endif
                         @else
                             <span class="text-muted"><i class="bi bi-dash-circle"></i> Not set</span>
-                            @if($req->status === 'completed')
+                            @if(in_array($req->status, ['completed', 'processing']))
                                 <br>
                                 <button class="btn btn-sm btn-outline-primary mt-1" 
                                         data-bs-toggle="modal" 

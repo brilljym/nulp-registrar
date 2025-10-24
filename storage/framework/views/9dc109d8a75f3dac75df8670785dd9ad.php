@@ -422,21 +422,21 @@
 <body>
     <div class="email-container">
         <div class="header">
-            <img src="{{ asset('images/NU_shield.svg.png') }}" alt="NU Logo" class="logo">
+            <img src="<?php echo e(asset('images/NU_shield.svg.png')); ?>" alt="NU Logo" class="logo">
             <div class="header-content">
                 <div class="header-icon">📅</div>
                 <h1>Release Date Updated</h1>
-                <p>Your {{ $requestType === 'student' ? 'document' : 'on-site' }} request has been updated</p>
+                <p>Your <?php echo e($requestType === 'student' ? 'document' : 'on-site'); ?> request has been updated</p>
             </div>
         </div>
 
         <div class="content">
             <div class="greeting">
-                Hello {{ $requestType === 'student' ? $request->student->user->first_name . ' ' . $request->student->user->last_name : $request->full_name }},
+                Hello <?php echo e($requestType === 'student' ? $request->student->user->first_name . ' ' . $request->student->user->last_name : $request->full_name); ?>,
             </div>
 
             <div class="message">
-                <p>We have updated the expected release date for your {{ $requestType === 'student' ? 'document' : 'on-site' }} request. Please find the updated details below:</p>
+                <p>We have updated the expected release date for your <?php echo e($requestType === 'student' ? 'document' : 'on-site'); ?> request. Please find the updated details below:</p>
             </div>
 
             <div class="request-details">
@@ -445,39 +445,42 @@
                 <div class="detail-row">
                     <span class="detail-label">Ticket Number</span>
                     <span class="detail-value">
-                        @if($requestType === 'student')
-                            {{ $request->created_at->format('Ymd') }}-{{ $request->id }}
-                        @else
-                            {{ $request->created_at->format('Ymd') }}-i{{ $request->id }}
-                        @endif
+                        <?php if($requestType === 'student'): ?>
+                            <?php echo e($request->created_at->format('Ymd')); ?>-<?php echo e($request->id); ?>
+
+                        <?php else: ?>
+                            <?php echo e($request->created_at->format('Ymd')); ?>-i<?php echo e($request->id); ?>
+
+                        <?php endif; ?>
                     </span>
                 </div>
 
                 <div class="detail-row">
                     <span class="detail-label">Reference Code</span>
-                    <span class="detail-value">{{ $requestType === 'student' ? $request->reference_no : ($request->ref_code ?? 'Not available') }}</span>
+                    <span class="detail-value"><?php echo e($requestType === 'student' ? $request->reference_no : ($request->ref_code ?? 'Not available')); ?></span>
                 </div>
 
-                @if($requestType === 'onsite')
+                <?php if($requestType === 'onsite'): ?>
                 <div class="detail-row">
                     <span class="detail-label">Course</span>
-                    <span class="detail-value">{{ $request->course }}</span>
+                    <span class="detail-value"><?php echo e($request->course); ?></span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Year Level</span>
-                    <span class="detail-value">{{ $request->year_level }}</span>
+                    <span class="detail-value"><?php echo e($request->year_level); ?></span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Department</span>
-                    <span class="detail-value">{{ $request->department }}</span>
+                    <span class="detail-value"><?php echo e($request->department); ?></span>
                 </div>
-                @endif
+                <?php endif; ?>
 
                 <div class="detail-row">
                     <span class="detail-label">Status</span>
                     <span class="detail-value">
-                        <span class="status-badge status-{{ $request->status === 'completed' ? 'completed' : 'processing' }}">
-                            {{ ucfirst(str_replace('_', ' ', $request->status)) }}
+                        <span class="status-badge status-<?php echo e($request->status === 'completed' ? 'completed' : 'processing'); ?>">
+                            <?php echo e(ucfirst(str_replace('_', ' ', $request->status))); ?>
+
                         </span>
                     </span>
                 </div>
@@ -485,14 +488,14 @@
                 <div class="detail-row">
                     <span class="detail-label">Documents</span>
                     <span class="detail-value">
-                        @if($request->requestItems->count() > 0)
-                            @foreach($request->requestItems as $item)
-                                {{ $item->document->type_document }} (x{{ $item->quantity }})
-                                @if(!$loop->last), @endif
-                            @endforeach
-                        @else
+                        <?php if($request->requestItems->count() > 0): ?>
+                            <?php $__currentLoopData = $request->requestItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <?php echo e($item->document->type_document); ?> (x<?php echo e($item->quantity); ?>)
+                                <?php if(!$loop->last): ?>, <?php endif; ?>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        <?php else: ?>
                             Not specified
-                        @endif
+                        <?php endif; ?>
                     </span>
                 </div>
             </div>
@@ -501,8 +504,8 @@
                 <div class="highlight-content">
                     <div class="highlight-icon">⏰</div>
                     <div class="highlight-title">New Expected Release Date</div>
-                    <div class="highlight-date">{{ \Carbon\Carbon::parse($request->expected_release_date)->format('l, F j, Y') }}</div>
-                    <div class="highlight-time">at {{ \Carbon\Carbon::parse($request->expected_release_date)->format('g:i A') }}</div>
+                    <div class="highlight-date"><?php echo e(\Carbon\Carbon::parse($request->expected_release_date)->format('l, F j, Y')); ?></div>
+                    <div class="highlight-time">at <?php echo e(\Carbon\Carbon::parse($request->expected_release_date)->format('g:i A')); ?></div>
                 </div>
             </div>
 
@@ -533,14 +536,16 @@
                 <div class="signature">NU Lipa Registrar's Office</div>
                 <div class="university">National University - Lipa</div>
                 <div class="ticket-badge">
-                    @if($requestType === 'student')
-                        {{ $request->created_at->format('Ymd') }}-{{ $request->id }}
-                    @else
-                        {{ $request->created_at->format('Ymd') }}-i{{ $request->id }}
-                    @endif
+                    <?php if($requestType === 'student'): ?>
+                        <?php echo e($request->created_at->format('Ymd')); ?>-<?php echo e($request->id); ?>
+
+                    <?php else: ?>
+                        <?php echo e($request->created_at->format('Ymd')); ?>-i<?php echo e($request->id); ?>
+
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
     </div>
 </body>
-</html>
+</html><?php /**PATH D:\Nu-Regisv2\resources\views/emails/expected-release-date-updated.blade.php ENDPATH**/ ?>

@@ -228,8 +228,28 @@
                         <?php if($request->expected_release_date): ?>
                             <div><i class="bi bi-calendar-check"></i> <?php echo e(\Carbon\Carbon::parse($request->expected_release_date)->format('M j, Y')); ?></div>
                             <small class="text-muted"><?php echo e(\Carbon\Carbon::parse($request->expected_release_date)->format('l')); ?></small>
+                            <?php if(in_array($request->status, ['completed', 'processing'])): ?>
+                                <br>
+                                <button class="btn btn-sm btn-outline-primary mt-1" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#editReleaseDateModal" 
+                                        data-request-id="<?php echo e($request->id); ?>"
+                                        data-current-date="<?php echo e($request->expected_release_date->format('Y-m-d\TH:i')); ?>">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </button>
+                            <?php endif; ?>
                         <?php else: ?>
                             <span class="text-muted"><i class="bi bi-dash-circle"></i> Not set</span>
+                            <?php if(in_array($request->status, ['completed', 'processing'])): ?>
+                                <br>
+                                <button class="btn btn-sm btn-outline-primary mt-1" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#editReleaseDateModal" 
+                                        data-request-id="<?php echo e($request->id); ?>"
+                                        data-current-date="">
+                                    <i class="bi bi-plus-circle"></i> Set Date
+                                </button>
+                            <?php endif; ?>
                         <?php endif; ?>
                     </td>
                     <td class="text-center">

@@ -612,7 +612,7 @@ class RegistrarController extends Controller
     }
 
     /**
-     * Update expected release date for completed requests
+     * Update expected release date for completed and processing requests
      */
     public function updateExpectedReleaseDate(Request $request, StudentRequest $studentRequest)
     {
@@ -620,8 +620,8 @@ class RegistrarController extends Controller
             'expected_release_date' => 'required|date|after:now',
         ]);
 
-        if ($studentRequest->status !== 'completed') {
-            return redirect()->back()->with('error', 'Only completed requests can have their expected release date updated.');
+        if (!in_array($studentRequest->status, ['completed', 'processing'])) {
+            return redirect()->back()->with('error', 'Only completed or processing requests can have their expected release date updated.');
         }
 
         $studentRequest->update([
@@ -634,9 +634,9 @@ class RegistrarController extends Controller
             if ($email) {
                 try {
                     Mail::to($email)->send(new ExpectedReleaseDateUpdatedMail($studentRequest, 'student'));
+                    // Email sent successfully to: $email
                 } catch (\Exception $e) {
-                    // Log the error but don't fail the request
-                    Log::error('Failed to send expected release date update email: ' . $e->getMessage());
+                    // Don't log the error, just continue
                 }
             }
         }

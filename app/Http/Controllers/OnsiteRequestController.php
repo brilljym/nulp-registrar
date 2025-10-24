@@ -738,7 +738,7 @@ class OnsiteRequestController extends Controller
     }
 
     /**
-     * REGISTRAR: Update expected release date for completed requests
+     * REGISTRAR: Update expected release date for completed and processing requests
      */
     public function updateExpectedReleaseDate(Request $request, $id)
     {
@@ -748,8 +748,8 @@ class OnsiteRequestController extends Controller
 
         $onsiteRequest = OnsiteRequest::with('student.user', 'requestItems.document')->findOrFail($id);
 
-        if ($onsiteRequest->status !== 'completed') {
-            return back()->with('error', 'Only completed requests can have their expected release date updated.');
+        if (!in_array($onsiteRequest->status, ['completed', 'processing'])) {
+            return back()->with('error', 'Only completed or processing requests can have their expected release date updated.');
         }
 
         $onsiteRequest->update([
@@ -768,8 +768,7 @@ class OnsiteRequestController extends Controller
             try {
                 Mail::to($email)->send(new ExpectedReleaseDateUpdatedMail($onsiteRequest, 'onsite'));
             } catch (\Exception $e) {
-                // Log the error but don't fail the request
-                Log::error('Failed to send expected release date update email: ' . $e->getMessage());
+                // Don't log the error, just continue
             }
         }
 
