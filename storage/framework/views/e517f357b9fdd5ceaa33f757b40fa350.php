@@ -1,6 +1,6 @@
-@extends('layouts.app') {{-- or your actual layout --}}
+ 
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 <style>
     .section-title {
         font-size: 1.1rem;
@@ -42,47 +42,50 @@
 <div class="container mt-5">
     <h3 class="mb-4">Request a Document</h3>
 
-    @if(session('success'))
+    <?php if(session('success')): ?>
         <div class="alert alert-success">
-            <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
-        </div>
-    @endif
+            <i class="bi bi-check-circle me-2"></i><?php echo e(session('success')); ?>
 
-    @if(session('error'))
+        </div>
+    <?php endif; ?>
+
+    <?php if(session('error')): ?>
         <div class="alert alert-danger">
-            <i class="bi bi-exclamation-circle me-2"></i>{{ session('error') }}
-        </div>
-    @endif
+            <i class="bi bi-exclamation-circle me-2"></i><?php echo e(session('error')); ?>
 
-    {{-- Show pending request details if exists and payment is confirmed or no payment required --}}
-    @if($pendingRequest && ($pendingRequest->payment_confirmed || ($pendingRequest->total_cost == 0 && $pendingRequest->status !== 'pending')))
-        @php $request = $pendingRequest; @endphp
+        </div>
+    <?php endif; ?>
+
+    
+    <?php if($pendingRequest && ($pendingRequest->payment_confirmed || ($pendingRequest->total_cost == 0 && $pendingRequest->status !== 'pending'))): ?>
+        <?php $request = $pendingRequest; ?>
         <div class="card mb-4 shadow-sm border-0" style="border-left: 4px solid 
-            {{ $request->status === 'pending' ? '#ffc107' : 
+            <?php echo e($request->status === 'pending' ? '#ffc107' : 
                ($request->status === 'processing' ? '#0dcaf0' : 
-               ($request->status === 'ready_for_release' ? '#0d6efd' : '#28a745')) }} !important;">
+               ($request->status === 'ready_for_release' ? '#0d6efd' : '#28a745'))); ?> !important;">
             <div class="card-body p-4">
                 <!-- Header -->
                 <div class="d-flex align-items-center mb-3">
                     <div class="rounded-circle d-flex align-items-center justify-content-center me-3" 
                          style="width: 40px; height: 40px; background-color: 
-                         {{ $request->status === 'pending' ? '#ffc107' : 
+                         <?php echo e($request->status === 'pending' ? '#ffc107' : 
                             ($request->status === 'processing' ? '#0dcaf0' : 
-                            ($request->status === 'ready_for_release' ? '#0d6efd' : '#28a745')) }};">
-                        <i class="bi bi-{{ $request->status === 'pending' ? 'clock-fill' : 
+                            ($request->status === 'ready_for_release' ? '#0d6efd' : '#28a745'))); ?>;">
+                        <i class="bi bi-<?php echo e($request->status === 'pending' ? 'clock-fill' : 
                                           ($request->status === 'processing' ? 'gear-fill' : 
-                                          ($request->status === 'ready_for_release' ? 'box-seam' : 'check-circle-fill')) }} text-white"></i>
+                                          ($request->status === 'ready_for_release' ? 'box-seam' : 'check-circle-fill'))); ?> text-white"></i>
                     </div>
                     <div>
                         <h6 class="mb-0 fw-bold" style="color: 
-                            {{ $request->status === 'pending' ? '#ffc107' : 
+                            <?php echo e($request->status === 'pending' ? '#ffc107' : 
                                ($request->status === 'processing' ? '#0dcaf0' : 
-                               ($request->status === 'ready_for_release' ? '#0d6efd' : '#28a745')) }};">
-                            {{ $request->status === 'pending' ? 'Document Request Submitted' : 
+                               ($request->status === 'ready_for_release' ? '#0d6efd' : '#28a745'))); ?>;">
+                            <?php echo e($request->status === 'pending' ? 'Document Request Submitted' : 
                                ($request->status === 'processing' ? 'Document Being Processed' : 
-                               ($request->status === 'ready_for_release' ? 'Document Ready' : 'Document Request Submitted')) }}
+                               ($request->status === 'ready_for_release' ? 'Document Ready' : 'Document Request Submitted'))); ?>
+
                         </h6>
-                        <small class="text-muted">{{ $request->created_at->format('M d, Y \a\t h:i A') }}</small>
+                        <small class="text-muted"><?php echo e($request->created_at->format('M d, Y \a\t h:i A')); ?></small>
                     </div>
                 </div>
                 
@@ -95,7 +98,7 @@
                             </div>
                             <div class="flex-grow-1">
                                 <small class="text-muted text-uppercase fw-medium">Reference</small>
-                                <div class="fw-bold text-primary">{{ $request->reference_no }}</div>
+                                <div class="fw-bold text-primary"><?php echo e($request->reference_no); ?></div>
                             </div>
                         </div>
                     </div>
@@ -107,8 +110,8 @@
                             </div>
                             <div class="flex-grow-1">
                                 <small class="text-muted text-uppercase fw-medium">Student</small>
-                                <div class="fw-medium">{{ $request->student->student_id }}</div>
-                                <small class="text-muted">{{ $request->student->user->first_name }} {{ $request->student->user->last_name }}</small>
+                                <div class="fw-medium"><?php echo e($request->student->student_id); ?></div>
+                                <small class="text-muted"><?php echo e($request->student->user->first_name); ?> <?php echo e($request->student->user->last_name); ?></small>
                             </div>
                         </div>
                     </div>
@@ -120,7 +123,7 @@
                             </div>
                             <div class="flex-grow-1">
                                 <small class="text-muted text-uppercase fw-medium">Documents</small>
-                                <div class="fw-medium">{{ $request->requestItems->count() }} item(s)</div>
+                                <div class="fw-medium"><?php echo e($request->requestItems->count()); ?> item(s)</div>
                             </div>
                         </div>
                     </div>
@@ -135,10 +138,11 @@
                                     <small class="text-muted text-uppercase fw-medium">Status</small>
                                     <div>
                                         <span class="badge px-2 py-1 
-                                            {{ $request->status === 'pending' ? 'bg-warning text-dark' : 
+                                            <?php echo e($request->status === 'pending' ? 'bg-warning text-dark' : 
                                                ($request->status === 'processing' ? 'bg-info text-white' : 
-                                               ($request->status === 'ready_for_release' ? 'bg-primary text-white' : 'bg-success text-white')) }}">
-                                            {{ ucfirst(str_replace('_', ' ', $request->status)) }}
+                                               ($request->status === 'ready_for_release' ? 'bg-primary text-white' : 'bg-success text-white'))); ?>">
+                                            <?php echo e(ucfirst(str_replace('_', ' ', $request->status))); ?>
+
                                         </span>
                                     </div>
                                 </div>
@@ -146,11 +150,12 @@
                             <div class="text-end ms-2">
                                 <small class="text-muted text-uppercase fw-medium d-block">Total Price</small>
                                 <div class="fw-bold text-success">
-                                    @if($request->total_cost > 0)
-                                        ₱{{ number_format($request->total_cost, 2) }}
-                                    @else
+                                    <?php if($request->total_cost > 0): ?>
+                                        ₱<?php echo e(number_format($request->total_cost, 2)); ?>
+
+                                    <?php else: ?>
                                         Free
-                                    @endif
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>
@@ -164,25 +169,26 @@
                             <div class="flex-grow-1">
                                 <small class="text-muted text-uppercase fw-medium">Expected Release Date</small>
                                 <div class="fw-medium">
-                                    @if($request->expected_release_date)
-                                        @php
+                                    <?php if($request->expected_release_date): ?>
+                                        <?php
                                             $releaseDate = is_string($request->expected_release_date) 
                                                 ? \Carbon\Carbon::parse($request->expected_release_date) 
                                                 : $request->expected_release_date;
-                                        @endphp
-                                        {{ $releaseDate->format('M d, Y') }}
-                                        <br><small class="text-muted">{{ $releaseDate->diffForHumans() }}</small>
-                                    @else
+                                        ?>
+                                        <?php echo e($releaseDate->format('M d, Y')); ?>
+
+                                        <br><small class="text-muted"><?php echo e($releaseDate->diffForHumans()); ?></small>
+                                    <?php else: ?>
                                         <span class="text-muted">Not set</span>
-                                    @endif
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                {{-- Remarks Section --}}
-                @if($request->remarks)
+                
+                <?php if($request->remarks): ?>
                 <div class="border-top pt-3 mt-3">
                     <div class="d-flex align-items-start">
                         <div class="text-secondary me-3">
@@ -190,35 +196,36 @@
                         </div>
                         <div class="flex-grow-1">
                             <small class="text-muted text-uppercase fw-medium">Remarks</small>
-                            <div class="fw-semibold">{{ $request->remarks }}</div>
+                            <div class="fw-semibold"><?php echo e($request->remarks); ?></div>
                         </div>
                     </div>
                 </div>
-                @endif
+                <?php endif; ?>
                 
                 <!-- Documents List -->
                 <div class="border-top pt-3 mt-3">
                     <h6 class="mb-2 fw-bold">Requested Documents</h6>
                     <div class="row g-2">
-                        @foreach($request->requestItems as $item)
+                        <?php $__currentLoopData = $request->requestItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <div class="col-md-6">
                                 <div class="d-flex align-items-center p-2 border rounded">
                                     <div class="text-primary me-2">
                                         <i class="bi bi-file-earmark-text"></i>
                                     </div>
                                     <div class="flex-grow-1">
-                                        <div class="fw-medium">{{ $item->document->type_document }}</div>
-                                        <small class="text-muted">Qty: {{ $item->quantity }} | Price: 
-                                            @if($item->price > 0)
-                                                ₱{{ number_format($item->price * $item->quantity, 2) }}
-                                            @else
+                                        <div class="fw-medium"><?php echo e($item->document->type_document); ?></div>
+                                        <small class="text-muted">Qty: <?php echo e($item->quantity); ?> | Price: 
+                                            <?php if($item->price > 0): ?>
+                                                ₱<?php echo e(number_format($item->price * $item->quantity, 2)); ?>
+
+                                            <?php else: ?>
                                                 Free
-                                            @endif
+                                            <?php endif; ?>
                                         </small>
                                     </div>
                                 </div>
                             </div>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </div>
                 </div>
                 
@@ -236,7 +243,7 @@
                                         <small class="text-muted fw-medium">Quick Setup:</small>
                                         <p class="mb-1 small">
                                             1. Download → 2. Install → 3. Enter Reference: 
-                                            <span class="badge bg-primary ms-1">{{ $request->reference_no }}</span>
+                                            <span class="badge bg-primary ms-1"><?php echo e($request->reference_no); ?></span>
                                         </p>
                                         <small class="text-muted">
                                             <i class="bi bi-info-circle me-1"></i>
@@ -244,7 +251,7 @@
                                         </small>
                                     </div>
                                     <div class="col-md-4 text-md-end mt-2 mt-md-0">
-                                        @php
+                                        <?php
                                             $apkPath = public_path('apk');
                                             $apkFiles = [];
                                             if (is_dir($apkPath)) {
@@ -252,21 +259,21 @@
                                                     return pathinfo($file, PATHINFO_EXTENSION) === 'apk';
                                                 });
                                             }
-                                        @endphp
+                                        ?>
                                         
-                                        @if(!empty($apkFiles))
-                                            @php $firstApk = reset($apkFiles); @endphp
-                                            <form action="{{ route('student.download.apk') }}" method="POST" class="d-inline">
-                                                @csrf
-                                                <input type="hidden" name="reference_no" value="{{ $request->reference_no }}">
-                                                <input type="hidden" name="apk_file" value="{{ $firstApk }}">
+                                        <?php if(!empty($apkFiles)): ?>
+                                            <?php $firstApk = reset($apkFiles); ?>
+                                            <form action="<?php echo e(route('student.download.apk')); ?>" method="POST" class="d-inline">
+                                                <?php echo csrf_field(); ?>
+                                                <input type="hidden" name="reference_no" value="<?php echo e($request->reference_no); ?>">
+                                                <input type="hidden" name="apk_file" value="<?php echo e($firstApk); ?>">
                                                 <button type="submit" class="btn btn-success btn-sm">
                                                     <i class="bi bi-download me-1"></i>Download App
                                                 </button>
                                             </form>
-                                        @else
+                                        <?php else: ?>
                                             <small class="text-muted">No apps available</small>
-                                        @endif
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </div>
@@ -276,23 +283,23 @@
             </div>
         </div>
 
-        {{-- Quick Actions for Pending Request --}}
+        
         <div class="row justify-content-center mt-4">
             <div class="col-md-8">
                 <div class="d-flex gap-2 justify-content-center">
-                    <a href="{{ route('student.track', $pendingRequest->reference_no) }}" class="btn btn-primary">
+                    <a href="<?php echo e(route('student.track', $pendingRequest->reference_no)); ?>" class="btn btn-primary">
                         <i class="bi bi-search me-2"></i>Track This Request
                     </a>
-                    <a href="{{ route('student.my-requests') }}" class="btn btn-outline-primary">
+                    <a href="<?php echo e(route('student.my-requests')); ?>" class="btn btn-outline-primary">
                         <i class="bi bi-list me-2"></i>All My Requests
                     </a>
                 </div>
             </div>
         </div>
-    @endif
+    <?php endif; ?>
 
-    {{-- Approval Section - Show for pending requests waiting for registrar approval --}}
-    @if($pendingRequest && $pendingRequest->status === 'pending')
+    
+    <?php if($pendingRequest && $pendingRequest->status === 'pending'): ?>
         <div class="row justify-content-center mt-4">
             <div class="col-md-8">
                 <div class="card shadow-sm border-info">
@@ -304,13 +311,13 @@
                             <div class="col-md-6">
                                 <strong>Documents Requested:</strong>
                                 <ul class="list-unstyled mb-2">
-                                    @foreach($pendingRequest->requestItems as $item)
-                                        <li>• {{ $item->document->type_document }} (x{{ $item->quantity }})</li>
-                                    @endforeach
+                                    <?php $__currentLoopData = $pendingRequest->requestItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <li>• <?php echo e($item->document->type_document); ?> (x<?php echo e($item->quantity); ?>)</li>
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </ul>
-                                <strong>Requester:</strong> {{ $pendingRequest->student->user->first_name }} {{ $pendingRequest->student->user->last_name }}<br>
-                                <strong>Reference Code:</strong> <span class="text-primary fw-bold">{{ $pendingRequest->reference_no }}</span><br>
-                                <strong>Student ID:</strong> {{ $pendingRequest->student->student_id }}<br>
+                                <strong>Requester:</strong> <?php echo e($pendingRequest->student->user->first_name); ?> <?php echo e($pendingRequest->student->user->last_name); ?><br>
+                                <strong>Reference Code:</strong> <span class="text-primary fw-bold"><?php echo e($pendingRequest->reference_no); ?></span><br>
+                                <strong>Student ID:</strong> <?php echo e($pendingRequest->student->student_id); ?><br>
                             </div>
                             <div class="col-md-6">
                                 <div class="alert alert-info">
@@ -327,10 +334,10 @@
                 </div>
             </div>
         </div>
-    @endif
+    <?php endif; ?>
 
-    {{-- Payment Section - Show for registrar approved requests that require payment and payment not confirmed --}}
-    @if($pendingRequest && $pendingRequest->status === 'registrar_approved' && $pendingRequest->total_cost > 0 && !$pendingRequest->payment_confirmed)
+    
+    <?php if($pendingRequest && $pendingRequest->status === 'registrar_approved' && $pendingRequest->total_cost > 0 && !$pendingRequest->payment_confirmed): ?>
         <div class="row justify-content-center mt-4">
             <div class="col-md-8">
                 <div class="card shadow-sm border-warning">
@@ -342,28 +349,28 @@
                             <div class="col-md-6">
                                 <strong>Documents Requested:</strong>
                                 <ul class="list-unstyled mb-2">
-                                    @foreach($pendingRequest->requestItems as $item)
-                                        <li>• {{ $item->document->type_document }} (x{{ $item->quantity }})</li>
-                                    @endforeach
+                                    <?php $__currentLoopData = $pendingRequest->requestItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <li>• <?php echo e($item->document->type_document); ?> (x<?php echo e($item->quantity); ?>)</li>
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </ul>
-                                <strong>Requester:</strong> {{ $pendingRequest->student->user->first_name }} {{ $pendingRequest->student->user->last_name }}<br>
-                                <strong>Reference Code:</strong> <span class="text-primary fw-bold">{{ $pendingRequest->reference_no }}</span><br>
-                                <strong>Student ID:</strong> {{ $pendingRequest->student->student_id }}<br>
+                                <strong>Requester:</strong> <?php echo e($pendingRequest->student->user->first_name); ?> <?php echo e($pendingRequest->student->user->last_name); ?><br>
+                                <strong>Reference Code:</strong> <span class="text-primary fw-bold"><?php echo e($pendingRequest->reference_no); ?></span><br>
+                                <strong>Student ID:</strong> <?php echo e($pendingRequest->student->student_id); ?><br>
                             </div>
                             <div class="col-md-6">
                                 <div class="payment-info">
                                     <strong>Payment Breakdown:</strong>
                                     <div class="mt-2">
-                                        @foreach($pendingRequest->requestItems as $item)
+                                        <?php $__currentLoopData = $pendingRequest->requestItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                             <div class="d-flex justify-content-between mb-1">
-                                                <small>{{ $item->document->type_document }} (x{{ $item->quantity }})</small>
-                                                <small>₱{{ number_format($item->document->price * $item->quantity, 2) }}</small>
+                                                <small><?php echo e($item->document->type_document); ?> (x<?php echo e($item->quantity); ?>)</small>
+                                                <small>₱<?php echo e(number_format($item->document->price * $item->quantity, 2)); ?></small>
                                             </div>
-                                        @endforeach
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                         <hr class="my-2">
                                         <div class="d-flex justify-content-between fw-bold">
                                             <span>Total Amount:</span>
-                                            <span class="text-success">₱{{ number_format($pendingRequest->total_cost, 2) }}</span>
+                                            <span class="text-success">₱<?php echo e(number_format($pendingRequest->total_cost, 2)); ?></span>
                                         </div>
                                     </div>
                                     <br>
@@ -371,10 +378,11 @@
                                         Payment must be made at the Accounting Office before your documents can be processed.
                                     </small>
                                 </div>
-                                <br><strong>Total Quantity:</strong> {{ $pendingRequest->requestItems->sum('quantity') }}
+                                <br><strong>Total Quantity:</strong> <?php echo e($pendingRequest->requestItems->sum('quantity')); ?>
+
                                 <br><br>
                                 <div class="text-center">
-                                    <img src="{{ asset('images/qr-display.jpg') }}" alt="Payment QR Code" class="img-fluid" style="max-width: 200px; max-height: 200px;">
+                                    <img src="<?php echo e(asset('images/qr-display.jpg')); ?>" alt="Payment QR Code" class="img-fluid" style="max-width: 200px; max-height: 200px;">
                                     <p class="text-muted mt-2 small">Scan QR code for payment</p>
                                 </div>
                             </div>
@@ -383,19 +391,19 @@
                         <div class="mt-3 p-3 bg-light rounded">
                             <h6 class="text-warning mb-2"><i class="bi bi-info-circle me-2"></i>Payment Instructions:</h6>
                             <ol class="mb-3 small">
-                                <li>Scan the QR code above or proceed to the Accounting Office with your Reference Number: <strong>{{ $pendingRequest->reference_no }}</strong></li>
-                                <li>Make payment for the total amount of <strong>₱{{ number_format($pendingRequest->total_cost, 2) }}</strong></li>
+                                <li>Scan the QR code above or proceed to the Accounting Office with your Reference Number: <strong><?php echo e($pendingRequest->reference_no); ?></strong></li>
+                                <li>Make payment for the total amount of <strong>₱<?php echo e(number_format($pendingRequest->total_cost, 2)); ?></strong></li>
                                 <li>Upload your payment receipt below for verification</li>
                             </ol>
                             
-                            @if($pendingRequest->payment_receipt_path)
+                            <?php if($pendingRequest->payment_receipt_path): ?>
                                 <div class="alert alert-info">
                                     <i class="bi bi-clock me-2"></i>
                                     Receipt uploaded and awaiting approval from accounting.
                                 </div>
-                            @else
-                                <form method="POST" action="{{ route('student.upload.receipt', $pendingRequest) }}" enctype="multipart/form-data">
-                                    @csrf
+                            <?php else: ?>
+                                <form method="POST" action="<?php echo e(route('student.upload.receipt', $pendingRequest)); ?>" enctype="multipart/form-data">
+                                    <?php echo csrf_field(); ?>
                                     <div class="mb-3">
                                         <label for="payment_receipt" class="form-label">Upload Payment Receipt</label>
                                         <input type="file" class="form-control" id="payment_receipt" name="payment_receipt"
@@ -408,23 +416,23 @@
                                         </button>
                                     </div>
                                 </form>
-                            @endif
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    @endif
+    <?php endif; ?>
 
-    {{-- Show form only if no pending request --}}
-    @if(!$pendingRequest)
+    
+    <?php if(!$pendingRequest): ?>
         <div class="card shadow-sm">
             <div class="card-header bg-primary text-white">
                 <h5 class="mb-0"><i class="bi bi-file-earmark-plus me-2"></i>Request Documents</h5>
             </div>
             <div class="card-body">
-                <form id="document-request-form" action="{{ route('student.request.document.submit') }}" method="POST">
-                    @csrf
+                <form id="document-request-form" action="<?php echo e(route('student.request.document.submit')); ?>" method="POST">
+                    <?php echo csrf_field(); ?>
                     
                     <!-- Documents Section -->
                     <div class="form-section">
@@ -446,11 +454,12 @@
                                     <div class="col-md-8">
                                         <select class="form-select document-select" name="documents[0][document_id]" required>
                                             <option value="" disabled selected>-- Choose document --</option>
-                                            @foreach($documents as $doc)
-                                                <option value="{{ $doc->id }}" data-price="{{ $doc->price }}" data-name="{{ $doc->type_document }}">
-                                                    {{ $doc->type_document }} - {{ $doc->price > 0 ? '₱' . number_format($doc->price, 2) : 'Free' }}
+                                            <?php $__currentLoopData = $documents; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $doc): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                <option value="<?php echo e($doc->id); ?>" data-price="<?php echo e($doc->price); ?>" data-name="<?php echo e($doc->type_document); ?>">
+                                                    <?php echo e($doc->type_document); ?> - <?php echo e($doc->price > 0 ? '₱' . number_format($doc->price, 2) : 'Free'); ?>
+
                                                 </option>
-                                            @endforeach
+                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                         </select>
                                     </div>
                                     <div class="col-md-4">
@@ -525,12 +534,12 @@
                 </form>
             </div>
         </div>
-    @else
+    <?php else: ?>
         <div class="alert alert-info">
             <i class="bi bi-info-circle me-2"></i>
             <strong>You have a pending document request.</strong> Please wait for your current request to be completed before submitting a new one.
         </div>
-    @endif
+    <?php endif; ?>
 </div>
 
 <script>
@@ -617,11 +626,12 @@
                     <div class="col-md-8">
                         <select class="form-select document-select" name="documents[${documentIndex}][document_id]" required>
                             <option value="">Choose document...</option>
-                            @foreach($documents as $doc)
-                                <option value="{{ $doc->id }}" data-price="{{ $doc->price }}" data-name="{{ $doc->type_document }}">
-                                    {{ $doc->type_document }} - {{ $doc->price > 0 ? '₱' . number_format($doc->price, 2) : 'Free' }}
+                            <?php $__currentLoopData = $documents; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $doc): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($doc->id); ?>" data-price="<?php echo e($doc->price); ?>" data-name="<?php echo e($doc->type_document); ?>">
+                                    <?php echo e($doc->type_document); ?> - <?php echo e($doc->price > 0 ? '₱' . number_format($doc->price, 2) : 'Free'); ?>
+
                                 </option>
-                            @endforeach
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </select>
                     </div>
                     <div class="col-md-4">
@@ -735,7 +745,7 @@
     });
 
     // Real-time updates for request status
-    @if($pendingRequest)
+    <?php if($pendingRequest): ?>
         // Load Pusher
         const pusherScript = document.createElement('script');
         pusherScript.src = 'https://js.pusher.com/8.2.0/pusher.min.js';
@@ -743,13 +753,13 @@
 
         pusherScript.onload = function() {
             // Initialize Pusher
-            const pusher = new Pusher('{{ config('broadcasting.connections.pusher.key') }}', {
-                cluster: '{{ config('broadcasting.connections.pusher.options.cluster') }}',
+            const pusher = new Pusher('<?php echo e(config('broadcasting.connections.pusher.key')); ?>', {
+                cluster: '<?php echo e(config('broadcasting.connections.pusher.options.cluster')); ?>',
                 encrypted: true
             });
 
             // Subscribe to the specific request channel
-            const requestChannel = pusher.subscribe('request-{{ $pendingRequest->reference_no }}');
+            const requestChannel = pusher.subscribe('request-<?php echo e($pendingRequest->reference_no); ?>');
 
             // Listen for status updates
             requestChannel.bind('realtime.notification', function(data) {
@@ -825,6 +835,8 @@
                 }
             }
         };
-    @endif
+    <?php endif; ?>
 </script>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\Nu-Regisv2\resources\views/student/request_document.blade.php ENDPATH**/ ?>
