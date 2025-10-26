@@ -206,7 +206,7 @@
     <div class="email-container">
         <div class="header">
             <img src="{{ asset('images/NU_shield.svg.png') }}" alt="NU Logo" class="logo">
-            <h1>🎉 Request Completed</h1>
+            <h1>Request Completed</h1>
             <p>Your {{ $requestType }} document request has been successfully completed</p>
         </div>
 

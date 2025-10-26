@@ -15,6 +15,7 @@ use App\Mail\RequestReadyForReleaseMail;
 use App\Mail\RequestCompletedMail;
 use App\Mail\RequestRejectedMail;
 use App\Mail\ExpectedReleaseDateUpdatedMail;
+use App\Mail\RequestApprovedMail;
 use Carbon\Carbon;
 
 class RegistrarController extends Controller
@@ -278,6 +279,17 @@ class RegistrarController extends Controller
                 'window_assignment' => $assignedWindow ? $assignedWindow->name : null,
             ]
         );
+
+        // Send approval email to student
+        try {
+            Mail::to($studentRequest->student->user->email)->send(new RequestApprovedMail($studentRequest, 'student'));
+        } catch (\Exception $e) {
+            Log::error('Failed to send request approval email', [
+                'request_id' => $studentRequest->id,
+                'email' => $studentRequest->student->user->email,
+                'error' => $e->getMessage()
+            ]);
+        }
 
         return redirect()->back()->with('success', 'Request approved by registrar and assigned to your window. Forwarded to accounting for payment processing.');
     }

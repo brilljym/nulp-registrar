@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use App\Services\RealTimeNotificationService;
 use App\Mail\RequestRejectedMail;
+use App\Mail\RequestApprovedMail;
 
 class RegistrarOnsiteController extends Controller
 {
@@ -307,6 +308,17 @@ class RegistrarOnsiteController extends Controller
                 'window_assignment' => $assignedWindow ? $assignedWindow->name : null,
             ]
         );
+
+        // Send approval email to onsite requester
+        try {
+            Mail::to($onsiteRequest->email)->send(new RequestApprovedMail($onsiteRequest, 'onsite'));
+        } catch (\Exception $e) {
+            Log::error('Failed to send onsite request approval email', [
+                'request_id' => $onsiteRequest->id,
+                'email' => $onsiteRequest->email,
+                'error' => $e->getMessage()
+            ]);
+        }
 
         return redirect()->back()->with('success', 'Request approved by registrar and assigned to your window. Forwarded to accounting for payment processing.');
     }

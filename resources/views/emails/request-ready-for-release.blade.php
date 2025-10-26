@@ -206,7 +206,7 @@
     <div class="email-container">
         <div class="header">
             <img src="{{ asset('images/NU_shield.svg.png') }}" alt="NU Logo" class="logo">
-            <h1>📦 Ready</h1>
+            <h1>Ready</h1>
             <p>Your {{ $requestType }} document request is ready for pickup</p>
         </div>
 

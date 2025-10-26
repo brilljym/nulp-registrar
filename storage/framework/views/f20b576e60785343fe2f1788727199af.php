@@ -820,23 +820,58 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-6">
-                                <strong>Documents Requested:</strong>
-                                <ul class="list-unstyled mb-2">
-                                    <?php $__currentLoopData = $onsiteRequest->requestItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                        <li>• <?php echo e($item->document->type_document); ?> (x<?php echo e($item->quantity); ?>)</li>
-                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                                </ul>
-                                <strong>Requester:</strong> <?php echo e($onsiteRequest->full_name ?? 'N/A'); ?><br>
-                                <strong>Reference Code:</strong> <span class="text-primary fw-bold"><?php echo e($onsiteRequest->ref_code); ?></span><br>
-                                <?php if($onsiteRequest->course): ?>
-                                    <strong>Course:</strong> <?php echo e($onsiteRequest->course); ?><br>
-                                <?php endif; ?>
-                                <?php if($onsiteRequest->reason): ?>
-                                    <strong>Reason:</strong> <?php echo e($onsiteRequest->reason); ?><br>
-                                <?php endif; ?>
-                                <?php if($onsiteRequest->remarks): ?>
-                                    <strong>Remarks:</strong> <span class="text-muted"><?php echo e($onsiteRequest->remarks); ?></span><br>
-                                <?php endif; ?>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="fw-semibold text-muted" style="font-size: 0.85rem;">Document Type</th>
+                                                <th class="text-center fw-semibold text-muted" style="font-size: 0.85rem;">Quantity</th>
+                                                <th class="text-end fw-semibold text-muted" style="font-size: 0.85rem;">Price</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php $__currentLoopData = $onsiteRequest->requestItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                <tr>
+                                                    <td class="fw-medium"><?php echo e($item->document->type_document); ?></td>
+                                                    <td class="text-center"><?php echo e($item->quantity); ?></td>
+                                                    <td class="text-end fw-bold">
+                                                        <?php if($item->document->price > 0): ?>
+                                                            ₱<?php echo e(number_format($item->document->price * $item->quantity, 2)); ?>
+
+                                                        <?php else: ?>
+                                                            <span class="text-success fw-medium">Free</span>
+                                                        <?php endif; ?>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="fw-semibold text-muted" style="font-size: 0.85rem;">Requester</th>
+                                                <th class="fw-semibold text-muted" style="font-size: 0.85rem;">Course</th>
+                                                <th class="fw-semibold text-muted" style="font-size: 0.85rem;">Reason</th>
+                                                <?php if($onsiteRequest->remarks): ?>
+                                                <th class="fw-semibold text-muted" style="font-size: 0.85rem;">Remarks</th>
+                                                <?php endif; ?>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="fw-medium"><?php echo e($onsiteRequest->full_name ?? 'N/A'); ?></td>
+                                                <td class="fw-medium"><?php echo e($onsiteRequest->course ?? 'N/A'); ?></td>
+                                                <td class="fw-medium"><?php echo e($onsiteRequest->reason ?? 'N/A'); ?></td>
+                                                <?php if($onsiteRequest->remarks): ?>
+                                                <td class="fw-medium text-muted"><?php echo e($onsiteRequest->remarks); ?></td>
+                                                <?php endif; ?>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="alert alert-info">
@@ -863,23 +898,58 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-6">
-                                <strong>Documents Requested:</strong>
-                                <ul class="list-unstyled mb-2">
-                                    <?php $__currentLoopData = $onsiteRequest->requestItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                        <li>• <?php echo e($item->document->type_document); ?> (x<?php echo e($item->quantity); ?>)</li>
-                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                                </ul>
-                                <strong>Requester:</strong> <?php echo e($onsiteRequest->full_name ?? 'N/A'); ?><br>
-                                <strong>Reference Code:</strong> <span class="text-primary fw-bold"><?php echo e($onsiteRequest->ref_code); ?></span><br>
-                                <?php if($onsiteRequest->course): ?>
-                                    <strong>Course:</strong> <?php echo e($onsiteRequest->course); ?><br>
-                                <?php endif; ?>
-                                <?php if($onsiteRequest->reason): ?>
-                                    <strong>Reason:</strong> <?php echo e($onsiteRequest->reason); ?><br>
-                                <?php endif; ?>
-                                <?php if($onsiteRequest->remarks): ?>
-                                    <strong>Remarks:</strong> <span class="text-muted"><?php echo e($onsiteRequest->remarks); ?></span><br>
-                                <?php endif; ?>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="fw-semibold text-muted" style="font-size: 0.85rem;">Document Type</th>
+                                                <th class="text-center fw-semibold text-muted" style="font-size: 0.85rem;">Quantity</th>
+                                                <th class="text-end fw-semibold text-muted" style="font-size: 0.85rem;">Price</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php $__currentLoopData = $onsiteRequest->requestItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                <tr>
+                                                    <td class="fw-medium"><?php echo e($item->document->type_document); ?></td>
+                                                    <td class="text-center"><?php echo e($item->quantity); ?></td>
+                                                    <td class="text-end fw-bold">
+                                                        <?php if($item->document->price > 0): ?>
+                                                            ₱<?php echo e(number_format($item->document->price * $item->quantity, 2)); ?>
+
+                                                        <?php else: ?>
+                                                            <span class="text-success fw-medium">Free</span>
+                                                        <?php endif; ?>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="fw-semibold text-muted" style="font-size: 0.85rem;">Requester</th>
+                                                <th class="fw-semibold text-muted" style="font-size: 0.85rem;">Course</th>
+                                                <th class="fw-semibold text-muted" style="font-size: 0.85rem;">Reason</th>
+                                                <?php if($onsiteRequest->remarks): ?>
+                                                <th class="fw-semibold text-muted" style="font-size: 0.85rem;">Remarks</th>
+                                                <?php endif; ?>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="fw-medium"><?php echo e($onsiteRequest->full_name ?? 'N/A'); ?></td>
+                                                <td class="fw-medium"><?php echo e($onsiteRequest->course ?? 'N/A'); ?></td>
+                                                <td class="fw-medium"><?php echo e($onsiteRequest->reason ?? 'N/A'); ?></td>
+                                                <?php if($onsiteRequest->remarks): ?>
+                                                <td class="fw-medium text-muted"><?php echo e($onsiteRequest->remarks); ?></td>
+                                                <?php endif; ?>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <?php

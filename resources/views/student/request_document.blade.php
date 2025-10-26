@@ -88,19 +88,7 @@
                 
                 <!-- Details Grid -->
                 <div class="row g-3">
-                    <div class="col-md-6 col-lg-2">
-                        <div class="d-flex align-items-center">
-                            <div class="text-muted me-2" style="min-width: 20px;">
-                                <i class="bi bi-hash"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <small class="text-muted text-uppercase fw-medium">Reference</small>
-                                <div class="fw-bold text-primary">{{ $request->reference_no }}</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-6 col-lg-2">
+                    <div class="col-md-6 col-lg-3">
                         <div class="d-flex align-items-center">
                             <div class="text-muted me-2" style="min-width: 20px;">
                                 <i class="bi bi-person-badge"></i>
@@ -113,7 +101,7 @@
                         </div>
                     </div>
                     
-                    <div class="col-md-6 col-lg-2">
+                    <div class="col-md-6 col-lg-3">
                         <div class="d-flex align-items-center">
                             <div class="text-muted me-2" style="min-width: 20px;">
                                 <i class="bi bi-file-earmark-text"></i>
@@ -181,44 +169,71 @@
                     </div>
                 </div>
                 
-                {{-- Remarks Section --}}
-                @if($request->remarks)
-                <div class="border-top pt-3 mt-3">
-                    <div class="d-flex align-items-start">
-                        <div class="text-secondary me-3">
-                            <i class="bi bi-chat-dots" style="font-size: 1.5rem;"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <small class="text-muted text-uppercase fw-medium">Remarks</small>
-                            <div class="fw-semibold">{{ $request->remarks }}</div>
-                        </div>
-                    </div>
-                </div>
-                @endif
-                
                 <!-- Documents List -->
                 <div class="border-top pt-3 mt-3">
-                    <h6 class="mb-2 fw-bold">Requested Documents</h6>
-                    <div class="row g-2">
-                        @foreach($request->requestItems as $item)
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-center p-2 border rounded">
-                                    <div class="text-primary me-2">
-                                        <i class="bi bi-file-earmark-text"></i>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <div class="fw-medium">{{ $item->document->type_document }}</div>
-                                        <small class="text-muted">Qty: {{ $item->quantity }} | Price: 
-                                            @if($item->price > 0)
-                                                ₱{{ number_format($item->price * $item->quantity, 2) }}
+                    <h6 class="mb-3 fw-bold">Requested Documents</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="fw-semibold text-muted" style="font-size: 0.85rem;">Document Type</th>
+                                    <th class="text-center fw-semibold text-muted" style="font-size: 0.85rem;">Quantity</th>
+                                    <th class="text-end fw-semibold text-muted" style="font-size: 0.85rem;">Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($request->requestItems as $item)
+                                    <tr>
+                                        <td class="fw-medium">{{ $item->document->type_document }}</td>
+                                        <td class="text-center">{{ $item->quantity }}</td>
+                                        <td class="text-end fw-bold">
+                                            @if($item->document->price > 0)
+                                                ₱{{ number_format($item->document->price * $item->quantity, 2) }}
                                             @else
-                                                Free
+                                                <span class="text-success fw-medium">Free</span>
                                             @endif
-                                        </small>
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
+                                        </td>
+                                    </tr>
+                                @endforeach
+                                <tr class="table-light">
+                                    <td colspan="2" class="text-end fw-bold">Total Amount:</td>
+                                    <td class="text-end fw-bold text-primary">₱{{ number_format($request->total_cost, 2) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                {{-- Request Information Table --}}
+                <div class="border-top pt-3 mt-3">
+                    <h6 class="mb-3 fw-bold">Request Information</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <tbody>
+                                <tr>
+                                    <td class="fw-semibold text-muted" style="width: 30%; border: none; padding: 0.5rem 0;">Requester:</td>
+                                    <td class="fw-medium" style="border: none; padding: 0.5rem 0;">{{ $request->student->user->first_name }} {{ $request->student->user->last_name }}</td>
+                                </tr>
+                                @if($request->student->course)
+                                <tr>
+                                    <td class="fw-semibold text-muted" style="border: none; padding: 0.5rem 0;">Course:</td>
+                                    <td class="fw-medium" style="border: none; padding: 0.5rem 0;">{{ $request->student->course }}</td>
+                                </tr>
+                                @endif
+                                @if($request->reason)
+                                <tr>
+                                    <td class="fw-semibold text-muted" style="border: none; padding: 0.5rem 0;">Reason:</td>
+                                    <td class="fw-medium" style="border: none; padding: 0.5rem 0;">{{ $request->reason }}</td>
+                                </tr>
+                                @endif
+                                @if($request->remarks)
+                                <tr>
+                                    <td class="fw-semibold text-muted" style="border: none; padding: 0.5rem 0;">Remarks:</td>
+                                    <td class="fw-medium text-muted" style="border: none; padding: 0.5rem 0;">{{ $request->remarks }}</td>
+                                </tr>
+                                @endif
+                            </tbody>
+                        </table>
                     </div>
                 </div>
                 
@@ -235,8 +250,7 @@
                                     <div class="col-md-8">
                                         <small class="text-muted fw-medium">Quick Setup:</small>
                                         <p class="mb-1 small">
-                                            1. Download → 2. Install → 3. Enter Reference: 
-                                            <span class="badge bg-primary ms-1">{{ $request->reference_no }}</span>
+                                            1. Download → 2. Install → 3. Login to your account
                                         </p>
                                         <small class="text-muted">
                                             <i class="bi bi-info-circle me-1"></i>
@@ -302,15 +316,37 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-6">
-                                <strong>Documents Requested:</strong>
-                                <ul class="list-unstyled mb-2">
-                                    @foreach($pendingRequest->requestItems as $item)
-                                        <li>• {{ $item->document->type_document }} (x{{ $item->quantity }})</li>
-                                    @endforeach
-                                </ul>
-                                <strong>Requester:</strong> {{ $pendingRequest->student->user->first_name }} {{ $pendingRequest->student->user->last_name }}<br>
-                                <strong>Reference Code:</strong> <span class="text-primary fw-bold">{{ $pendingRequest->reference_no }}</span><br>
-                                <strong>Student ID:</strong> {{ $pendingRequest->student->student_id }}<br>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="fw-semibold text-muted" style="font-size: 0.85rem;">Document Type</th>
+                                                <th class="text-center fw-semibold text-muted" style="font-size: 0.85rem;">Quantity</th>
+                                                <th class="text-end fw-semibold text-muted" style="font-size: 0.85rem;">Price</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($pendingRequest->requestItems as $item)
+                                                <tr>
+                                                    <td class="fw-medium">{{ $item->document->type_document }}</td>
+                                                    <td class="text-center">{{ $item->quantity }}</td>
+                                                    <td class="text-end fw-bold">
+                                                        @if($item->document->price > 0)
+                                                            ₱{{ number_format($item->document->price * $item->quantity, 2) }}
+                                                        @else
+                                                            <span class="text-success fw-medium">Free</span>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <strong>Requester:</strong> {{ $pendingRequest->student->user->first_name }} {{ $pendingRequest->student->user->last_name }}<br>
+                                    <strong>Student ID:</strong> {{ $pendingRequest->student->student_id }}<br>
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="alert alert-info">
@@ -340,15 +376,37 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-6">
-                                <strong>Documents Requested:</strong>
-                                <ul class="list-unstyled mb-2">
-                                    @foreach($pendingRequest->requestItems as $item)
-                                        <li>• {{ $item->document->type_document }} (x{{ $item->quantity }})</li>
-                                    @endforeach
-                                </ul>
-                                <strong>Requester:</strong> {{ $pendingRequest->student->user->first_name }} {{ $pendingRequest->student->user->last_name }}<br>
-                                <strong>Reference Code:</strong> <span class="text-primary fw-bold">{{ $pendingRequest->reference_no }}</span><br>
-                                <strong>Student ID:</strong> {{ $pendingRequest->student->student_id }}<br>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="fw-semibold text-muted" style="font-size: 0.85rem;">Document Type</th>
+                                                <th class="text-center fw-semibold text-muted" style="font-size: 0.85rem;">Quantity</th>
+                                                <th class="text-end fw-semibold text-muted" style="font-size: 0.85rem;">Price</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($pendingRequest->requestItems as $item)
+                                                <tr>
+                                                    <td class="fw-medium">{{ $item->document->type_document }}</td>
+                                                    <td class="text-center">{{ $item->quantity }}</td>
+                                                    <td class="text-end fw-bold">
+                                                        @if($item->document->price > 0)
+                                                            ₱{{ number_format($item->document->price * $item->quantity, 2) }}
+                                                        @else
+                                                            <span class="text-success fw-medium">Free</span>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <strong>Requester:</strong> {{ $pendingRequest->student->user->first_name }} {{ $pendingRequest->student->user->last_name }}<br>
+                                    <strong>Student ID:</strong> {{ $pendingRequest->student->student_id }}<br>
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="payment-info">
@@ -383,7 +441,7 @@
                         <div class="mt-3 p-3 bg-light rounded">
                             <h6 class="text-warning mb-2"><i class="bi bi-info-circle me-2"></i>Payment Instructions:</h6>
                             <ol class="mb-3 small">
-                                <li>Scan the QR code above or proceed to the Accounting Office with your Reference Number: <strong>{{ $pendingRequest->reference_no }}</strong></li>
+                                <li>Scan the QR code above or proceed to the Accounting Office to make payment</li>
                                 <li>Make payment for the total amount of <strong>₱{{ number_format($pendingRequest->total_cost, 2) }}</strong></li>
                                 <li>Upload your payment receipt below for verification</li>
                             </ol>

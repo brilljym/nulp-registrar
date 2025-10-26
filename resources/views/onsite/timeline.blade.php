@@ -817,23 +817,57 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-6">
-                                <strong>Documents Requested:</strong>
-                                <ul class="list-unstyled mb-2">
-                                    @foreach($onsiteRequest->requestItems as $item)
-                                        <li>• {{ $item->document->type_document }} (x{{ $item->quantity }})</li>
-                                    @endforeach
-                                </ul>
-                                <strong>Requester:</strong> {{ $onsiteRequest->full_name ?? 'N/A' }}<br>
-                                <strong>Reference Code:</strong> <span class="text-primary fw-bold">{{ $onsiteRequest->ref_code }}</span><br>
-                                @if($onsiteRequest->course)
-                                    <strong>Course:</strong> {{ $onsiteRequest->course }}<br>
-                                @endif
-                                @if($onsiteRequest->reason)
-                                    <strong>Reason:</strong> {{ $onsiteRequest->reason }}<br>
-                                @endif
-                                @if($onsiteRequest->remarks)
-                                    <strong>Remarks:</strong> <span class="text-muted">{{ $onsiteRequest->remarks }}</span><br>
-                                @endif
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="fw-semibold text-muted" style="font-size: 0.85rem;">Document Type</th>
+                                                <th class="text-center fw-semibold text-muted" style="font-size: 0.85rem;">Quantity</th>
+                                                <th class="text-end fw-semibold text-muted" style="font-size: 0.85rem;">Price</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($onsiteRequest->requestItems as $item)
+                                                <tr>
+                                                    <td class="fw-medium">{{ $item->document->type_document }}</td>
+                                                    <td class="text-center">{{ $item->quantity }}</td>
+                                                    <td class="text-end fw-bold">
+                                                        @if($item->document->price > 0)
+                                                            ₱{{ number_format($item->document->price * $item->quantity, 2) }}
+                                                        @else
+                                                            <span class="text-success fw-medium">Free</span>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="fw-semibold text-muted" style="font-size: 0.85rem;">Requester</th>
+                                                <th class="fw-semibold text-muted" style="font-size: 0.85rem;">Course</th>
+                                                <th class="fw-semibold text-muted" style="font-size: 0.85rem;">Reason</th>
+                                                @if($onsiteRequest->remarks)
+                                                <th class="fw-semibold text-muted" style="font-size: 0.85rem;">Remarks</th>
+                                                @endif
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="fw-medium">{{ $onsiteRequest->full_name ?? 'N/A' }}</td>
+                                                <td class="fw-medium">{{ $onsiteRequest->course ?? 'N/A' }}</td>
+                                                <td class="fw-medium">{{ $onsiteRequest->reason ?? 'N/A' }}</td>
+                                                @if($onsiteRequest->remarks)
+                                                <td class="fw-medium text-muted">{{ $onsiteRequest->remarks }}</td>
+                                                @endif
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="alert alert-info">
@@ -860,23 +894,57 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-6">
-                                <strong>Documents Requested:</strong>
-                                <ul class="list-unstyled mb-2">
-                                    @foreach($onsiteRequest->requestItems as $item)
-                                        <li>• {{ $item->document->type_document }} (x{{ $item->quantity }})</li>
-                                    @endforeach
-                                </ul>
-                                <strong>Requester:</strong> {{ $onsiteRequest->full_name ?? 'N/A' }}<br>
-                                <strong>Reference Code:</strong> <span class="text-primary fw-bold">{{ $onsiteRequest->ref_code }}</span><br>
-                                @if($onsiteRequest->course)
-                                    <strong>Course:</strong> {{ $onsiteRequest->course }}<br>
-                                @endif
-                                @if($onsiteRequest->reason)
-                                    <strong>Reason:</strong> {{ $onsiteRequest->reason }}<br>
-                                @endif
-                                @if($onsiteRequest->remarks)
-                                    <strong>Remarks:</strong> <span class="text-muted">{{ $onsiteRequest->remarks }}</span><br>
-                                @endif
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="fw-semibold text-muted" style="font-size: 0.85rem;">Document Type</th>
+                                                <th class="text-center fw-semibold text-muted" style="font-size: 0.85rem;">Quantity</th>
+                                                <th class="text-end fw-semibold text-muted" style="font-size: 0.85rem;">Price</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($onsiteRequest->requestItems as $item)
+                                                <tr>
+                                                    <td class="fw-medium">{{ $item->document->type_document }}</td>
+                                                    <td class="text-center">{{ $item->quantity }}</td>
+                                                    <td class="text-end fw-bold">
+                                                        @if($item->document->price > 0)
+                                                            ₱{{ number_format($item->document->price * $item->quantity, 2) }}
+                                                        @else
+                                                            <span class="text-success fw-medium">Free</span>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="fw-semibold text-muted" style="font-size: 0.85rem;">Requester</th>
+                                                <th class="fw-semibold text-muted" style="font-size: 0.85rem;">Course</th>
+                                                <th class="fw-semibold text-muted" style="font-size: 0.85rem;">Reason</th>
+                                                @if($onsiteRequest->remarks)
+                                                <th class="fw-semibold text-muted" style="font-size: 0.85rem;">Remarks</th>
+                                                @endif
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="fw-medium">{{ $onsiteRequest->full_name ?? 'N/A' }}</td>
+                                                <td class="fw-medium">{{ $onsiteRequest->course ?? 'N/A' }}</td>
+                                                <td class="fw-medium">{{ $onsiteRequest->reason ?? 'N/A' }}</td>
+                                                @if($onsiteRequest->remarks)
+                                                <td class="fw-medium text-muted">{{ $onsiteRequest->remarks }}</td>
+                                                @endif
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 @php

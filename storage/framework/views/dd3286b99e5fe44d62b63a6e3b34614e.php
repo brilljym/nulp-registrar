@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NU Lipa - Payment Approved</title>
+    <title>NU Lipa - Request Rejected</title>
     <style>
         * {
             margin: 0;
@@ -31,7 +31,7 @@
         }
 
         .header {
-            background: linear-gradient(135deg, #2c2f92 0%, #1e2461 100%);
+            background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);
             padding: 40px 30px;
             text-align: center;
             color: white;
@@ -80,7 +80,7 @@
         .greeting {
             font-size: 20px;
             font-weight: 600;
-            color: #2c2f92;
+            color: #dc3545;
             margin-bottom: 20px;
         }
 
@@ -96,53 +96,83 @@
             border-radius: 12px;
             padding: 25px;
             margin: 25px 0;
-            border-left: 4px solid #2c2f92;
+            border-left: 4px solid #dc3545;
         }
 
         .detail-row {
             display: flex;
             justify-content: space-between;
-            align-items: center;
             margin-bottom: 12px;
-            padding: 8px 0;
+            padding-bottom: 8px;
             border-bottom: 1px solid #dee2e6;
         }
 
         .detail-row:last-child {
             border-bottom: none;
             margin-bottom: 0;
+            padding-bottom: 0;
         }
 
         .detail-label {
             font-weight: 600;
-            color: #2c2f92;
-            flex: 1;
+            color: #dc3545;
+            min-width: 140px;
         }
 
         .detail-value {
-            flex: 2;
-            text-align: right;
             color: #333;
+            text-align: right;
+            flex: 1;
         }
 
-        .highlight-box {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        .remarks-box {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border: 2px solid #ffc107;
             border-radius: 12px;
-            padding: 25px;
-            text-align: center;
+            padding: 20px;
             margin: 25px 0;
-            color: white;
         }
 
-        .highlight-text {
+        .remarks-title {
             font-size: 18px;
             font-weight: 700;
-            margin-bottom: 5px;
+            color: #856404;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .highlight-subtext {
+        .remarks-content {
             font-size: 14px;
-            opacity: 0.9;
+            color: #856404;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ffeaa7;
+            font-style: italic;
+        }
+
+        .action-box {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+            border: 2px solid #17a2b8;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 25px 0;
+            text-align: center;
+        }
+
+        .action-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: #0c5460;
+            margin-bottom: 8px;
+        }
+
+        .action-subtext {
+            font-size: 14px;
+            color: #0c5460;
+            opacity: 0.8;
         }
 
         .footer {
@@ -160,11 +190,11 @@
 
         .footer .signature {
             font-weight: 600;
-            color: #2c2f92;
+            color: #dc3545;
         }
 
         .ticket-number {
-            background: #2c2f92;
+            background: #dc3545;
             color: white;
             padding: 8px 16px;
             border-radius: 20px;
@@ -184,9 +214,9 @@
             letter-spacing: 0.5px;
         }
 
-        .status-processing {
-            background: #fff3cd;
-            color: #856404;
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
         }
 
         @media (max-width: 600px) {
@@ -205,100 +235,114 @@
 <body>
     <div class="email-container">
         <div class="header">
-            <img src="{{ asset('images/NU_shield.svg.png') }}" alt="NU Logo" class="logo">
-            <h1>Payment Approved</h1>
-            <p>Your {{ $requestType }} document request payment has been approved</p>
+            <img src="<?php echo e(asset('images/NU_shield.svg.png')); ?>" alt="NU Logo" class="logo">
+            <h1>❌ Request Rejected</h1>
+            <p>Your <?php echo e($requestType === 'student' ? 'document' : 'on-site'); ?> request has been rejected</p>
         </div>
 
         <div class="content">
             <div class="greeting">
-                Hello {{ $requestType === 'onsite' ? $request->full_name : $request->student->user->first_name . ' ' . $request->student->user->last_name }},
+                Hello <?php echo e($requestType === 'student' ? $request->student->user->first_name . ' ' . $request->student->user->last_name : $request->full_name); ?>,
             </div>
 
             <div class="message">
-                <p>Great news! Your payment for the {{ $requestType }} document request has been approved by our accounting department. Your request is now moving forward in the processing queue.</p>
+                <p>We regret to inform you that your <?php echo e($requestType === 'student' ? 'document' : 'on-site'); ?> request has been rejected by the registrar. Please review the details below and the remarks from the registrar.</p>
+            </div>
+
+            <div class="remarks-box">
+                <div class="remarks-title">
+                    <span>💬</span> Registrar Remarks
+                </div>
+                <div class="remarks-content">
+                    <?php echo e($remarks); ?>
+
+                </div>
             </div>
 
             <div class="request-details">
                 <div class="detail-row">
-                    <span class="detail-label">Reference Code:</span>
-                    <span class="detail-value">{{ $requestType === 'onsite' ? $request->ref_code : $request->reference_no }}</span>
-                </div>
-                @if($requestType === 'onsite')
-                <div class="detail-row">
                     <span class="detail-label">Ticket Number:</span>
-                    <span class="detail-value">{{ $request->created_at->format('Ymd') }}-i{{ $request->id }}</span>
+                    <span class="detail-value">
+                        <?php if($requestType === 'student'): ?>
+                            <?php echo e($request->created_at->format('Ymd')); ?>-<?php echo e($request->id); ?>
+
+                        <?php else: ?>
+                            <?php echo e($request->created_at->format('Ymd')); ?>-i<?php echo e($request->id); ?>
+
+                        <?php endif; ?>
+                    </span>
                 </div>
-                @endif
-                @if($requestType === 'student')
                 <div class="detail-row">
-                    <span class="detail-label">Student ID:</span>
-                    <span class="detail-value">{{ $request->student->student_id }}</span>
+                    <span class="detail-label">Reference Code:</span>
+                    <span class="detail-value"><?php echo e($requestType === 'student' ? $request->reference_no : ($request->ref_code ?? 'Not available')); ?></span>
                 </div>
-                @endif
+                <?php if($requestType === 'onsite'): ?>
                 <div class="detail-row">
                     <span class="detail-label">Course:</span>
-                    <span class="detail-value">{{ $request->student ? $request->student->course : $request->course }}</span>
+                    <span class="detail-value"><?php echo e($request->course); ?></span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Year Level:</span>
-                    <span class="detail-value">{{ $request->student ? $request->student->year_level : $request->year_level }}</span>
+                    <span class="detail-value"><?php echo e($request->year_level); ?></span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Department:</span>
-                    <span class="detail-value">{{ $request->student ? $request->student->department : $request->department }}</span>
+                    <span class="detail-value"><?php echo e($request->department); ?></span>
                 </div>
+                <?php endif; ?>
                 <div class="detail-row">
                     <span class="detail-label">Status:</span>
                     <span class="detail-value">
-                        <span class="status-badge status-processing">{{ ucfirst($request->status) }}</span>
+                        <span class="status-badge status-rejected"><?php echo e(ucfirst($request->status)); ?></span>
                     </span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Documents:</span>
                     <span class="detail-value">
-                        @foreach($request->requestItems as $item)
-                            {{ $item->document->type_document }} (x{{ $item->quantity }})
-                            @if(!$loop->last), @endif
-                        @endforeach
+                        <?php if($request->requestItems->count() > 0): ?>
+                            <?php $__currentLoopData = $request->requestItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <?php echo e($item->document->type_document); ?> (x<?php echo e($item->quantity); ?>)
+                                <?php if(!$loop->last): ?>, <?php endif; ?>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        <?php else: ?>
+                            Not specified
+                        <?php endif; ?>
                     </span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">Total Amount:</span>
-                    <span class="detail-value">₱{{ number_format($request->requestItems->sum(function($item) { return $item->document->price * $item->quantity; }), 2) }}</span>
+                    <span class="detail-label">Request Date:</span>
+                    <span class="detail-value"><?php echo e($request->created_at->format('M d, Y')); ?></span>
                 </div>
             </div>
 
-            <div class="highlight-box">
-                <div class="highlight-text">
+            <div class="action-box">
+                <div class="action-text">
                     🔄 Next Steps
                 </div>
-                <div class="highlight-subtext">
-                    Your request is now being processed by our registrar team
+                <div class="action-subtext">
+                    Please review the registrar's remarks and re-submit your request with the necessary corrections. You can access your request timeline to make changes and re-approve.
                 </div>
             </div>
 
             <div class="message">
-                <p><strong>What happens next?</strong></p>
-                <ul>
-                    <li>Your request will be assigned to a registrar for processing</li>
-                    <li>You will receive another notification when your documents are ready</li>
-                    <li>Please keep your reference code for tracking purposes</li>
-                </ul>
-
-                <p>If you have any questions about your request, please contact the registrar's office.</p>
+                <p>If you have any questions about this rejection or need assistance with re-submitting your request, please contact the registrar's office.</p>
             </div>
         </div>
 
         <div class="footer">
             <p>Thank you for using NU Lipa's Document Request System</p>
             <p class="signature">NU Lipa Registrar's Office</p>
-            @if($requestType === 'onsite')
             <div class="ticket-number">
-                Ticket: {{ $request->created_at->format('Ymd') }}-i{{ $request->id }}
+                Ticket:
+                <?php if($requestType === 'student'): ?>
+                    <?php echo e($request->created_at->format('Ymd')); ?>-<?php echo e($request->id); ?>
+
+                <?php else: ?>
+                    <?php echo e($request->created_at->format('Ymd')); ?>-i<?php echo e($request->id); ?>
+
+                <?php endif; ?>
             </div>
-            @endif
         </div>
     </div>
 </body>
-</html>
+</html><?php /**PATH D:\Nu-Regisv2\resources\views/emails/request-rejected.blade.php ENDPATH**/ ?>

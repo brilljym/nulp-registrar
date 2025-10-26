@@ -120,16 +120,7 @@
             color: #856404;
             font-size: 16px;
             margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-        }
-        
-        .security-notice h3::before {
-            content: "⚠️";
-            margin-right: 8px;
-        }
-        
-        .security-notice p {
+        }        .security-notice p {
             color: #856404;
             font-size: 14px;
             margin: 5px 0;
@@ -160,14 +151,7 @@
             padding: 15px;
             margin: 25px 0;
             text-align: center;
-        }
-        
-        .expiry-info .timer-icon {
-            font-size: 20px;
-            margin-right: 8px;
-        }
-        
-        .expiry-info p {
+        }        .expiry-info p {
             color: #444;
             font-size: 14px;
             margin: 0;
@@ -222,7 +206,6 @@
             
             <div class="expiry-info">
                 <p>
-                    <span class="timer-icon">⏰</span>
                     This code will expire in <strong>10 minutes</strong> for your security.
                 </p>
             </div>

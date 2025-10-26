@@ -13,12 +13,16 @@ class RequestApprovedMail extends Mailable
 {
     use Queueable, SerializesModels;
 
+    public $request;
+    public $requestType;
+
     /**
      * Create a new message instance.
      */
-    public function __construct()
+    public function __construct($request, $requestType = 'onsite')
     {
-        //
+        $this->request = $request;
+        $this->requestType = $requestType;
     }
 
     /**
@@ -26,8 +30,9 @@ class RequestApprovedMail extends Mailable
      */
     public function envelope(): Envelope
     {
+        $refCode = $this->requestType === 'onsite' ? $this->request->ref_code : $this->request->reference_no;
         return new Envelope(
-            subject: 'Request Approved Mail',
+            subject: 'NU Lipa - Your Document Request Has Been Approved',
         );
     }
 
@@ -37,7 +42,11 @@ class RequestApprovedMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'view.name',
+            view: 'emails.request-approved',
+            with: [
+                'request' => $this->request,
+                'requestType' => $this->requestType,
+            ],
         );
     }
 

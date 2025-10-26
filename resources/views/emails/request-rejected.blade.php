@@ -236,7 +236,7 @@
     <div class="email-container">
         <div class="header">
             <img src="{{ asset('images/NU_shield.svg.png') }}" alt="NU Logo" class="logo">
-            <h1>❌ Request Rejected</h1>
+            <h1>Request Rejected</h1>
             <p>Your {{ $requestType === 'student' ? 'document' : 'on-site' }} request has been rejected</p>
         </div>
 

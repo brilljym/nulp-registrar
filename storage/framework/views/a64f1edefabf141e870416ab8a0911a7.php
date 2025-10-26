@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Track Your Request - {{ $studentRequest->reference_no }}</title>
+    <title>Track Your Request - <?php echo e($studentRequest->reference_no); ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -41,7 +41,7 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: url('{{ asset('images/login-bg.jpg') }}') no-repeat center center fixed;
+            background: url('<?php echo e(asset('images/login-bg.jpg')); ?>') no-repeat center center fixed;
             background-size: cover;
             min-height: 100vh;
             position: relative;
@@ -404,10 +404,10 @@
         <!-- Enhanced Header -->
         <header class="nu-header">
             <div class="nu-logo-container">
-                <img src="{{ asset('images/NU_shield.svg.png') }}" alt="NU Shield" class="nu-shield">
+                <img src="<?php echo e(asset('images/NU_shield.svg.png')); ?>" alt="NU Shield" class="nu-shield">
                 <span class="nu-title">NU LIPA</span>
             </div>
-            <a href="{{ route('student.my-requests') }}" class="back-button">
+            <a href="<?php echo e(route('student.my-requests')); ?>" class="back-button">
                 <i class="bi bi-arrow-left me-1"></i>My Requests
             </a>
         </header>
@@ -419,7 +419,7 @@
                     <h3><i class="bi bi-search me-2"></i>Track Your Document Request</h3>
                 </div>
 
-                {{-- Request Details Summary --}}
+                
                 <div class="request-details-card">
                     <div class="row g-3">
                         <div class="col-md-6">
@@ -429,8 +429,8 @@
                                 </div>
                                 <div>
                                     <small class="text-muted text-uppercase fw-medium">Student</small>
-                                    <div class="fw-semibold">{{ $studentRequest->student->user->first_name }} {{ $studentRequest->student->user->last_name }}</div>
-                                    <small class="text-muted">{{ $studentRequest->student->student_id }}</small>
+                                    <div class="fw-semibold"><?php echo e($studentRequest->student->user->first_name); ?> <?php echo e($studentRequest->student->user->last_name); ?></div>
+                                    <small class="text-muted"><?php echo e($studentRequest->student->student_id); ?></small>
                                 </div>
                             </div>
                         </div>
@@ -441,8 +441,8 @@
                                 </div>
                                 <div>
                                     <small class="text-muted text-uppercase fw-medium">Submitted</small>
-                                    <div class="fw-semibold">{{ $studentRequest->created_at->format('M d, Y') }}</div>
-                                    <small class="text-muted">{{ $studentRequest->created_at->format('h:i A') }}</small>
+                                    <div class="fw-semibold"><?php echo e($studentRequest->created_at->format('M d, Y')); ?></div>
+                                    <small class="text-muted"><?php echo e($studentRequest->created_at->format('h:i A')); ?></small>
                                 </div>
                             </div>
                         </div>
@@ -453,8 +453,8 @@
                                 </div>
                                 <div>
                                     <small class="text-muted text-uppercase fw-medium">Documents</small>
-                                    <div class="fw-semibold">{{ $studentRequest->requestItems->count() }} item(s)</div>
-                                    <small class="text-muted">₱{{ number_format($studentRequest->total_cost, 2) }}</small>
+                                    <div class="fw-semibold"><?php echo e($studentRequest->requestItems->count()); ?> item(s)</div>
+                                    <small class="text-muted">₱<?php echo e(number_format($studentRequest->total_cost, 2)); ?></small>
                                 </div>
                             </div>
                         </div>
@@ -466,14 +466,15 @@
                                 <div>
                                     <small class="text-muted text-uppercase fw-medium">Status</small>
                                     <div>
-                                        <span class="status-badge status-{{ $studentRequest->status }}">
-                                            {{ ucfirst(str_replace('_', ' ', $studentRequest->status)) }}
+                                        <span class="status-badge status-<?php echo e($studentRequest->status); ?>">
+                                            <?php echo e(ucfirst(str_replace('_', ' ', $studentRequest->status))); ?>
+
                                         </span>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        @if($studentRequest->reason)
+                        <?php if($studentRequest->reason): ?>
                         <div class="col-12">
                             <div class="d-flex align-items-start">
                                 <div class="text-secondary me-3">
@@ -481,14 +482,14 @@
                                 </div>
                                 <div class="flex-grow-1">
                                     <small class="text-muted text-uppercase fw-medium">Reason for Request</small>
-                                    <div class="fw-medium">{{ $studentRequest->reason }}</div>
+                                    <div class="fw-medium"><?php echo e($studentRequest->reason); ?></div>
                                 </div>
                             </div>
                         </div>
-                        @endif
+                        <?php endif; ?>
 
-                        {{-- Registrar Remarks --}}
-                        @if($studentRequest->remarks)
+                        
+                        <?php if($studentRequest->remarks): ?>
                         <div class="col-12">
                             <div class="d-flex align-items-start">
                                 <div class="text-info me-3">
@@ -496,14 +497,14 @@
                                 </div>
                                 <div class="flex-grow-1">
                                     <small class="text-muted text-uppercase fw-medium">Registrar Remarks</small>
-                                    <div class="fw-semibold text-info">{{ $studentRequest->remarks }}</div>
+                                    <div class="fw-semibold text-info"><?php echo e($studentRequest->remarks); ?></div>
                                 </div>
                             </div>
                         </div>
-                        @endif
+                        <?php endif; ?>
                     </div>
 
-                    {{-- Documents List --}}
+                    
                     <div class="border-top pt-3 mt-3">
                         <h6 class="mb-3 fw-bold">Requested Documents</h6>
                         <div class="table-responsive">
@@ -517,44 +518,46 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($studentRequest->requestItems as $item)
+                                    <?php $__currentLoopData = $studentRequest->requestItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                         <tr>
-                                            <td class="fw-medium">{{ $item->document->type_document }}</td>
-                                            <td class="text-center">{{ $item->quantity }}</td>
+                                            <td class="fw-medium"><?php echo e($item->document->type_document); ?></td>
+                                            <td class="text-center"><?php echo e($item->quantity); ?></td>
                                             <td class="text-end">
-                                                @if($item->document->price > 0)
-                                                    ₱{{ number_format($item->document->price, 2) }}
-                                                @else
+                                                <?php if($item->document->price > 0): ?>
+                                                    ₱<?php echo e(number_format($item->document->price, 2)); ?>
+
+                                                <?php else: ?>
                                                     <span class="text-success fw-medium">Free</span>
-                                                @endif
+                                                <?php endif; ?>
                                             </td>
                                             <td class="text-end fw-bold">
-                                                @if($item->document->price > 0)
-                                                    ₱{{ number_format($item->document->price * $item->quantity, 2) }}
-                                                @else
+                                                <?php if($item->document->price > 0): ?>
+                                                    ₱<?php echo e(number_format($item->document->price * $item->quantity, 2)); ?>
+
+                                                <?php else: ?>
                                                     <span class="text-success fw-medium">Free</span>
-                                                @endif
+                                                <?php endif; ?>
                                             </td>
                                         </tr>
-                                    @endforeach
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                     <tr class="table-light">
                                         <td colspan="3" class="text-end fw-bold">Total Amount:</td>
-                                        <td class="text-end fw-bold text-primary">₱{{ number_format($studentRequest->total_cost, 2) }}</td>
+                                        <td class="text-end fw-bold text-primary">₱<?php echo e(number_format($studentRequest->total_cost, 2)); ?></td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
 
-                    {{-- Payment Receipt Section --}}
-                    @if($studentRequest->total_cost > 0)
+                    
+                    <?php if($studentRequest->total_cost > 0): ?>
                         <div class="border-top pt-3 mt-3">
                             <h6 class="mb-2 fw-bold">Payment Information</h6>
-                            @if($studentRequest->payment_receipt_path)
+                            <?php if($studentRequest->payment_receipt_path): ?>
                                 <div class="payment-section">
                                     <div class="d-flex align-items-center">
                                         <div class="me-3">
-                                            <img src="{{ route('accounting.receipt.student', $studentRequest) }}" 
+                                            <img src="<?php echo e(route('accounting.receipt.student', $studentRequest)); ?>" 
                                                  alt="Payment Receipt" 
                                                  class="receipt-preview" 
                                                  data-bs-toggle="modal" 
@@ -562,13 +565,13 @@
                                         </div>
                                         <div class="flex-grow-1">
                                             <div class="d-flex align-items-center mb-2">
-                                                @if($studentRequest->payment_approved)
+                                                <?php if($studentRequest->payment_approved): ?>
                                                     <i class="bi bi-check-circle-fill text-success me-2"></i>
                                                     <span class="text-success fw-semibold">Payment Approved</span>
-                                                @else
+                                                <?php else: ?>
                                                     <i class="bi bi-clock-fill text-warning me-2"></i>
                                                     <span class="text-warning fw-semibold">Payment Under Review</span>
-                                                @endif
+                                                <?php endif; ?>
                                             </div>
                                             <small class="text-muted">
                                                 Receipt uploaded. Click image to view full size.
@@ -576,99 +579,101 @@
                                         </div>
                                     </div>
                                 </div>
-                            @else
+                            <?php else: ?>
                                 <div class="alert alert-warning">
                                     <i class="bi bi-exclamation-triangle me-2"></i>
                                     <strong>Payment Required:</strong> Please upload your payment receipt to continue processing.
                                 </div>
-                            @endif
+                            <?php endif; ?>
                         </div>
-                    @endif
+                    <?php endif; ?>
                 </div>
 
-                {{-- Timeline Steps --}}
+                
                 <div class="d-flex justify-content-center mb-4">
                     <div class="d-flex align-items-center justify-content-between w-100 timeline-steps-container" style="max-width: 900px; padding: 0 30px;">
-                        @foreach ($steps as $index => $step)
-                            @if ($index > 0)
-                                <div style="height: 4px; flex-grow: 1; background-color: {{ $index <= $currentStepIndex ? '#28a745' : '#ced4da' }}; margin: 0 -10px; z-index: 0;"></div>
-                            @endif
+                        <?php $__currentLoopData = $steps; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $step): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <?php if($index > 0): ?>
+                                <div style="height: 4px; flex-grow: 1; background-color: <?php echo e($index <= $currentStepIndex ? '#28a745' : '#ced4da'); ?>; margin: 0 -10px; z-index: 0;"></div>
+                            <?php endif; ?>
                             <div class="timeline-step text-center position-relative" style="width: 90px; z-index: 1;">
                                 <div class="mb-2 d-flex justify-content-center">
                                     <div class="rounded-circle d-flex align-items-center justify-content-center shadow-sm"
                                          style="width: 55px; height: 55px;
-                                                background-color: {{ $index < $currentStepIndex ? '#28a745' : ($index === $currentStepIndex ? '#0d6efd' : '#dee2e6') }};
+                                                background-color: <?php echo e($index < $currentStepIndex ? '#28a745' : ($index === $currentStepIndex ? '#0d6efd' : '#dee2e6')); ?>;
                                                 color: #fff; font-size: 24px;">
-                                        {{ $step['icon'] }}
+                                        <?php echo e($step['icon']); ?>
+
                                     </div>
                                 </div>
-                                <div class="fw-semibold small {{ $index < $currentStepIndex ? 'text-success' : ($index === $currentStepIndex ? 'text-primary' : 'text-muted') }}">
-                                    {{ $step['label'] }}
+                                <div class="fw-semibold small <?php echo e($index < $currentStepIndex ? 'text-success' : ($index === $currentStepIndex ? 'text-primary' : 'text-muted')); ?>">
+                                    <?php echo e($step['label']); ?>
+
                                 </div>
                             </div>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </div>
                 </div>
 
-                {{-- Status-specific Information --}}
+                
                 <div class="text-center mt-4">
-                    @if($studentRequest->status === 'pending')
-                        @if($studentRequest->total_cost > 0 && !$studentRequest->payment_receipt_path)
+                    <?php if($studentRequest->status === 'pending'): ?>
+                        <?php if($studentRequest->total_cost > 0 && !$studentRequest->payment_receipt_path): ?>
                             <div class="alert alert-warning">
                                 <h5 class="alert-heading"><i class="bi bi-credit-card me-2"></i>Payment Required</h5>
                                 <p>Please upload your payment receipt to proceed with your document request.</p>
                                 <hr>
-                                <p class="mb-0">Total Amount: <strong>₱{{ number_format($studentRequest->total_cost, 2) }}</strong></p>
+                                <p class="mb-0">Total Amount: <strong>₱<?php echo e(number_format($studentRequest->total_cost, 2)); ?></strong></p>
                             </div>
-                        @elseif($studentRequest->payment_receipt_path && !$studentRequest->payment_approved)
+                        <?php elseif($studentRequest->payment_receipt_path && !$studentRequest->payment_approved): ?>
                             <div class="alert alert-info">
                                 <h5 class="alert-heading"><i class="bi bi-clock me-2"></i>Payment Under Review</h5>
                                 <p>Your payment receipt has been uploaded and is currently being reviewed by our accounting team.</p>
                                 <hr>
                                 <p class="mb-0">We'll update you once the payment is verified.</p>
                             </div>
-                        @else
+                        <?php else: ?>
                             <div class="alert alert-success">
                                 <h5 class="alert-heading"><i class="bi bi-check-circle me-2"></i>Request Submitted Successfully</h5>
                                 <p>Your document request has been submitted and is ready for processing.</p>
-                                @if($studentRequest->expected_release_date)
+                                <?php if($studentRequest->expected_release_date): ?>
                                     <hr>
-                                    <p class="mb-0">Expected Release Date: <strong>{{ $studentRequest->expected_release_date->format('M d, Y') }}</strong></p>
-                                @endif
+                                    <p class="mb-0">Expected Release Date: <strong><?php echo e($studentRequest->expected_release_date->format('M d, Y')); ?></strong></p>
+                                <?php endif; ?>
                             </div>
-                        @endif
+                        <?php endif; ?>
 
-                    @elseif($studentRequest->status === 'processing')
+                    <?php elseif($studentRequest->status === 'processing'): ?>
                         <div class="alert alert-info">
                             <h5 class="alert-heading"><i class="bi bi-gear me-2"></i>Document Being Processed</h5>
                             <p>Your document request is currently being processed by our registrar team.</p>
-                            @if($studentRequest->assignedRegistrar)
+                            <?php if($studentRequest->assignedRegistrar): ?>
                                 <hr>
-                                <p class="mb-0">Assigned to: <strong>{{ $studentRequest->assignedRegistrar->first_name }} {{ $studentRequest->assignedRegistrar->last_name }}</strong></p>
-                            @endif
+                                <p class="mb-0">Assigned to: <strong><?php echo e($studentRequest->assignedRegistrar->first_name); ?> <?php echo e($studentRequest->assignedRegistrar->last_name); ?></strong></p>
+                            <?php endif; ?>
                         </div>
 
-                    @elseif($studentRequest->status === 'ready_for_release')
+                    <?php elseif($studentRequest->status === 'ready_for_release'): ?>
                         <div class="alert alert-primary">
                             <h5 class="alert-heading"><i class="bi bi-box-seam me-2"></i>Ready</h5>
                             <p>Your document is ready for pickup or download.</p>
-                            @if($studentRequest->expected_release_date)
+                            <?php if($studentRequest->expected_release_date): ?>
                                 <hr>
-                                <p class="mb-0">Available for pickup since: <strong>{{ $studentRequest->expected_release_date->format('M d, Y') }}</strong></p>
-                            @endif
+                                <p class="mb-0">Available for pickup since: <strong><?php echo e($studentRequest->expected_release_date->format('M d, Y')); ?></strong></p>
+                            <?php endif; ?>
                         </div>
 
-                    @elseif($studentRequest->status === 'completed')
+                    <?php elseif($studentRequest->status === 'completed'): ?>
                         <div class="alert alert-success">
                             <h5 class="alert-heading"><i class="bi bi-check-circle-fill me-2"></i>Request Completed</h5>
                             <p>Your document request has been completed successfully!</p>
                             <hr>
                             <p class="mb-0">Thank you for using NU Lipa Document Services.</p>
                         </div>
-                    @endif
+                    <?php endif; ?>
                 </div>
 
-                {{-- Status-specific Information --}}
+                
             </div>
         </main>
 
@@ -685,8 +690,8 @@
         </footer>
     </div>
 
-    {{-- Receipt Modal --}}
-    @if($studentRequest->payment_receipt_path)
+    
+    <?php if($studentRequest->payment_receipt_path): ?>
     <div class="modal fade" id="receiptModal" tabindex="-1" aria-labelledby="receiptModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
@@ -695,7 +700,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-center">
-                    <img src="{{ route('accounting.receipt.student', $studentRequest) }}" 
+                    <img src="<?php echo e(route('accounting.receipt.student', $studentRequest)); ?>" 
                          alt="Payment Receipt" 
                          class="img-fluid"
                          style="max-height: 70vh;">
@@ -706,7 +711,7 @@
             </div>
         </div>
     </div>
-    @endif
+    <?php endif; ?>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -715,13 +720,13 @@
     <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
     <script>
         // Initialize Pusher for real-time updates
-        const pusher = new Pusher('{{ config('broadcasting.connections.pusher.key') }}', {
-            cluster: '{{ config('broadcasting.connections.pusher.options.cluster') }}',
+        const pusher = new Pusher('<?php echo e(config('broadcasting.connections.pusher.key')); ?>', {
+            cluster: '<?php echo e(config('broadcasting.connections.pusher.options.cluster')); ?>',
             encrypted: true
         });
 
         // Subscribe to request-specific channel
-        const channelName = 'request-{{ $studentRequest->reference_no }}';
+        const channelName = 'request-<?php echo e($studentRequest->reference_no); ?>';
         const requestChannel = pusher.subscribe(channelName);
         
         // Listen for status updates
@@ -764,4 +769,4 @@
         });
     </script>
 </body>
-</html>
+</html><?php /**PATH D:\Nu-Regisv2\resources\views/student/track.blade.php ENDPATH**/ ?>

@@ -70,10 +70,9 @@
             margin-bottom: 20px;
         }
 
-        .header-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-            opacity: 0.9;
+        .header-content {
+            position: relative;
+            z-index: 2;
         }
 
         .logo {
@@ -139,11 +138,6 @@
             gap: 10px;
         }
 
-        .details-title::before {
-            content: '📋';
-            font-size: 20px;
-        }
-
         .detail-row {
             display: flex;
             justify-content: space-between;
@@ -201,10 +195,9 @@
             z-index: 2;
         }
 
-        .highlight-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-            opacity: 0.8;
+        .highlight-content {
+            position: relative;
+            z-index: 2;
         }
 
         .highlight-title {
@@ -240,7 +233,6 @@
         }
 
         .important-notice::before {
-            content: 'ℹ️';
             position: absolute;
             top: -15px;
             left: 25px;
@@ -424,7 +416,6 @@
         <div class="header">
             <img src="{{ asset('images/NU_shield.svg.png') }}" alt="NU Logo" class="logo">
             <div class="header-content">
-                <div class="header-icon">📅</div>
                 <h1>Release Date Updated</h1>
                 <p>Your {{ $requestType === 'student' ? 'document' : 'on-site' }} request has been updated</p>
             </div>
@@ -499,7 +490,6 @@
 
             <div class="highlight-section">
                 <div class="highlight-content">
-                    <div class="highlight-icon">⏰</div>
                     <div class="highlight-title">New Expected Release Date</div>
                     <div class="highlight-date">{{ \Carbon\Carbon::parse($request->expected_release_date)->format('l, F j, Y') }}</div>
                     <div class="highlight-time">at {{ \Carbon\Carbon::parse($request->expected_release_date)->format('g:i A') }}</div>
