@@ -592,10 +592,6 @@
                     <i class="bi bi-bar-chart-line"></i>
                     <span class="nav-text">Reports & Analytics</span>
                 </a>
-                <a href="{{ route('admin.pia.reports') }}" class="{{ request()->is('admin/pia-reports*') ? 'active' : '' }}">
-                    <i class="bi bi-shield-check"></i>
-                    <span class="nav-text">PIA & Stakeholder Reports</span>
-                </a>
             </div>
 
            

@@ -38,7 +38,7 @@
         color: #2c3192;
     }
 
-    .stakeholder-section {
+    .report-section {
         background: #fff;
         border-radius: 15px;
         padding: 2rem;
@@ -122,9 +122,9 @@
     <div class="row mb-4">
         <div class="col-12">
             <h2 class="mb-0" style="color: #2c3192; font-weight: 700;">
-                <i class="fas fa-shield-alt me-2"></i>PIA Compliance & Stakeholder Reports
+                <i class="fas fa-shield-alt me-2"></i>Compliance Reports
             </h2>
-            <p class="text-muted mt-2">Specialized reports for regulatory compliance and stakeholder coordination</p>
+            <p class="text-muted mt-2">Specialized reports for regulatory compliance and operational monitoring</p>
         </div>
     </div>
 
@@ -132,12 +132,12 @@
     <div class="export-section">
         <div class="row align-items-center">
             <div class="col-lg-8">
-                <h4><i class="fas fa-download me-2"></i>Stakeholder Report Exports</h4>
-                <p class="mb-0">Generate specialized reports for regulatory compliance and stakeholder requirements</p>
+                <h4><i class="fas fa-download me-2"></i>Report Exports</h4>
+                <p class="mb-0">Generate specialized reports for regulatory compliance and operational monitoring</p>
             </div>
             <div class="col-lg-4 text-end">
                 <a href="<?php echo e(route('admin.pia.export-compliance')); ?>" class="btn export-btn">
-                    <i class="fas fa-file-shield me-2"></i>PIA Compliance Report
+                    <i class="fas fa-file-shield me-2"></i>Compliance Report
                 </a>
                 <a href="<?php echo e(route('admin.pia.export-operational')); ?>" class="btn export-btn">
                     <i class="fas fa-chart-line me-2"></i>Operational Efficiency Report
@@ -188,7 +188,7 @@
     </div>
 
     <!-- Operational Efficiency -->
-    <div class="stakeholder-section">
+    <div class="report-section">
         <h4 class="section-title"><i class="fas fa-tachometer-alt me-2"></i>Operational Efficiency Metrics</h4>
         <div class="row">
             <div class="col-lg-3 col-md-6">
@@ -219,7 +219,7 @@
     </div>
 
     <!-- Quality Assurance -->
-    <div class="stakeholder-section">
+    <div class="report-section">
         <h4 class="section-title"><i class="fas fa-award me-2"></i>Quality Assurance Metrics</h4>
         <div class="row">
             <div class="col-lg-6">
@@ -272,8 +272,8 @@
     </div>
 
     <!-- Stakeholder Satisfaction -->
-    <div class="stakeholder-section">
-        <h4 class="section-title"><i class="fas fa-users me-2"></i>Stakeholder Satisfaction Scores</h4>
+    <div class="report-section">
+        <h4 class="section-title"><i class="fas fa-users me-2"></i>User Satisfaction Scores</h4>
         <div class="row">
             <div class="col-lg-4">
                 <h6><i class="fas fa-user-graduate me-2"></i>Student Satisfaction</h6>
@@ -342,7 +342,7 @@
     </div>
 
     <!-- Process Improvements -->
-    <div class="stakeholder-section">
+    <div class="report-section">
         <h4 class="section-title"><i class="fas fa-lightbulb me-2"></i>Process Improvement Initiatives</h4>
         <div class="row">
             <div class="col-lg-6">
@@ -369,7 +369,7 @@
     </div>
 
     <!-- Audit Trail -->
-    <div class="stakeholder-section">
+    <div class="report-section">
         <h4 class="section-title"><i class="fas fa-history me-2"></i>Audit Trail & Accountability</h4>
         <div class="row">
             <div class="col-lg-6">
@@ -409,17 +409,17 @@
         </div>
     </div>
 
-    <!-- Stakeholder Coordination Notes -->
-    <div class="stakeholder-section">
-        <h4 class="section-title"><i class="fas fa-handshake me-2"></i>Stakeholder Coordination</h4>
+    <!-- User Coordination Notes -->
+    <div class="report-section">
+        <h4 class="section-title"><i class="fas fa-handshake me-2"></i>User Coordination</h4>
         <div class="alert alert-info">
-            <h6><i class="fas fa-info-circle me-2"></i>PIA Coordination Status</h6>
-            <p class="mb-2">These reports are designed to meet regulatory compliance requirements and facilitate stakeholder coordination. The system maintains comprehensive audit trails and performance metrics as required by institutional policies.</p>
+            <h6><i class="fas fa-info-circle me-2"></i>Compliance Coordination Status</h6>
+            <p class="mb-2">These reports are designed to meet regulatory compliance requirements and facilitate user coordination. The system maintains comprehensive audit trails and performance metrics as required by institutional policies.</p>
             <ul class="mb-2">
                 <li><strong>Data Privacy Compliance:</strong> All student data handling follows GDPR-equivalent standards</li>
                 <li><strong>Process Transparency:</strong> Complete audit trail for all document processing activities</li>
                 <li><strong>Performance Monitoring:</strong> Real-time metrics for operational efficiency and quality assurance</li>
-                <li><strong>Stakeholder Communication:</strong> Regular reports available for all stakeholder groups</li>
+                <li><strong>User Communication:</strong> Regular reports available for all user groups</li>
             </ul>
             <p class="mb-0"><strong>Next Stakeholder Review:</strong> Scheduled for <?php echo e(Carbon\Carbon::now()->addMonth()->format('F j, Y')); ?></p>
         </div>
@@ -432,7 +432,7 @@
                 <h6><i class="fas fa-calendar-alt me-2"></i>Report Schedule & Customization</h6>
                 <p class="mb-1"><strong>Generated on:</strong> <?php echo e(now()->format('F j, Y \a\t g:i A')); ?></p>
                 <p class="mb-1"><strong>Update Frequency:</strong> Real-time data with automated daily summaries</p>
-                <p class="mb-0"><strong>Custom Reports:</strong> Additional stakeholder-specific reports can be generated upon request. Contact the system administrator for specialized reporting requirements or to coordinate with PIA and other regulatory bodies.</p>
+                <p class="mb-0"><strong>Custom Reports:</strong> Additional user-specific reports can be generated upon request. Contact the system administrator for specialized reporting requirements or to coordinate with regulatory bodies.</p>
             </div>
         </div>
     </div>

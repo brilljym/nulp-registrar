@@ -202,10 +202,10 @@
                     </td>
                     <td class="text-center">
                         <!-- View Icon Button -->
-                        <button type="button" class="btn btn-outline-info btn-sm me-2 action-btn view-btn"
+                        <a href="<?php echo e(route('admin.students.show', $student)); ?>" class="btn btn-outline-info btn-sm me-2 action-btn view-btn"
                             data-tippy-content="<span class='tooltip-icon'>👁️</span> View Student">
                             <i class="fas fa-eye"></i>
-                        </button>
+                        </a>
 
                         <!-- Delete Form with Icon -->
                         <form method="POST" action="#" style="display:inline-block;">
