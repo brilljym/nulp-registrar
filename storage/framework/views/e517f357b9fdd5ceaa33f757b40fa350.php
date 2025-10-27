@@ -296,20 +296,6 @@
                 </div>
             </div>
         </div>
-
-        
-        <div class="row justify-content-center mt-4">
-            <div class="col-md-8">
-                <div class="d-flex gap-2 justify-content-center">
-                    <a href="<?php echo e(route('student.track', $pendingRequest->reference_no)); ?>" class="btn btn-primary">
-                        <i class="bi bi-search me-2"></i>Track This Request
-                    </a>
-                    <a href="<?php echo e(route('student.my-requests')); ?>" class="btn btn-outline-primary">
-                        <i class="bi bi-list me-2"></i>All My Requests
-                    </a>
-                </div>
-            </div>
-        </div>
     <?php endif; ?>
 
     

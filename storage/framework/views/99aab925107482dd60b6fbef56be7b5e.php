@@ -109,6 +109,21 @@
         font-weight: 500;
         font-size: 0.75rem;
     }
+
+    /* Disable hover/focus effects for readonly student name field in modal */
+    #student_name {
+        pointer-events: none !important;
+        cursor: default !important;
+        background-color: #e9ecef !important;
+        opacity: 1 !important;
+    }
+    #student_name:hover,
+    #student_name:focus {
+        background-color: #e9ecef !important;
+        border-color: #ced4da !important;
+        box-shadow: none !important;
+        outline: none !important;
+    }
 </style>
 
 <div class="container mt-5">
@@ -160,6 +175,7 @@
                     <th>Student Details</th>
                     <th>Document Type</th>
                     <th>Reason</th>
+                    <th>Remarks</th>
                     <th class="text-center">Status</th>
                     <th>Window / Registrar</th>
                     <th>Request Date</th>
@@ -190,6 +206,13 @@
                     <td>
                         <?php echo e($request->reason ?? 'Not specified'); ?>
 
+                    </td>
+                    <td>
+                        <?php if($request->remarks): ?>
+                            <small class="text-muted"><?php echo e(Str::limit($request->remarks, 50)); ?></small>
+                        <?php else: ?>
+                            <small class="text-muted">-</small>
+                        <?php endif; ?>
                     </td>
                     <td class="text-center">
                         <span class="badge bg-<?php echo e($request->status === 'completed' ? 'success' : ($request->status === 'pending' ? 'warning' : ($request->status === 'registrar_approved' ? 'info' : ($request->status === 'processing' ? 'primary' : ($request->status === 'ready_for_release' ? 'success' : ($request->status === 'ready_for_pickup' ? 'warning' : ($request->status === 'in_queue' ? 'primary' : ($request->status === 'waiting' ? 'secondary' : 'secondary')))))))); ?> rounded-pill px-3">

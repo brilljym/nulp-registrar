@@ -270,6 +270,18 @@
             background-color: rgba(16, 185, 129, 0.05);
         }
 
+        /* Hide check icons for academic fields, student identification fields, Document Type, Reason for Request, and Quantity when valid */
+        #course.is-valid,
+        #year_level.is-valid,
+        #department.is-valid,
+        #student-search.is-valid,
+        #full_name_display.is-valid,
+        .document-select.is-valid,
+        #reason_select.is-valid,
+        #documents-container .quantity-input.is-valid {
+            background-image: none !important;
+        }
+
         .btn-submit {
             background: linear-gradient(135deg, var(--nu-blue) 0%, #001f5f 100%);
             border: none;
@@ -766,7 +778,7 @@
                             </div>
                             
                             <div class="row">
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-4 mb-3">
                                     <label for="student-search" class="form-label">Student ID *</label>
                                     <div class="position-relative">
                                         <input type="text" id="student-search" name="student_id" class="form-control" 
@@ -776,7 +788,7 @@
                                         <div id="suggestions" class="suggestions-dropdown" style="display:none;"></div>
                                     </div>
                                 </div>
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-8 mb-3">
                                     <label for="full_name_display" class="form-label">Full Name</label>
                                     <div class="position-relative">
                                         <input type="text" id="full_name_display" class="form-control" 
@@ -810,20 +822,12 @@
                                 </div>
                                 <div class="col-md-4 mb-3">
                                     <label for="department" class="form-label">Department *</label>
-                                    <input type="text" id="department" name="department" class="form-control" 
+                                    <input type="text" id="department" name="department" class="form-control"
                                            readonly style="background-color: #f8f9fa;"
                                            placeholder="Auto-filled from student data" required>
                                 </div>
-                                <div class="col-md-4 mb-3">
-                                    <label for="email" class="form-label">Email Address</label>
-                                    <input type="email" id="email" name="email" class="form-control" 
-                                           placeholder="your.email@example.com">
-                                    <div class="form-text">Optional: We'll use this to send you updates about your request.</div>
-                                </div>
                             </div>
-                        </div>
-
-                        <div class="form-section">
+                        </div>                        <div class="form-section">
                             <div class="section-title">
                                 <i class="bi bi-file-text-fill"></i>
                                 Document Request
@@ -957,6 +961,30 @@
                 }
             });
 
+            // Validate academic fields when student ID input loses focus
+            document.getElementById('student-search').addEventListener('blur', function() {
+                setTimeout(() => {
+                    // Only validate if suggestions are not visible (user finished input)
+                    const suggestions = document.getElementById('suggestions');
+                    if (suggestions.style.display === 'none' || suggestions.style.display === '') {
+                        const courseField = document.getElementById('course');
+                        const yearLevelField = document.getElementById('year_level');
+                        const departmentField = document.getElementById('department');
+                        
+                        // Validate academic fields only if they are still empty
+                        if (courseField.value.trim() === '') {
+                            validateField(courseField);
+                        }
+                        if (yearLevelField.value.trim() === '') {
+                            validateField(yearLevelField);
+                        }
+                        if (departmentField.value.trim() === '') {
+                            validateField(departmentField);
+                        }
+                    }
+                }, 200); // Small delay to allow for suggestion clicks
+            });
+
             // Full name search functionality
             document.getElementById('full_name_display').addEventListener('input', function() {
                 const query = this.value;
@@ -976,6 +1004,30 @@
                     document.getElementById('name-suggestions').style.display = 'none';
                     document.getElementById('student-search').value = '';
                 }
+            });
+
+            // Validate academic fields when full name input loses focus
+            document.getElementById('full_name_display').addEventListener('blur', function() {
+                setTimeout(() => {
+                    // Only validate if suggestions are not visible (user finished input)
+                    const suggestions = document.getElementById('name-suggestions');
+                    if (suggestions.style.display === 'none' || suggestions.style.display === '') {
+                        const courseField = document.getElementById('course');
+                        const yearLevelField = document.getElementById('year_level');
+                        const departmentField = document.getElementById('department');
+                        
+                        // Validate academic fields only if they are still empty
+                        if (courseField.value.trim() === '') {
+                            validateField(courseField);
+                        }
+                        if (yearLevelField.value.trim() === '') {
+                            validateField(yearLevelField);
+                        }
+                        if (departmentField.value.trim() === '') {
+                            validateField(departmentField);
+                        }
+                    }
+                }, 200); // Small delay to allow for suggestion clicks
             });
 
             // Reusable search function with proper error handling
@@ -1008,6 +1060,15 @@
                         if (!data || !Array.isArray(data) || data.length === 0) {
                             suggestionsContainer.style.display = 'none';
                             otherField.value = '';
+                            
+                            // Clear and mark academic fields as invalid when no student found
+                            document.getElementById('course').value = '';
+                            document.getElementById('year_level').value = '';
+                            document.getElementById('department').value = '';
+                            validateField(document.getElementById('course'));
+                            validateField(document.getElementById('year_level'));
+                            validateField(document.getElementById('department'));
+                            
                             return;
                         }
                         
@@ -1053,6 +1114,11 @@
                     document.getElementById('year_level').value = yearLevel || '';
                     document.getElementById('department').value = department || '';
 
+                    // Validate the auto-filled fields
+                    validateField(document.getElementById('course'));
+                    validateField(document.getElementById('year_level'));
+                    validateField(document.getElementById('department'));
+
                     // Hide both suggestion containers
                     document.getElementById('suggestions').style.display = 'none';
                     document.getElementById('name-suggestions').style.display = 'none';
@@ -1078,6 +1144,11 @@
                         document.getElementById('course').value = '';
                         document.getElementById('year_level').value = '';
                         document.getElementById('department').value = '';
+                        
+                        // Remove validation states when clearing
+                        document.getElementById('course').classList.remove('is-invalid', 'is-valid');
+                        document.getElementById('year_level').classList.remove('is-invalid', 'is-valid');
+                        document.getElementById('department').classList.remove('is-invalid', 'is-valid');
                     }
                 }, 10);
             });
@@ -1092,6 +1163,11 @@
                         document.getElementById('course').value = '';
                         document.getElementById('year_level').value = '';
                         document.getElementById('department').value = '';
+                        
+                        // Remove validation states when clearing
+                        document.getElementById('course').classList.remove('is-invalid', 'is-valid');
+                        document.getElementById('year_level').classList.remove('is-invalid', 'is-valid');
+                        document.getElementById('department').classList.remove('is-invalid', 'is-valid');
                     }
                 }, 10);
             });
@@ -1309,7 +1385,8 @@
             });
 
             // Form validation feedback with enhanced styling
-            const inputs = document.querySelectorAll('input[required], select[required]');
+            // Exclude academic fields from initial validation - they get validated after student search
+            const inputs = document.querySelectorAll('input[required]:not(#course):not(#year_level):not(#department), select[required]');
             inputs.forEach(input => {
                 input.addEventListener('blur', function() {
                     validateField(this);

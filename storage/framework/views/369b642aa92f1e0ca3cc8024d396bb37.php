@@ -426,12 +426,12 @@
                 <div style="height: 350px; display: flex; align-items: center; justify-content: center;">
                     <canvas id="studentDocumentChart" width="350" height="350"></canvas>
                 </div>
-                <?php if(isset($chartData['studentDocumentTypes']) && $chartData['studentDocumentTypes']->count() > 0): ?>
+                <?php if(isset($studentDocumentTypes) && count($studentDocumentTypes) > 0): ?>
                 <div class="mt-3">
                     <small class="text-muted">
-                        <strong>Most Popular:</strong> <?php echo e($chartData['studentDocumentTypes']->first()->label ?? 'N/A'); ?>
+                        <strong>Most Popular:</strong> <?php echo e(array_key_first($studentDocumentTypes) ?? 'N/A'); ?>
 
-                        (<?php echo e($chartData['studentDocumentTypes']->first()->value ?? 0); ?> requests)
+                        (<?php echo e($studentDocumentTypes[array_key_first($studentDocumentTypes)] ?? 0); ?> requests)
                     </small>
                 </div>
                 <?php endif; ?>
@@ -445,12 +445,12 @@
                 <div style="height: 350px; display: flex; align-items: center; justify-content: center;">
                     <canvas id="onsiteDocumentChart" width="350" height="350"></canvas>
                 </div>
-                <?php if(isset($chartData['onsiteDocumentTypes']) && $chartData['onsiteDocumentTypes']->count() > 0): ?>
+                <?php if(isset($onsiteDocumentTypes) && count($onsiteDocumentTypes) > 0): ?>
                 <div class="mt-3">
                     <small class="text-muted">
-                        <strong>Most Popular:</strong> <?php echo e($chartData['onsiteDocumentTypes']->first()->label ?? 'N/A'); ?>
+                        <strong>Most Popular:</strong> <?php echo e(array_key_first($onsiteDocumentTypes) ?? 'N/A'); ?>
 
-                        (<?php echo e($chartData['onsiteDocumentTypes']->first()->value ?? 0); ?> requests)
+                        (<?php echo e($onsiteDocumentTypes[array_key_first($onsiteDocumentTypes)] ?? 0); ?> requests)
                     </small>
                 </div>
                 <?php endif; ?>
@@ -1129,15 +1129,15 @@
 
     // 🆕 Chart Initialization
     document.addEventListener('DOMContentLoaded', function() {
-        // Document Types Pie Chart
-        <?php if(isset($chartData['documentTypes']) && $chartData['documentTypes']->count() > 0): ?>
+        // Document Types Pie Chart (Student Requests)
+        <?php if(isset($studentDocumentTypes) && count($studentDocumentTypes) > 0): ?>
         const docTypeCtx = document.getElementById('documentTypesChart').getContext('2d');
         new Chart(docTypeCtx, {
             type: 'pie',
             data: {
-                labels: <?php echo json_encode($chartData['documentTypes']->pluck('label')); ?>,
+                labels: <?php echo json_encode(array_keys($studentDocumentTypes)); ?>,
                 datasets: [{
-                    data: <?php echo json_encode($chartData['documentTypes']->pluck('value')); ?>,
+                    data: <?php echo json_encode(array_values($studentDocumentTypes)); ?>,
                     backgroundColor: [
                         '#2c3192', '#28a745', '#ffc107', '#dc3545', '#17a2b8',
                         '#6f42c1', '#fd7e14', '#20c997', '#e83e8c', '#6c757d'
@@ -1170,16 +1170,16 @@
         });
         <?php endif; ?>
 
-        // Status Distribution Pie Chart
-        <?php if(isset($chartData['statusDistribution']) && $chartData['statusDistribution']->count() > 0): ?>
+        // Status Distribution Pie Chart (Student Requests)
+        <?php if(isset($studentStatuses) && count($studentStatuses) > 0): ?>
         const statusCtx = document.getElementById('statusChart').getContext('2d');
         new Chart(statusCtx, {
             type: 'doughnut',
             data: {
-                labels: <?php echo json_encode($chartData['statusDistribution']->pluck('label')); ?>,
+                labels: <?php echo json_encode(array_keys($studentStatuses)); ?>,
                 datasets: [{
-                    data: <?php echo json_encode($chartData['statusDistribution']->pluck('value')); ?>,
-                    backgroundColor: ['#ffc107', '#17a2b8', '#28a745', '#2c3192'],
+                    data: <?php echo json_encode(array_values($studentStatuses)); ?>,
+                    backgroundColor: ['#ffc107', '#17a2b8', '#28a745', '#2c3192', '#dc3545', '#6c757d'],
                     borderWidth: 3,
                     borderColor: '#fff'
                 }]
@@ -1201,15 +1201,15 @@
         <?php endif; ?>
 
         // Monthly Trends Line Chart
-        <?php if(isset($chartData['monthlyTrends']) && $chartData['monthlyTrends']->count() > 0): ?>
+        <?php if(isset($monthlyTrends) && $monthlyTrends->count() > 0): ?>
         const monthlyCtx = document.getElementById('monthlyTrendsChart').getContext('2d');
         new Chart(monthlyCtx, {
             type: 'line',
             data: {
-                labels: <?php echo json_encode($chartData['monthlyTrends']->pluck('label')); ?>,
+                labels: <?php echo json_encode($monthlyTrends->pluck('month')); ?>,
                 datasets: [{
                     label: 'Requests',
-                    data: <?php echo json_encode($chartData['monthlyTrends']->pluck('value')); ?>,
+                    data: <?php echo json_encode($monthlyTrends->pluck('requests')); ?>,
                     borderColor: '#2c3192',
                     backgroundColor: 'rgba(44, 49, 146, 0.1)',
                     borderWidth: 3,
@@ -1245,16 +1245,30 @@
         });
         <?php endif; ?>
 
-        // Daily Requests Bar Chart
-        <?php if(isset($chartData['dailyRequests']) && $chartData['dailyRequests']->count() > 0): ?>
+        // Daily Requests Bar Chart (This Month)
+        <?php
+            $dailyData = collect();
+            $daysInMonth = now()->daysInMonth;
+            for ($day = 1; $day <= $daysInMonth; $day++) {
+                $date = now()->startOfMonth()->addDays($day - 1);
+                if ($date <= now()) {
+                    $requests = \App\Models\StudentRequest::whereDate('created_at', $date)->count();
+                    $dailyData->push([
+                        'label' => $date->format('M j'),
+                        'value' => $requests
+                    ]);
+                }
+            }
+        ?>
+        <?php if($dailyData->count() > 0): ?>
         const dailyCtx = document.getElementById('dailyRequestsChart').getContext('2d');
         new Chart(dailyCtx, {
             type: 'bar',
             data: {
-                labels: <?php echo json_encode($chartData['dailyRequests']->pluck('label')); ?>,
+                labels: <?php echo json_encode($dailyData->pluck('label')); ?>,
                 datasets: [{
                     label: 'Daily Requests',
-                    data: <?php echo json_encode($chartData['dailyRequests']->pluck('value')); ?>,
+                    data: <?php echo json_encode($dailyData->pluck('value')); ?>,
                     backgroundColor: 'rgba(44, 49, 146, 0.8)',
                     borderColor: '#2c3192',
                     borderWidth: 1,
@@ -1278,17 +1292,17 @@
         <?php endif; ?>
         
         // 🆕 Student Request Status Distribution Chart
-        <?php if(isset($chartData['studentRequestDistribution']) && $chartData['studentRequestDistribution']->count() > 0): ?>
+        <?php if(isset($studentStatuses) && count($studentStatuses) > 0): ?>
         const studentRequestCtx = document.getElementById('studentRequestChart').getContext('2d');
         new Chart(studentRequestCtx, {
             type: 'pie',
             data: {
-                labels: <?php echo json_encode($chartData['studentRequestDistribution']->pluck('label')); ?>,
+                labels: <?php echo json_encode(array_keys($studentStatuses)); ?>,
                 datasets: [{
-                    data: <?php echo json_encode($chartData['studentRequestDistribution']->pluck('value')); ?>,
+                    data: <?php echo json_encode(array_values($studentStatuses)); ?>,
                     backgroundColor: [
                         '#ffc107', // Pending - Warning Yellow
-                        '#17a2b8', // Processing - Info Cyan  
+                        '#17a2b8', // Processing - Info Cyan
                         '#28a745', // Ready - Success Green
                         '#2c3192', // Completed - Primary Blue
                         '#dc3545'  // Rejected - Danger Red
@@ -1326,14 +1340,14 @@
         <?php endif; ?>
 
         // 🆕 Onsite Request Status Distribution Chart
-        <?php if(isset($chartData['onsiteRequestDistribution']) && $chartData['onsiteRequestDistribution']->count() > 0): ?>
+        <?php if(isset($onsiteStatuses) && count($onsiteStatuses) > 0): ?>
         const onsiteRequestCtx = document.getElementById('onsiteRequestChart').getContext('2d');
         new Chart(onsiteRequestCtx, {
             type: 'doughnut',
             data: {
-                labels: <?php echo json_encode($chartData['onsiteRequestDistribution']->pluck('label')); ?>,
+                labels: <?php echo json_encode(array_keys($onsiteStatuses)); ?>,
                 datasets: [{
-                    data: <?php echo json_encode($chartData['onsiteRequestDistribution']->pluck('value')); ?>,
+                    data: <?php echo json_encode(array_values($onsiteStatuses)); ?>,
                     backgroundColor: [
                         '#ffc107', // Pending - Warning Yellow
                         '#17a2b8', // Processing - Info Cyan
@@ -1374,14 +1388,14 @@
         <?php endif; ?>
 
         // 🆕 Student Document Type Distribution Chart
-        <?php if(isset($chartData['studentDocumentTypes']) && $chartData['studentDocumentTypes']->count() > 0): ?>
+        <?php if(isset($studentDocumentTypes) && count($studentDocumentTypes) > 0): ?>
         const studentDocCtx = document.getElementById('studentDocumentChart').getContext('2d');
         new Chart(studentDocCtx, {
             type: 'pie',
             data: {
-                labels: <?php echo json_encode($chartData['studentDocumentTypes']->pluck('label')); ?>,
+                labels: <?php echo json_encode(array_keys($studentDocumentTypes)); ?>,
                 datasets: [{
-                    data: <?php echo json_encode($chartData['studentDocumentTypes']->pluck('value')); ?>,
+                    data: <?php echo json_encode(array_values($studentDocumentTypes)); ?>,
                     backgroundColor: [
                         '#2c3192', '#28a745', '#ffc107', '#dc3545', '#17a2b8',
                         '#6f42c1', '#fd7e14', '#20c997', '#e83e8c', '#6c757d',
@@ -1420,14 +1434,14 @@
         <?php endif; ?>
 
         // 🆕 Onsite Document Type Distribution Chart
-        <?php if(isset($chartData['onsiteDocumentTypes']) && $chartData['onsiteDocumentTypes']->count() > 0): ?>
+        <?php if(isset($onsiteDocumentTypes) && count($onsiteDocumentTypes) > 0): ?>
         const onsiteDocCtx = document.getElementById('onsiteDocumentChart').getContext('2d');
         new Chart(onsiteDocCtx, {
             type: 'doughnut',
             data: {
-                labels: <?php echo json_encode($chartData['onsiteDocumentTypes']->pluck('label')); ?>,
+                labels: <?php echo json_encode(array_keys($onsiteDocumentTypes)); ?>,
                 datasets: [{
-                    data: <?php echo json_encode($chartData['onsiteDocumentTypes']->pluck('value')); ?>,
+                    data: <?php echo json_encode(array_values($onsiteDocumentTypes)); ?>,
                     backgroundColor: [
                         '#17a2b8', '#28a745', '#ffc107', '#dc3545', '#6f42c1',
                         '#fd7e14', '#20c997', '#e83e8c', '#6c757d', '#2c3192',

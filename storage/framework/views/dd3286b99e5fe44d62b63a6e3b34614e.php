@@ -236,7 +236,7 @@
     <div class="email-container">
         <div class="header">
             <img src="<?php echo e(asset('images/NU_shield.svg.png')); ?>" alt="NU Logo" class="logo">
-            <h1>❌ Request Rejected</h1>
+            <h1>Request Rejected</h1>
             <p>Your <?php echo e($requestType === 'student' ? 'document' : 'on-site'); ?> request has been rejected</p>
         </div>
 

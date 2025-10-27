@@ -32,7 +32,7 @@ class OnsiteRequestController extends Controller
     }
     public function index()
     {
-        $documents = Document::all(); // Fetch all documents
+        $documents = Document::where('is_active', true)->get(); // Fetch only active documents
         return view('onsite.index', compact('documents'));
     }
 

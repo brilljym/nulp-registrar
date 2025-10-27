@@ -154,7 +154,7 @@
                 <tr class="table-row">
                     <td class="text-center fw-bold text-muted"><?php echo e($users->firstItem() + $index); ?></td>
                     <td class="fw-semibold"><?php echo e($user->last_name); ?>, <?php echo e($user->first_name); ?> <?php echo e($user->middle_name); ?></td>
-                    <td class="text-primary"><?php echo e($user->school_email); ?></td>
+                    <td><?php echo e($user->school_email); ?></td>
                     <td class="text-muted"><?php echo e($user->personal_email); ?></td>
                     <td class="text-center">
                         <span class="badge bg-primary rounded-pill px-3"><?php echo e(strtoupper($user->role->name ?? 'N/A')); ?></span>

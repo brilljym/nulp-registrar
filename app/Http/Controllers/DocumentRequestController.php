@@ -19,7 +19,7 @@ class DocumentRequestController extends Controller
 
     public function showRequestForm()
     {
-        $documents = Document::all();
+        $documents = Document::where('is_active', true)->get();
 
         $pendingRequest = null;
         if (Auth::check() && Auth::user()->student) {

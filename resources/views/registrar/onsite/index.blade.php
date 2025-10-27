@@ -112,6 +112,21 @@
         font-size: 0.75rem;
     }
 
+    /* Disable hover/focus effects for readonly student name field in modal */
+    #student_name {
+        pointer-events: none !important;
+        cursor: default !important;
+        background-color: #e9ecef !important;
+        opacity: 1 !important;
+    }
+    #student_name:hover,
+    #student_name:focus {
+        background-color: #e9ecef !important;
+        border-color: #ced4da !important;
+        box-shadow: none !important;
+        outline: none !important;
+    }
+
     /* Enhanced pagination styling */
     .pagination-wrapper .pagination {
         margin: 0;

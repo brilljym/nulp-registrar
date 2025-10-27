@@ -156,7 +156,7 @@
                 <tr class="table-row">
                     <td class="text-center fw-bold text-muted">{{ $users->firstItem() + $index }}</td>
                     <td class="fw-semibold">{{ $user->last_name }}, {{ $user->first_name }} {{ $user->middle_name }}</td>
-                    <td class="text-primary">{{ $user->school_email }}</td>
+                    <td>{{ $user->school_email }}</td>
                     <td class="text-muted">{{ $user->personal_email }}</td>
                     <td class="text-center">
                         <span class="badge bg-primary rounded-pill px-3">{{ strtoupper($user->role->name ?? 'N/A') }}</span>

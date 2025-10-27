@@ -23,9 +23,15 @@ class ReportsController extends Controller
     {
         // User Statistics
         $totalUsers = User::count();
-        $totalStudents = User::where('role_id', 3)->count(); // Assuming role_id 3 is student
-        $totalRegistrars = User::where('role_id', 2)->count(); // Assuming role_id 2 is registrar
-        $totalAdmins = User::where('role_id', 1)->count(); // Assuming role_id 1 is admin
+        $totalStudents = User::whereHas('role', function($q) {
+            $q->where('name', 'student');
+        })->count();
+        $totalRegistrars = User::whereHas('role', function($q) {
+            $q->where('name', 'registrar');
+        })->count();
+        $totalAdmins = User::whereHas('role', function($q) {
+            $q->where('name', 'admin');
+        })->count();
         
         // Document Statistics
         $totalDocuments = Document::count();
@@ -265,9 +271,9 @@ class ReportsController extends Controller
             fputcsv($file, ['USER STATISTICS']);
             fputcsv($file, ['Metric', 'Count']);
             fputcsv($file, ['Total Users', User::count()]);
-            fputcsv($file, ['Students', User::where('role_id', 3)->count()]);
-            fputcsv($file, ['Registrars', User::where('role_id', 2)->count()]);
-            fputcsv($file, ['Administrators', User::where('role_id', 1)->count()]);
+            fputcsv($file, ['Students', User::whereHas('role', function($q) { $q->where('name', 'student'); })->count()]);
+            fputcsv($file, ['Registrars', User::whereHas('role', function($q) { $q->where('name', 'registrar'); })->count()]);
+            fputcsv($file, ['Administrators', User::whereHas('role', function($q) { $q->where('name', 'admin'); })->count()]);
             fputcsv($file, []);
             
             // Request Statistics
@@ -452,61 +458,55 @@ class ReportsController extends Controller
 
     // 🆕 Enhanced Analytics Methods
 
-    /**
-     * Get chart data for visualization
-     */
     private function getChartData()
     {
-        // Pie chart data for document types
-        $documentPieChart = DB::table('student_requests')
+        // Student Request Status Distribution
+        $studentStatuses = StudentRequest::select('status', DB::raw('count(*) as count'))
+            ->groupBy('status')
+            ->get()
+            ->map(function($item) {
+                return [
+                    'label' => ucfirst(str_replace('_', ' ', $item->status)),
+                    'value' => $item->count
+                ];
+            });
+
+        // Onsite Request Status Distribution
+        $onsiteStatuses = OnsiteRequest::select('status', DB::raw('count(*) as count'))
+            ->groupBy('status')
+            ->get()
+            ->map(function($item) {
+                return [
+                    'label' => ucfirst(str_replace('_', ' ', $item->status)),
+                    'value' => $item->count
+                ];
+            });
+
+        // Student Request Document Types
+        $studentDocumentTypes = DB::table('student_requests')
             ->join('student_request_items', 'student_requests.id', '=', 'student_request_items.student_request_id')
             ->join('documents', 'student_request_items.document_id', '=', 'documents.id')
             ->select('documents.type_document as label', DB::raw('COUNT(*) as value'))
             ->groupBy('documents.id', 'documents.type_document')
             ->orderBy('value', 'desc')
+            ->limit(10)
             ->get();
 
-        // Status distribution pie chart
-        $statusPieChart = collect([
-            ['label' => 'Pending', 'value' => StudentRequest::where('status', 'pending')->count()],
-            ['label' => 'Processing', 'value' => StudentRequest::where('status', 'processing')->count()],
-            ['label' => 'Ready', 'value' => StudentRequest::where('status', 'ready_for_release')->count()],
-            ['label' => 'Completed', 'value' => StudentRequest::where('status', 'completed')->count()],
-        ])->filter(function($item) { return $item['value'] > 0; });
-
-        // Monthly trends bar chart (last 12 months)
-        $monthlyChart = collect();
-        for ($i = 11; $i >= 0; $i--) {
-            $date = Carbon::now()->subMonths($i);
-            $monthlyChart->push([
-                'label' => $date->format('M Y'),
-                'value' => StudentRequest::whereYear('created_at', $date->year)
-                    ->whereMonth('created_at', $date->month)->count()
-            ]);
-        }
-
-        // Daily requests this month
-        $dailyChart = collect();
-        $daysInMonth = Carbon::now()->daysInMonth;
-        for ($day = 1; $day <= $daysInMonth; $day++) {
-            $date = Carbon::now()->startOfMonth()->addDays($day - 1);
-            if ($date <= Carbon::now()) {
-                $dailyChart->push([
-                    'label' => $date->format('M j'),
-                    'value' => StudentRequest::whereDate('created_at', $date)->count()
-                ]);
-            }
-        }
+        // Onsite Request Document Types
+        $onsiteDocumentTypes = DB::table('onsite_requests')
+            ->join('onsite_request_items', 'onsite_requests.id', '=', 'onsite_request_items.onsite_request_id')
+            ->join('documents', 'onsite_request_items.document_id', '=', 'documents.id')
+            ->select('documents.type_document as label', DB::raw('COUNT(*) as value'))
+            ->groupBy('documents.id', 'documents.type_document')
+            ->orderBy('value', 'desc')
+            ->limit(10)
+            ->get();
 
         return [
-            'documentTypes' => $documentPieChart,
-            'statusDistribution' => $statusPieChart,
-            'monthlyTrends' => $monthlyChart,
-            'dailyRequests' => $dailyChart,
-            'studentRequestDistribution' => $this->getStudentRequestDistribution(),
-            'onsiteRequestDistribution' => $this->getOnsiteRequestDistribution(),
-            'studentDocumentTypes' => $this->getStudentDocumentTypes(),
-            'onsiteDocumentTypes' => $this->getOnsiteDocumentTypes()
+            'studentStatuses' => $studentStatuses,
+            'onsiteStatuses' => $onsiteStatuses,
+            'studentDocumentTypes' => $studentDocumentTypes,
+            'onsiteDocumentTypes' => $onsiteDocumentTypes
         ];
     }
 
@@ -1068,12 +1068,75 @@ class ReportsController extends Controller
      */
     public function printReport(Request $request)
     {
-        $reportType = $request->get('type', 'summary');
+        // Use the same data as the index method but add a print flag
+        $totalUsers = User::count();
+        $totalStudents = User::whereHas('role', function($q) {
+            $q->where('name', 'student');
+        })->count();
+        $totalRegistrars = User::whereHas('role', function($q) {
+            $q->where('name', 'registrar');
+        })->count();
+        $totalAdmins = User::whereHas('role', function($q) {
+            $q->where('name', 'admin');
+        })->count();
         
-        // Get all data similar to index method but optimized for printing
-        $data = $this->getAllReportData();
+        // Document Statistics
+        $totalDocuments = Document::count();
         
-        return view('admin.reports-print', $data);
+        // Request Statistics
+        $totalRequests = StudentRequest::count();
+        $totalOnlineRequests = StudentRequest::count();
+        $totalOnsiteRequests = OnsiteRequest::count();
+        
+        // Status Statistics
+        $pendingRequests = StudentRequest::where('status', 'pending')->count();
+        $processingRequests = StudentRequest::where('status', 'processing')->count();
+        $readyRequests = StudentRequest::where('status', 'ready_for_release')->count();
+        $completedRequests = StudentRequest::where('status', 'completed')->count();
+        
+        // Document Type Analytics - Number of requests per document type
+        $documentTypeStats = DB::table('student_requests')
+            ->join('student_request_items', 'student_requests.id', '=', 'student_request_items.student_request_id')
+            ->join('documents', 'student_request_items.document_id', '=', 'documents.id')
+            ->select('documents.type_document', DB::raw('COUNT(*) as request_count'), DB::raw('SUM(student_request_items.quantity) as total_quantity'))
+            ->groupBy('documents.id', 'documents.type_document')
+            ->orderBy('request_count', 'desc')
+            ->get();
+        
+        // Processing Time Analytics
+        $avgProcessingTime = $this->calculateAverageProcessingTime();
+        $processingTimeStats = $this->getProcessingTimeBreakdown();
+        
+        // Queue Performance Metrics
+        $queueStats = $this->getQueuePerformanceMetrics();
+        
+        // Monthly Trends
+        $monthlyTrends = $this->getMonthlyTrends();
+        
+        // Registrar Performance
+        $registrarPerformance = $this->getRegistrarPerformance();
+        
+        // Revenue Analytics
+        $revenueStats = $this->getRevenueAnalytics();
+        
+        // Peak Hours Analysis
+        $peakHoursData = $this->getPeakHoursAnalysis();
+        
+        // 🆕 Enhanced Analytics
+        $chartData = $this->getChartData();
+        $predictiveAnalytics = $this->getPredictiveAnalytics();
+        $documentStatistics = $this->getDetailedDocumentStatistics();
+        $trendAnalytics = $this->getTrendAnalytics();
+        $performanceMetrics = $this->getPerformanceMetrics();
+        
+        return view('admin.reports', compact(
+            'totalUsers', 'totalStudents', 'totalRegistrars', 'totalAdmins',
+            'totalDocuments', 'totalRequests', 'totalOnlineRequests', 'totalOnsiteRequests',
+            'pendingRequests', 'processingRequests', 'readyRequests', 'completedRequests',
+            'documentTypeStats', 'avgProcessingTime', 'processingTimeStats',
+            'queueStats', 'monthlyTrends', 'registrarPerformance', 'revenueStats', 'peakHoursData',
+            'chartData', 'predictiveAnalytics', 'documentStatistics', 'trendAnalytics', 'performanceMetrics'
+        ))->with('isPrint', true);
     }
 
     private function getAllReportData()
