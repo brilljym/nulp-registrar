@@ -221,6 +221,7 @@ class ReferenceController extends Controller
 
     /**
      * Get a specific onsite request by queue number (instead of kiosk number)
+     * Also updates status to "in_queue" when accessed (check-in functionality)
      */
     public function getKioskRequest($queueNumber)
     {
@@ -244,6 +245,13 @@ class ReferenceController extends Controller
 
         if (!$studentRequest) {
             return response()->json(['message' => 'Queue request not found'], 404);
+        }
+
+        // Check-in functionality: Update status to "in_queue" if it's not already in_queue, processing, or completed
+        $statusesThatShouldBecomeInQueue = ['accepted', 'pending', 'waiting'];
+        if (in_array($studentRequest->status, $statusesThatShouldBecomeInQueue)) {
+            $studentRequest->update(['status' => 'in_queue']);
+            $studentRequest->refresh(); // Refresh to get updated data
         }
 
         $studentName = '';
