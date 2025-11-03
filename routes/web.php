@@ -18,65 +18,6 @@ use App\Http\Controllers\WindowController; // ✅ Already added
 use App\Http\Controllers\TwoFactorController;
 
 // Home/Splash Screen Route
-// Temporary route to create test request for kiosk check-in testing
-Route::get('/create-test-kiosk-request', function () {
-    try {
-        $student = \App\Models\Student::first();
-        if (!$student) {
-            return response()->json(['error' => 'No students found']);
-        }
-
-        $document = \App\Models\Document::first();
-        if (!$document) {
-            return response()->json(['error' => 'No documents found']);
-        }
-
-        // Create a test student request with status "pending" for kiosk testing
-        $testRequest = \App\Models\StudentRequest::create([
-            'student_id' => $student->id,
-            'reference_no' => 'TEST-KIOSK-' . time(),
-            'queue_number' => 'TEST001',
-            'status' => 'pending', // This should change to "in_queue" when accessed via kiosk
-            'reason' => 'Test kiosk check-in functionality',
-            'total_cost' => 50.00,
-            'payment_receipt_path' => null,
-            'payment_approved' => 1,
-            'approved_by_accounting_id' => 20,
-            'payment_approved_at' => now(),
-            'payment_confirmed' => 1,
-            'registrar_approved' => 1,
-            'approved_by_registrar_id' => 21,
-            'window_id' => 1,
-            'registrar_approved_at' => now(),
-            'expected_release_date' => now()->addDays(3),
-            'assigned_registrar_id' => 21,
-        ]);
-
-        // Create request item
-        \App\Models\StudentRequestItem::create([
-            'student_request_id' => $testRequest->id,
-            'document_id' => $document->id,
-            'quantity' => 1,
-            'price' => 50.00,
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Test kiosk request created',
-            'queue_number' => $testRequest->queue_number,
-            'status' => $testRequest->status,
-            'instructions' => 'Access /api/kiosk/TEST001 to test check-in functionality'
-        ]);
-
-    } catch (Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage(),
-            'file' => $e->getFile(),
-            'line' => $e->getLine()
-        ]);
-    }
-});
-
 Route::get('/', function () {
     return view('welcome');
 });
