@@ -220,22 +220,23 @@ class ReferenceController extends Controller
     }
 
     /**
-     * Get a specific onsite request by kiosk number (ref_code)
+     * Get a specific onsite request by queue number (instead of kiosk number)
      */
-    public function getKioskRequest($kioskNumber)
+    public function getKioskRequest($queueNumber)
     {
         $request = OnsiteRequest::with(['document', 'window', 'registrar'])
-            ->where('ref_code', $kioskNumber)
+            ->where('queue_number', $queueNumber)
             ->first();
 
         if (!$request) {
-            return response()->json(['message' => 'Kiosk request not found'], 404);
+            return response()->json(['message' => 'Queue request not found'], 404);
         }
 
         return response()->json([
             'id' => $request->id,
             'ref_code' => $request->ref_code,
-            'kiosk_number' => $request->ref_code, // Alias for frontend compatibility
+            'queue_number' => $request->queue_number, // Now the primary identifier
+            'kiosk_number' => $request->queue_number, // Alias for frontend compatibility
             'full_name' => $request->full_name,
             'student_id' => $request->student_id,
             'course' => $request->course,
@@ -251,7 +252,6 @@ class ReferenceController extends Controller
             'reason' => $request->reason,
             'status' => $request->status,
             'current_step' => $request->current_step,
-            'queue_number' => $request->queue_number,
             'window_name' => $request->window->name ?? null,
             'registrar_name' => $request->registrar ?
                 trim(($request->registrar->first_name ?? '') . ' ' . ($request->registrar->last_name ?? '')) : null,
