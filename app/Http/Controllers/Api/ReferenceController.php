@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\StudentRequest;
 use App\Models\OnsiteRequest;
+use App\Events\QueuePlacementConfirmed;
 use Illuminate\Http\Request;
 
 class ReferenceController extends Controller
@@ -250,8 +251,17 @@ class ReferenceController extends Controller
         // Check-in functionality: Update status to "in_queue" if it's not already in_queue, processing, or ready_for_release
         $statusesThatShouldBecomeInQueue = ['accepted', 'pending', 'waiting', 'completed'];
         if (in_array($studentRequest->status, $statusesThatShouldBecomeInQueue)) {
+            $oldStatus = $studentRequest->status;
             $studentRequest->update(['status' => 'in_queue']);
             $studentRequest->refresh(); // Refresh to get updated data
+            
+            // Broadcast queue update event for real-time display
+            event(new QueuePlacementConfirmed(
+                $studentRequest, 
+                'student', 
+                'checkin', 
+                "Queue number {$queueNumber} checked in from kiosk (status changed from {$oldStatus} to in_queue)"
+            ));
         }
 
         $studentName = '';
