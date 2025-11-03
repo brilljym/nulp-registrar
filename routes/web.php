@@ -58,7 +58,7 @@ Route::get('/create-real-onsite-requests', function () {
                 'quantity' => $studentRequest->requestItems->first()->quantity ?? 1,
                 'reason' => 'Converted from online request',
                 'status' => $studentRequest->status,
-                'current_step' => 'queue',
+                'current_step' => 'completed',
                 'expected_release_date' => $studentRequest->expected_release_date,
             ]);
 
