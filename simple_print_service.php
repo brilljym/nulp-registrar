@@ -13,6 +13,7 @@ require_once 'vendor/autoload.php';
 use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
 use Mike42\Escpos\Printer;
 use Mike42\Escpos\CapabilityProfile;
+use Mike42\Escpos\EscposImage;
 
 class SimplePrintService
 {
@@ -141,6 +142,25 @@ class SimplePrintService
         $connector = new WindowsPrintConnector($this->config['printer_name']);
         $printer = new Printer($connector);
         $this->log("✅ Printer connected successfully");
+
+        // ===========================
+        // NU LOGO
+        // ===========================
+        try {
+            $logoPath = __DIR__ . '/public/images/NU_shield.svg.png';
+            if (file_exists($logoPath)) {
+                $this->log("🖼️ Loading NU Shield logo");
+                $logo = EscposImage::load($logoPath);
+                $printer->setJustification(Printer::JUSTIFY_CENTER);
+                $printer->bitImage($logo);
+                $printer->feed(1);
+                $this->log("✅ NU Shield logo printed successfully");
+            } else {
+                $this->log("⚠️ NU Shield logo not found at: {$logoPath}");
+            }
+        } catch (Exception $e) {
+            $this->log("⚠️ Failed to print logo: " . $e->getMessage());
+        }
 
         // ===========================
         // HEADER

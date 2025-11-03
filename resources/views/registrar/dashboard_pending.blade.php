@@ -179,7 +179,7 @@
                     <th>Reason</th>
                     <th>Remarks</th>
                     <th class="text-center">Status</th>
-                    <th>Window / Registrar</th>
+                    <th>Registrar</th>
                     <th>Request Date</th>
                     <th>Expected Release Date</th>
                     <th class="text-center" style="width: 15%;">Actions</th>
@@ -234,10 +234,7 @@
                         </small>
                     </td>
                     <td>
-                        @if($request->window && $request->window->window_number)
-                            <div class="fw-semibold"><i class="bi bi-grid-1x2"></i> Window {{ $request->window->window_number }}</div>
-                            <small class="text-muted">{{ $request->registrar ? $request->registrar->first_name . ' ' . $request->registrar->last_name : 'Unassigned' }}</small>
-                        @elseif($request->registrar)
+                        @if($request->registrar)
                             <div><i class="bi bi-person-fill"></i> {{ $request->registrar->first_name }} {{ $request->registrar->last_name }}</div>
                         @else
                             <span class="text-muted"><i class="bi bi-dash-circle"></i> Not Assigned</span>

@@ -240,7 +240,7 @@
                     <th>Reason</th>
                     <th class="text-center">Status</th>
                     <th>Expected Release Date</th>
-                    <th>Window / Registrar</th>
+                    <th>Registrar</th>
                     <th class="text-center" style="width: 15%;">Actions</th>
                 </tr>
             </thead>
@@ -351,13 +351,6 @@
                         @endif
                     </td>
                     <td>
-                        <div><strong>Window:</strong>
-                            @if ($req->window)
-                                {{ $req->window->name }}
-                            @else
-                                <span class="text-muted">Unassigned</span>
-                            @endif
-                        </div>
                         <div><strong>Registrar:</strong>
                             @if ($req->registrar)
                                 {{ $req->registrar->first_name }} {{ $req->registrar->last_name }}

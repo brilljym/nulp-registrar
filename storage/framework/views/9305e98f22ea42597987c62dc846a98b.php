@@ -62,7 +62,7 @@
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, rgba(0, 51, 153, 0.85), rgba(0, 51, 153, 0.6), rgba(255, 215, 0, 0.1)), 
-                        url('{{ asset("images/NU-header.jpg") }}');
+                        url('<?php echo e(asset("images/NU-header.jpg")); ?>');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -783,7 +783,7 @@
         <!-- Header -->
         <header class="nu-header">
             <div class="nu-logo-container">
-                <img src="{{ asset('images/NU_shield.svg.png') }}" alt="NU Shield" class="nu-shield">
+                <img src="<?php echo e(asset('images/NU_shield.svg.png')); ?>" alt="NU Shield" class="nu-shield">
                 <span class="nu-title">NU LIPA</span>
             </div>
             <span class="nu-welcome">Welcome to NU Lipa</span>
@@ -805,21 +805,22 @@
                         </h2>
                         <div class="section-stats">
                             <div class="queue-numbers-list">
-                                @if($inQueueRequests->count() > 0)
-                                    @foreach($inQueueRequests as $request)
+                                <?php if($inQueueRequests->count() > 0): ?>
+                                    <?php $__currentLoopData = $inQueueRequests; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $request): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                         <div class="queue-number-display">
                                             <span class="window-assignment">
-                                                <i class="fas fa-desktop"></i> {{ $request['window_assignment'] ?? 'Unassigned' }}
+                                                <i class="fas fa-desktop"></i> <?php echo e($request['window_assignment'] ?? 'Unassigned'); ?>
+
                                             </span>
-                                            <span class="queue-number">{{ $request['queue_number'] }}</span>
+                                            <span class="queue-number"><?php echo e($request['queue_number']); ?></span>
                                         </div>
-                                    @endforeach
-                                @else
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                <?php else: ?>
                                     <div class="no-queue-message">
                                         <i class="fas fa-users"></i>
                                         No one in queue
                                     </div>
-                                @endif
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -831,21 +832,22 @@
                         </h2>
                         <div class="section-stats">
                             <div class="queue-numbers-list">
-                                @if($readyForPickupRequests->count() > 0)
-                                    @foreach($readyForPickupRequests as $request)
+                                <?php if($readyForPickupRequests->count() > 0): ?>
+                                    <?php $__currentLoopData = $readyForPickupRequests; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $request): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                         <div class="queue-number-display">
                                             <span class="window-assignment">
-                                                <i class="fas fa-desktop"></i> {{ $request['window_assignment'] ?? 'Unassigned' }}
+                                                <i class="fas fa-desktop"></i> <?php echo e($request['window_assignment'] ?? 'Unassigned'); ?>
+
                                             </span>
-                                            <span class="queue-number">{{ $request['queue_number'] }}</span>
+                                            <span class="queue-number"><?php echo e($request['queue_number']); ?></span>
                                         </div>
-                                    @endforeach
-                                @else
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                <?php else: ?>
                                     <div class="no-queue-message">
                                         <i class="fas fa-users"></i>
                                         No requests ready for pickup
                                     </div>
-                                @endif
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -856,24 +858,25 @@
                             <i class="fas fa-hourglass-half"></i> Waiting Queue
                         </h2>
                         <div class="section-stats">
-                            @if($waitingRequests->count() > 0)
-                                @foreach($waitingRequests->take(10) as $index => $request)
+                            <?php if($waitingRequests->count() > 0): ?>
+                                <?php $__currentLoopData = $waitingRequests->take(10); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $request): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                     <div class="waiting-queue-number">
-                                        <div class="position-number">{{ $index + 1 }}</div>
+                                        <div class="position-number"><?php echo e($index + 1); ?></div>
                                         <div>
-                                            <span class="queue-number">{{ $request['queue_number'] }}</span>
+                                            <span class="queue-number"><?php echo e($request['queue_number']); ?></span>
                                             <small style="display: block; color: var(--neutral-500); font-size: 0.75rem; margin-top: 0.25rem;">
-                                                {{ ucfirst($request['type']) }} • {{ $request['name'] }}
+                                                <?php echo e(ucfirst($request['type'])); ?> • <?php echo e($request['name']); ?>
+
                                             </small>
                                         </div>
                                     </div>
-                                @endforeach
-                            @else
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            <?php else: ?>
                                 <div class="no-queue-message">
                                     <i class="fas fa-users"></i>
                                     No one waiting in queue
                                 </div>
-                            @endif
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -884,7 +887,7 @@
         <div class="video-ad-container" id="videoAdContainer">
             <button class="video-ad-close" id="videoAdClose" title="Close video">&times;</button>
             <video id="nuAdvertisementVideo" muted playsinline>
-                <source src="{{ asset('videos/nu-advertisment.mp4') }}" type="video/mp4">
+                <source src="<?php echo e(asset('videos/nu-advertisment.mp4')); ?>" type="video/mp4">
             </video>
         </div>
         
@@ -892,8 +895,8 @@
         <div class="image-slideshow-container" id="imageSlideshowContainer">
             <button class="slideshow-close" id="slideshowClose" title="Close slideshow">&times;</button>
             <div class="image-slideshow" id="imageSlideshow">
-                <div class="slideshow-slide active" style="background-image: url('{{ asset('images/NU-adv1.jpg') }}');"></div>
-                <div class="slideshow-slide" style="background-image: url('{{ asset('images/NU-adv2.jpg') }}');"></div>
+                <div class="slideshow-slide active" style="background-image: url('<?php echo e(asset('images/NU-adv1.jpg')); ?>');"></div>
+                <div class="slideshow-slide" style="background-image: url('<?php echo e(asset('images/NU-adv2.jpg')); ?>');"></div>
             </div>
             <div class="slideshow-indicators" id="slideshowIndicators">
                 <div class="slideshow-indicator active" data-slide="0"></div>
@@ -909,8 +912,8 @@
     <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
     <script>
         // Initialize Pusher for real-time queue updates
-        const pusher = new Pusher('{{ config('broadcasting.connections.pusher.key') }}', {
-            cluster: '{{ config('broadcasting.connections.pusher.options.cluster') }}',
+        const pusher = new Pusher('<?php echo e(config('broadcasting.connections.pusher.key')); ?>', {
+            cluster: '<?php echo e(config('broadcasting.connections.pusher.options.cluster')); ?>',
             encrypted: true
         });
         
@@ -1341,4 +1344,4 @@
         }
     </script>
 </body>
-</html>
+</html><?php /**PATH D:\Nu-Regisv2\resources\views/queue/display.blade.php ENDPATH**/ ?>
