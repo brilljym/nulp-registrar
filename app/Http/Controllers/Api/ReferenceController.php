@@ -247,8 +247,8 @@ class ReferenceController extends Controller
             return response()->json(['message' => 'Queue request not found'], 404);
         }
 
-        // Check-in functionality: Update status to "in_queue" if it's not already in_queue, processing, or completed
-        $statusesThatShouldBecomeInQueue = ['accepted', 'pending', 'waiting'];
+        // Check-in functionality: Update status to "in_queue" if it's not already in_queue, processing, or ready_for_release
+        $statusesThatShouldBecomeInQueue = ['accepted', 'pending', 'waiting', 'completed'];
         if (in_array($studentRequest->status, $statusesThatShouldBecomeInQueue)) {
             $studentRequest->update(['status' => 'in_queue']);
             $studentRequest->refresh(); // Refresh to get updated data
