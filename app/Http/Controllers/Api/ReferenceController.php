@@ -224,6 +224,36 @@ class ReferenceController extends Controller
      */
     public function getKioskRequest($queueNumber)
     {
+        // Temporary mock data for testing queue number A004
+        if ($queueNumber === 'A004') {
+            return response()->json([
+                'id' => 999,
+                'ref_code' => 'NU68D160',
+                'queue_number' => 'A004',
+                'kiosk_number' => 'A004', // Alias for frontend compatibility
+                'full_name' => 'Test User',
+                'student_id' => '20210001',
+                'course' => 'BS Computer Science',
+                'year_level' => '4th Year',
+                'department' => 'College of Computer Studies',
+                'document_name' => 'Transcript of Records',
+                'documents' => [[
+                    'name' => 'Transcript of Records',
+                    'quantity' => 1,
+                    'queue_number' => 'A004'
+                ]],
+                'quantity' => 1,
+                'reason' => 'For employment purposes',
+                'status' => 'ready_for_pickup',
+                'current_step' => 'completed',
+                'window_name' => 'Window 1',
+                'registrar_name' => 'Juan Dela Cruz',
+                'expected_release_date' => '2025-11-05T10:00:00.000000Z',
+                'created_at' => '2025-11-03T10:00:00.000000Z',
+                'updated_at' => '2025-11-03T12:00:00.000000Z',
+            ]);
+        }
+
         $request = OnsiteRequest::with(['document', 'window', 'registrar'])
             ->where('queue_number', $queueNumber)
             ->first();
