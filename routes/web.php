@@ -31,12 +31,12 @@ Route::get('/create-test-kiosk-request', function () {
             return response()->json(['error' => 'No documents found']);
         }
 
-        // Create a test student request with status "accepted" for kiosk testing
+        // Create a test student request with status "pending" for kiosk testing
         $testRequest = \App\Models\StudentRequest::create([
             'student_id' => $student->id,
             'reference_no' => 'TEST-KIOSK-' . time(),
             'queue_number' => 'TEST001',
-            'status' => 'accepted', // This should change to "in_queue" when accessed via kiosk
+            'status' => 'pending', // This should change to "in_queue" when accessed via kiosk
             'reason' => 'Test kiosk check-in functionality',
             'total_cost' => 50.00,
             'payment_receipt_path' => null,
