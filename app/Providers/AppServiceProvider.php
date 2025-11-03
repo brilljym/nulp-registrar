@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use App\Console\Commands\SyncQueueCommand;
+use App\Models\OnsiteRequest;
+use App\Observers\OnsiteRequestObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,6 +26,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Register the OnsiteRequest observer
+        OnsiteRequest::observe(OnsiteRequestObserver::class);
+
         // Force HTTPS in production
         if (app()->environment('production')) {
             \Illuminate\Support\Facades\URL::forceScheme('https');

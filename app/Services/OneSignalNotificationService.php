@@ -45,20 +45,8 @@ class OneSignalNotificationService
 
             $response = $this->oneSignal->sendNotificationCustom($params);
 
-            Log::info('OneSignal notification sent to all users', [
-                'title' => $title,
-                'message' => $message,
-                'response' => $response
-            ]);
-
             return $response;
         } catch (\Exception $e) {
-            Log::error('Failed to send OneSignal notification', [
-                'error' => $e->getMessage(),
-                'title' => $title,
-                'message' => $message
-            ]);
-
             return null;
         }
     }
