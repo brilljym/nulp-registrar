@@ -10,6 +10,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "berkayk/onesignal-laravel": "^2.4",
         "chillerlan/php-qrcode": "^5.0",
         "endroid/qr-code": "^6.0",
         "laravel/framework": "^12.0",

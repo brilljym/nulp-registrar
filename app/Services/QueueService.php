@@ -12,10 +12,12 @@ use Illuminate\Support\Facades\DB;
 class QueueService
 {
     protected $notificationService;
+    protected $oneSignalService;
 
-    public function __construct(RealTimeNotificationService $notificationService)
+    public function __construct(RealTimeNotificationService $notificationService, OneSignalNotificationService $oneSignalService)
     {
         $this->notificationService = $notificationService;
+        $this->oneSignalService = $oneSignalService;
     }
     /**
      * Generate a unique queue number for requests (onsite and student)
@@ -151,6 +153,16 @@ class QueueService
                             'status' => 'waiting',
                             'current_step' => 'waiting'
                         ]);
+
+                        // Calculate queue position for this registrar
+                        $position = $this->getQueuePositionForRegistrar($request->assigned_registrar_id);
+
+                        // Send OneSignal notification for waiting status
+                        $this->oneSignalService->sendQueueWaitingNotification(
+                            $request->ref_code,
+                            $position,
+                            'onsite request'
+                        );
                     } else {
                         // Mark window as occupied only if this is the first request
                         $window->update(['is_occupied' => true]);
@@ -185,6 +197,16 @@ class QueueService
                         'status' => 'waiting',
                         'current_step' => 'waiting'
                     ]);
+
+                    // Calculate queue position for this registrar
+                    $position = $this->getQueuePositionForRegistrar($request->assigned_registrar_id);
+
+                    // Send OneSignal notification for waiting status
+                    $this->oneSignalService->sendQueueWaitingNotification(
+                        $request->ref_code,
+                        $position,
+                        'onsite request'
+                    );
                 } else {
                     // Mark window as occupied only if this is the first request
                     $registrarWindow->update(['is_occupied' => true]);
@@ -259,6 +281,22 @@ class QueueService
 
         $position = array_search($request->id, $queue) + 1;
         return $position ?: 0;
+    }
+
+    /**
+     * Get the current queue position for a request among all waiting requests for a specific registrar
+     */
+    public function getQueuePositionForRegistrar(int $registrarUserId): int
+    {
+        // Get all waiting requests for this registrar, ordered by creation time
+        $waitingRequests = OnsiteRequest::where('assigned_registrar_id', $registrarUserId)
+            ->whereIn('status', ['waiting'])
+            ->orderBy('created_at', 'asc')
+            ->pluck('id')
+            ->toArray();
+
+        // Return the count of waiting requests (position would be the count + 1 for the next one)
+        return count($waitingRequests) + 1;
     }
 
     /**

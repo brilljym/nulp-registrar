@@ -14,6 +14,9 @@ class AppServiceProvider extends ServiceProvider
     {
         // Register queue management service
         $this->app->singleton(\App\Services\QueueManagementService::class);
+
+        // Register OneSignal notification service
+        $this->app->singleton(\App\Services\OneSignalNotificationService::class);
     }
 
     /**
