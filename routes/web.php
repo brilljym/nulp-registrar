@@ -18,6 +18,64 @@ use App\Http\Controllers\WindowController; // ✅ Already added
 use App\Http\Controllers\TwoFactorController;
 
 // Home/Splash Screen Route
+// Temporary route to create onsite requests from real student data
+Route::get('/create-real-onsite-requests', function () {
+    try {
+        $document = \App\Models\Document::first();
+        if (!$document) {
+            return response()->json(['error' => 'No documents found in database']);
+        }
+
+        // Get real student requests to base onsite requests on
+        $studentRequests = \App\Models\StudentRequest::with(['student.user'])
+            ->whereIn('reference_no', ['SR-20251028-0001', 'SR-20251028-0002'])
+            ->get();
+
+        $created = [];
+        foreach ($studentRequests as $studentRequest) {
+            // Check if onsite request already exists for this queue number
+            $existing = \App\Models\OnsiteRequest::where('queue_number', $studentRequest->queue_number)->first();
+            if ($existing) {
+                $created[] = "Queue number {$studentRequest->queue_number} already exists";
+                continue;
+            }
+
+            // Create onsite request based on real student data
+            $onsiteRequest = \App\Models\OnsiteRequest::create([
+                'ref_code' => 'ONSITE-' . $studentRequest->reference_no,
+                'queue_number' => $studentRequest->queue_number,
+                'full_name' => $studentRequest->student_name ?? 'Unknown Student',
+                'student_id' => $studentRequest->student_id,
+                'course' => $studentRequest->student->course ?? 'Not specified',
+                'year_level' => $studentRequest->student->year_level ?? 'Not specified',
+                'department' => $studentRequest->student->department ?? 'Not specified',
+                'document_id' => $document->id,
+                'quantity' => $studentRequest->requestItems->first()->quantity ?? 1,
+                'reason' => 'Converted from online request',
+                'status' => $studentRequest->status,
+                'current_step' => 'waiting',
+                'expected_release_date' => $studentRequest->expected_release_date,
+            ]);
+
+            $created[] = "Created onsite request for {$onsiteRequest->full_name} with queue number: {$onsiteRequest->queue_number}";
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Real onsite requests created from student data',
+            'created' => $created,
+            'available_queue_numbers' => ['A004', 'A007']
+        ]);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine()
+        ]);
+    }
+});
+
 Route::get('/', function () {
     return view('welcome');
 });
