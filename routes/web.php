@@ -41,11 +41,16 @@ Route::get('/create-real-onsite-requests', function () {
             }
 
             // Create onsite request based on real student data
+            $studentName = $studentRequest->student_name;
+            if (!$studentName && $studentRequest->student && $studentRequest->student->user) {
+                $studentName = trim(($studentRequest->student->user->first_name ?? '') . ' ' . ($studentRequest->student->user->last_name ?? ''));
+            }
+
             $onsiteRequest = \App\Models\OnsiteRequest::create([
                 'ref_code' => 'ONSITE-' . $studentRequest->reference_no,
                 'queue_number' => $studentRequest->queue_number,
-                'full_name' => $studentRequest->student_name ?? 'Unknown Student',
-                'student_id' => $studentRequest->student_id,
+                'full_name' => $studentName ?: 'Unknown Student',
+                'student_id' => null, // Don't link to student table to avoid constraints
                 'course' => $studentRequest->student->course ?? 'Not specified',
                 'year_level' => $studentRequest->student->year_level ?? 'Not specified',
                 'department' => $studentRequest->student->department ?? 'Not specified',
@@ -53,7 +58,7 @@ Route::get('/create-real-onsite-requests', function () {
                 'quantity' => $studentRequest->requestItems->first()->quantity ?? 1,
                 'reason' => 'Converted from online request',
                 'status' => $studentRequest->status,
-                'current_step' => 'waiting',
+                'current_step' => 'queue',
                 'expected_release_date' => $studentRequest->expected_release_date,
             ]);
 
