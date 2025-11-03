@@ -224,42 +224,93 @@ class ReferenceController extends Controller
      */
     public function getKioskRequest($queueNumber)
     {
-        $request = OnsiteRequest::with(['document', 'window', 'registrar'])
+        // Look for student requests by queue number instead of onsite requests
+        $acceptableStatuses = [
+            'accepted',
+            'pending',
+            'in_queue',
+            'processing',
+            'ready_for_release',
+            'ready_for_pickup',
+            'completed',
+            'waiting',
+            'released'
+        ];
+
+        $studentRequest = StudentRequest::with(['student.user', 'requestItems.document', 'assignedRegistrar'])
             ->where('queue_number', $queueNumber)
+            ->whereIn('status', $acceptableStatuses)
             ->first();
 
-        if (!$request) {
+        if (!$studentRequest) {
             return response()->json(['message' => 'Queue request not found'], 404);
         }
 
+        $studentName = '';
+        if ($studentRequest->student && $studentRequest->student->user) {
+            $studentName = trim(
+                ($studentRequest->student->user->first_name ?? '') . ' ' .
+                ($studentRequest->student->user->last_name ?? '')
+            );
+        }
+
+        // Get all documents for this request
+        $documents = $studentRequest->requestItems->map(function ($item) use ($studentRequest) {
+            return [
+                'name' => $item->document->type_document ?? 'Unknown Document',
+                'quantity' => $item->quantity,
+                'price' => $item->price,
+                'queue_number' => $studentRequest->queue_number
+            ];
+        });
+
+        // For backward compatibility, return the first document name as document_name
+        $firstDocument = $studentRequest->requestItems->first();
+        $documentName = $firstDocument ? ($firstDocument->document->type_document ?? 'Unknown Document') : 'Unknown Document';
+
         return response()->json([
-            'id' => $request->id,
-            'ref_code' => $request->ref_code,
-            'queue_number' => $request->queue_number, // Now the primary identifier
-            'kiosk_number' => $request->queue_number, // Alias for frontend compatibility
-            'full_name' => $request->full_name,
-            'student_id' => $request->student_id,
-            'course' => $request->course,
-            'year_level' => $request->year_level,
-            'department' => $request->department,
-            'document_name' => $request->document->type_document ?? null, // For backward compatibility
-            'documents' => [[ // New field with documents array
-                'name' => $request->document->type_document ?? 'Unknown Document',
-                'quantity' => $request->quantity,
-                'queue_number' => $request->queue_number
-            ]],
-            'quantity' => $request->quantity,
-            'reason' => $request->reason,
-            'status' => $request->status,
-            'current_step' => $request->current_step,
-            'window_name' => $request->window->name ?? null,
-            'registrar_name' => $request->registrar ?
-                trim(($request->registrar->first_name ?? '') . ' ' . ($request->registrar->last_name ?? '')) : null,
-            'expected_release_date' => $request->expected_release_date ?
-                $request->expected_release_date->toISOString() : null,
-            'created_at' => $request->created_at,
-            'updated_at' => $request->updated_at,
+            'id' => $studentRequest->id,
+            'ref_code' => $studentRequest->reference_no, // Use reference_no as ref_code
+            'queue_number' => $studentRequest->queue_number, // Now the primary identifier
+            'kiosk_number' => $studentRequest->queue_number, // Alias for frontend compatibility
+            'full_name' => $studentName,
+            'student_id' => $studentRequest->student->student_id ?? null,
+            'course' => $studentRequest->student->course ?? 'Not specified',
+            'year_level' => $studentRequest->student->year_level ?? 'Not specified',
+            'department' => $studentRequest->student->department ?? 'Not specified',
+            'document_name' => $documentName, // For backward compatibility
+            'documents' => $documents, // New field with documents array
+            'quantity' => $studentRequest->requestItems->sum('quantity'),
+            'reason' => $studentRequest->reason,
+            'status' => $studentRequest->status,
+            'current_step' => $this->mapStatusToStep($studentRequest->status),
+            'window_name' => null, // Student requests don't have windows assigned yet
+            'registrar_name' => $studentRequest->assignedRegistrar ?
+                trim(($studentRequest->assignedRegistrar->first_name ?? '') . ' ' . ($studentRequest->assignedRegistrar->last_name ?? '')) : null,
+            'expected_release_date' => $studentRequest->expected_release_date ?
+                $studentRequest->expected_release_date->toISOString() : null,
+            'created_at' => $studentRequest->created_at,
+            'updated_at' => $studentRequest->updated_at,
         ]);
+    }
+
+    /**
+     * Map student request status to current step
+     */
+    private function mapStatusToStep($status)
+    {
+        return match($status) {
+            'pending' => 'payment_pending',
+            'in_queue' => 'in_queue',
+            'processing' => 'processing',
+            'ready_for_release' => 'ready_for_release',
+            'ready_for_pickup' => 'ready_for_pickup',
+            'completed' => 'completed',
+            'accepted' => 'accepted',
+            'waiting' => 'waiting',
+            'released' => 'released',
+            default => 'unknown'
+        };
     }
 
     /**
