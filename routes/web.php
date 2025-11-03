@@ -83,7 +83,7 @@ Route::get('/create-test-onsite-requests', function () {
                 'document_id' => $document->id,
                 'quantity' => 1,
                 'reason' => 'For medical requirements',
-                'status' => 'accepted',
+                'status' => 'pending',
                 'current_step' => 'payment',
                 'expected_release_date' => now()->addDays(2),
             ],
