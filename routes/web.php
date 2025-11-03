@@ -54,7 +54,7 @@ Route::get('/create-test-onsite-requests', function () {
                 'quantity' => 2,
                 'reason' => 'For scholarship application',
                 'status' => 'processing',
-                'current_step' => 'document_preparation',
+                'current_step' => 'processing',
                 'expected_release_date' => now()->addDays(3),
             ],
             [
