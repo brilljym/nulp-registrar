@@ -39,6 +39,8 @@ class OnsiteRequest extends Model
 
     protected $casts = [
         'expected_release_date' => 'datetime',
+        'payment_approved_at' => 'datetime',
+        'registrar_approved_at' => 'datetime',
     ];
 
     // Optional relationship if student is matched

@@ -539,6 +539,15 @@
                     <span class="nav-text">Payment Verification & Approval</span>
                 </a>
             </div>
+
+            <!-- Transaction History Section -->
+            <div class="nav-section">
+                <div class="nav-section-title">Reports</div>
+                <a href="{{ route('accounting.history') }}" class="{{ request()->is('accounting/history*') ? 'active' : '' }}">
+                    <i class="bi bi-clock-history"></i>
+                    <span class="nav-text">Transaction History</span>
+                </a>
+            </div>
         </div>
     </div>
 

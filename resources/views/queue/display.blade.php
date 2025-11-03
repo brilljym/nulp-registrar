@@ -61,7 +61,12 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--neutral-50);
+            background: linear-gradient(135deg, rgba(0, 51, 153, 0.85), rgba(0, 51, 153, 0.6), rgba(255, 215, 0, 0.1)), 
+                        url('{{ asset("images/NU-header.jpg") }}');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
             min-height: 100vh;
             height: 100vh;
             display: flex;
@@ -70,6 +75,23 @@
             overflow: hidden;
             margin: 0;
             padding: 0;
+        }
+
+        /* Add subtle overlay for better text readability */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(0, 51, 153, 0.2) 0%, 
+                rgba(0, 51, 153, 0.4) 30%,
+                rgba(0, 51, 153, 0.2) 70%,
+                rgba(255, 215, 0, 0.05) 100%);
+            backdrop-filter: blur(0.5px);
+            z-index: -1;
         }
 
         /* Background overlay with blur */
@@ -152,11 +174,12 @@
         .header-section {
             text-align: center;
             margin-bottom: 1rem;
-            background: var(--nu-white);
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
             padding: 1rem;
             border-radius: var(--border-radius-lg);
-            box-shadow: var(--shadow-md);
-            border: 1px solid var(--neutral-200);
+            box-shadow: 0 8px 32px rgba(0, 51, 153, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .header-section::before {
@@ -187,15 +210,26 @@
         }
 
         .unified-queue-container {
-            background: var(--nu-white);
+            background: rgba(255, 255, 255, 0.50);
+            backdrop-filter: blur(10px);
             border-radius: var(--border-radius-xl);
             padding: 2rem;
             box-shadow: var(--shadow-xl);
-            border: 1px solid var(--neutral-200);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             margin-bottom: 1.5rem;
             margin-top: 2rem;
             position: relative;
             overflow: hidden;
+            animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1), float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-5px);
+            }
         }
 
         .unified-queue-container::before {
@@ -217,13 +251,15 @@
         }
 
         .queue-section {
-            background: var(--neutral-50);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
             border-radius: var(--border-radius-lg);
             padding: 1.5rem;
-            border: 1px solid var(--neutral-200);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             height: auto;
             min-height: 300px;
             transition: all 0.3s ease;
+            box-shadow: 0 8px 32px rgba(0, 51, 153, 0.1);
         }
 
         .queue-section:hover {
@@ -333,6 +369,15 @@
             margin-bottom: 0.5rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+        }
+
+        .kiosk-indicator {
+            font-size: 0.9rem;
+            color: var(--neutral-600);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            margin-top: 0.5rem;
         }
 
         .no-queue-message {
@@ -562,6 +607,173 @@
         .queue-section:nth-child(3) {
             animation-delay: 0.3s;
         }
+
+        /* Video advertisement styles */
+        .video-ad-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 320px;
+            height: 180px;
+            z-index: 1000;
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 51, 153, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.3s ease;
+        }
+
+        .video-ad-container.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .video-ad-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: calc(var(--border-radius-lg) - 3px);
+        }
+
+        .video-ad-close {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--nu-white);
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            z-index: 1001;
+            transition: background 0.2s ease;
+        }
+
+        .video-ad-close:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        /* Image Slideshow Styles */
+        .image-slideshow-container {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 400px;
+            height: 225px;
+            z-index: 1000;
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 51, 153, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            opacity: 1;
+            transform: scale(1);
+            transition: all 0.3s ease;
+        }
+
+        .image-slideshow {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .slideshow-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border-radius: calc(var(--border-radius-lg) - 3px);
+        }
+
+        .slideshow-slide.active {
+            opacity: 1;
+        }
+
+        .slideshow-indicators {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            z-index: 1002;
+        }
+
+        .slideshow-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .slideshow-indicator.active {
+            background: var(--nu-yellow);
+            border-color: var(--nu-white);
+            transform: scale(1.2);
+        }
+
+        .slideshow-indicator:hover {
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .slideshow-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--nu-white);
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 1002;
+            transition: all 0.2s ease;
+        }
+
+        .slideshow-close:hover {
+            background: rgba(0, 0, 0, 0.9);
+            transform: scale(1.1);
+        }
+
+        @media (max-width: 768px) {
+            .video-ad-container {
+                width: 280px;
+                height: 157px;
+                bottom: 15px;
+                right: 15px;
+            }
+
+            .image-slideshow-container {
+                width: 280px;
+                height: 157px;
+                bottom: 15px;
+                left: 15px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -600,9 +812,11 @@
                                                 <i class="fas fa-desktop"></i> {{ $request['window_assignment'] ?? 'Unassigned' }}
                                             </span>
                                             <span class="queue-number">{{ $request['queue_number'] }}</span>
-                                            <small style="display: block; margin-top: 0.25rem; color: var(--neutral-500); font-size: 0.75rem;">
-                                                {{ ucfirst($request['type']) }} • {{ $request['name'] }}
-                                            </small>
+                                            @if(isset($request['kiosk_number']) && $request['kiosk_number'])
+                                                <span class="kiosk-indicator">
+                                                    <i class="fas fa-laptop"></i> Kiosk: {{ $request['kiosk_number'] }}
+                                                </span>
+                                            @endif
                                         </div>
                                     @endforeach
                                 @else
@@ -629,9 +843,11 @@
                                                 <i class="fas fa-desktop"></i> {{ $request['window_assignment'] ?? 'Unassigned' }}
                                             </span>
                                             <span class="queue-number">{{ $request['queue_number'] }}</span>
-                                            <small style="display: block; margin-top: 0.25rem; color: var(--neutral-500); font-size: 0.75rem;">
-                                                {{ ucfirst($request['type']) }} • {{ $request['name'] }}
-                                            </small>
+                                            @if(isset($request['kiosk_number']) && $request['kiosk_number'])
+                                                <span class="kiosk-indicator">
+                                                    <i class="fas fa-laptop"></i> Kiosk: {{ $request['kiosk_number'] }}
+                                                </span>
+                                            @endif
                                         </div>
                                     @endforeach
                                 @else
@@ -656,6 +872,11 @@
                                         <div class="position-number">{{ $index + 1 }}</div>
                                         <div>
                                             <span class="queue-number">{{ $request['queue_number'] }}</span>
+                                            @if(isset($request['kiosk_number']) && $request['kiosk_number'])
+                                                <small style="display: block; color: var(--accent-color); font-size: 0.7rem; margin-top: 0.1rem;">
+                                                    <i class="fas fa-laptop"></i> Kiosk: {{ $request['kiosk_number'] }}
+                                                </small>
+                                            @endif
                                             <small style="display: block; color: var(--neutral-500); font-size: 0.75rem; margin-top: 0.25rem;">
                                                 {{ ucfirst($request['type']) }} • {{ $request['name'] }}
                                             </small>
@@ -674,6 +895,19 @@
             </div>
         </main>
 
+        <!-- Video Advertisement Container -->
+        <div class="video-ad-container" id="videoAdContainer">
+            <button class="video-ad-close" id="videoAdClose" title="Close video">&times;</button>
+            <video id="nuAdvertisementVideo" muted playsinline>
+                <source src="{{ asset('videos/nu-advertisment.mp4') }}" type="video/mp4
+                <div class="slideshow-slide" style="background-image: url('{{ asset('images/NU-adv1.jpg') }}');"></div>
+            </div>
+            <div class="slideshow-indicators" id="slideshowIndicators">
+                <div class="slideshow-indicator active" data-slide="0"></div>
+                <div class="slideshow-indicator" data-slide="1"></div>
+                <div class="slideshow-indicator" data-slide="2"></div>
+            </div>
+        </div>
         
     </div>
 
@@ -804,6 +1038,129 @@
             pusher.disconnect();
         });
 
+        // Function to announce queue numbers using TTS
+        function announceQueueNumbers() {
+            console.log('🎤 Starting TTS announcement...');
+            
+            // Function to get voices (handles async loading)
+            function getVoices() {
+                let voices = speechSynthesis.getVoices();
+                if (voices.length === 0) {
+                    // Voices not loaded yet, try again after a short delay
+                    setTimeout(() => {
+                        voices = speechSynthesis.getVoices();
+                        console.log('🎭 Available voices (delayed):', voices.map(voice => ({
+                            name: voice.name,
+                            lang: voice.lang,
+                            default: voice.default
+                        })));
+                        proceedWithAnnouncement(voices);
+                    }, 100);
+                } else {
+                    console.log('🎭 Available voices:', voices.map(voice => ({
+                        name: voice.name,
+                        lang: voice.lang,
+                        default: voice.default
+                    })));
+                    proceedWithAnnouncement(voices);
+                }
+            }
+            
+            function proceedWithAnnouncement(voices) {
+                if ('speechSynthesis' in window) {
+                    // Announce In Queue numbers
+                    const inQueueDisplays = document.querySelectorAll('.in-queue .queue-number-display');
+                    console.log('📋 Found', inQueueDisplays.length, 'in-queue displays to announce');
+                    inQueueDisplays.forEach((display, index) => {
+                        const queueNumberElement = display.querySelector('.queue-number');
+                        const windowAssignmentElement = display.querySelector('.window-assignment');
+                        
+                        if (queueNumberElement && windowAssignmentElement) {
+                            const queueNumber = queueNumberElement.textContent.trim();
+                            const windowAssignment = windowAssignmentElement.textContent.trim();
+                            
+                            if (queueNumber && windowAssignment) {
+                                const announcement = `In queue serving ${queueNumber} at ${windowAssignment}`;
+                                console.log('🔊 Announcing:', announcement);
+                                const utterance = new SpeechSynthesisUtterance(announcement);
+                                utterance.rate = 0.8; // Adjust speed if needed
+                                utterance.pitch = 1; // Adjust pitch if needed
+                                
+                                // Set voice to sound like Siri (female voice)
+                                // Try to find a female voice that sounds like Siri
+                                let siriLikeVoice = voices.find(voice => 
+                                    voice.name.toLowerCase().includes('samantha') || // macOS
+                                    voice.name.toLowerCase().includes('susan') ||    // macOS
+                                    voice.name.toLowerCase().includes('zira') ||     // Windows
+                                    voice.name.toLowerCase().includes('female') ||
+                                    (voice.name.toLowerCase().includes('english') && voice.name.toLowerCase().includes('us'))
+                                );
+                                
+                                // If no Siri-like voice found, use the first female voice or default
+                                if (!siriLikeVoice) {
+                                    siriLikeVoice = voices.find(voice => voice.lang.includes('en') && !voice.name.toLowerCase().includes('male'));
+                                }
+                                
+                                if (siriLikeVoice) {
+                                    utterance.voice = siriLikeVoice;
+                                    console.log('🎭 Using voice:', siriLikeVoice.name);
+                                }
+                                
+                                speechSynthesis.speak(utterance);
+                            }
+                        }
+                    });
+
+                    // Announce Ready for Pickup numbers
+                    const readyPickupDisplays = document.querySelectorAll('.ready-pickup .queue-number-display');
+                    console.log('📋 Found', readyPickupDisplays.length, 'ready-pickup displays to announce');
+                    readyPickupDisplays.forEach((display, index) => {
+                        const queueNumberElement = display.querySelector('.queue-number');
+                        const windowAssignmentElement = display.querySelector('.window-assignment');
+                        
+                        if (queueNumberElement && windowAssignmentElement) {
+                            const queueNumber = queueNumberElement.textContent.trim();
+                            const windowAssignment = windowAssignmentElement.textContent.trim();
+                            
+                            if (queueNumber && windowAssignment) {
+                                const announcement = `Ready for pickup ${queueNumber} at ${windowAssignment}`;
+                                console.log('🔊 Announcing:', announcement);
+                                const utterance = new SpeechSynthesisUtterance(announcement);
+                                utterance.rate = 0.8; // Adjust speed if needed
+                                utterance.pitch = 1; // Adjust pitch if needed
+                                
+                                // Set voice to sound like Siri (female voice)
+                                // Try to find a female voice that sounds like Siri
+                                let siriLikeVoice = voices.find(voice => 
+                                    voice.name.toLowerCase().includes('samantha') || // macOS
+                                    voice.name.toLowerCase().includes('susan') ||    // macOS
+                                    voice.name.toLowerCase().includes('zira') ||     // Windows
+                                    voice.name.toLowerCase().includes('female') ||
+                                    (voice.name.toLowerCase().includes('english') && voice.name.toLowerCase().includes('us'))
+                                );
+                                
+                                // If no Siri-like voice found, use the first female voice or default
+                                if (!siriLikeVoice) {
+                                    siriLikeVoice = voices.find(voice => voice.lang.includes('en') && !voice.name.toLowerCase().includes('male'));
+                                }
+                                
+                                if (siriLikeVoice) {
+                                    utterance.voice = siriLikeVoice;
+                                    console.log('🎭 Using voice:', siriLikeVoice.name);
+                                }
+                                
+                                speechSynthesis.speak(utterance);
+                            }
+                        }
+                    });
+                } else {
+                    console.warn('Text-to-speech not supported in this browser.');
+                }
+            }
+            
+            getVoices();
+        }
+
         // Add smooth animations when page loads
         document.addEventListener('DOMContentLoaded', function() {
             const cards = document.querySelectorAll('.window-card');
@@ -816,7 +1173,180 @@
                     card.style.transform = 'translateY(0)';
                 }, index * 100);
             });
+
+            // Announce queue numbers on page load
+            announceQueueNumbers();
+
+            // Initialize video advertisement
+            initializeVideoAd();
+
+            // Initialize image slideshow
+            initializeImageSlideshow();
         });
+
+        // Function to initialize video advertisement
+        function initializeVideoAd() {
+            const videoContainer = document.getElementById('videoAdContainer');
+            const video = document.getElementById('nuAdvertisementVideo');
+            const closeButton = document.getElementById('videoAdClose');
+
+            let videoInterval;
+            let isVideoPlaying = false;
+
+            // Function to show video
+            function showVideo() {
+                if (isVideoPlaying) return; // Prevent multiple instances
+
+                console.log('🎬 Showing NU advertisement video');
+                videoContainer.classList.add('visible');
+                isVideoPlaying = true;
+
+                // Start playing the video
+                video.currentTime = 0;
+                video.play().then(() => {
+                    console.log('▶️ Video started playing');
+                }).catch(error => {
+                    console.error('❌ Error playing video:', error);
+                });
+            }
+
+            // Function to hide video
+            function hideVideo() {
+                console.log('⏹️ Hiding NU advertisement video');
+                videoContainer.classList.remove('visible');
+                video.pause();
+                video.currentTime = 0;
+                isVideoPlaying = false;
+            }
+
+            // Close button functionality
+            closeButton.addEventListener('click', function() {
+                hideVideo();
+                // Reset the interval to start counting from now
+                clearInterval(videoInterval);
+                startVideoInterval();
+            });
+
+            // Video ended event
+            video.addEventListener('ended', function() {
+                console.log('🏁 Video ended');
+                hideVideo();
+                // Start new interval for next video
+                startVideoInterval();
+            });
+
+            // Video error handling
+            video.addEventListener('error', function(e) {
+                console.error('❌ Video error:', e);
+                hideVideo();
+                // Try again in 5 seconds
+                setTimeout(startVideoInterval, 5000);
+            });
+
+            // Function to start the video interval
+            function startVideoInterval() {
+                videoInterval = setInterval(() => {
+                    showVideo();
+                }, 5000); // Show every 5 seconds
+            }
+
+            // Start the video cycle
+            console.log('🎬 Initializing NU advertisement video system');
+            startVideoInterval();
+
+            // Cleanup on page unload
+            window.addEventListener('beforeunload', function() {
+                clearInterval(videoInterval);
+                hideVideo();
+            });
+        }
+
+        // Function to initialize image slideshow
+        function initializeImageSlideshow() {
+            const slideshowContainer = document.getElementById('imageSlideshowContainer');
+            const slideshow = document.getElementById('imageSlideshow');
+            const slides = document.querySelectorAll('.slideshow-slide');
+            const indicators = document.querySelectorAll('.slideshow-indicator');
+            const closeButton = document.getElementById('slideshowClose');
+
+            let currentSlide = 0;
+            let slideshowInterval;
+            const slideDuration = 4000; // 4 seconds per slide
+
+            // Function to show a specific slide
+            function showSlide(index) {
+                // Hide all slides
+                slides.forEach(slide => slide.classList.remove('active'));
+                indicators.forEach(indicator => indicator.classList.remove('active'));
+
+                // Show the current slide
+                slides[index].classList.add('active');
+                indicators[index].classList.add('active');
+
+                currentSlide = index;
+                console.log(`🖼️ Showing slideshow slide ${index + 1}`);
+            }
+
+            // Function to show next slide
+            function nextSlide() {
+                currentSlide = (currentSlide + 1) % slides.length;
+                showSlide(currentSlide);
+            }
+
+            // Function to start slideshow
+            function startSlideshow() {
+                slideshowInterval = setInterval(nextSlide, slideDuration);
+                console.log('🎠 Starting image slideshow');
+            }
+
+            // Function to stop slideshow
+            function stopSlideshow() {
+                clearInterval(slideshowInterval);
+                console.log('⏸️ Stopping image slideshow');
+            }
+
+            // Function to hide slideshow
+            function hideSlideshow() {
+                slideshowContainer.style.opacity = '0';
+                slideshowContainer.style.transform = 'scale(0.8)';
+                stopSlideshow();
+                console.log('🙈 Hiding image slideshow');
+            }
+
+            // Function to show slideshow
+            function showSlideshow() {
+                slideshowContainer.style.opacity = '1';
+                slideshowContainer.style.transform = 'scale(1)';
+                startSlideshow();
+                console.log('👁️ Showing image slideshow');
+            }
+
+            // Indicator click handlers
+            indicators.forEach((indicator, index) => {
+                indicator.addEventListener('click', function() {
+                    stopSlideshow();
+                    showSlide(index);
+                    startSlideshow(); // Restart with new timing
+                });
+            });
+
+            // Close button functionality
+            closeButton.addEventListener('click', function() {
+                hideSlideshow();
+            });
+
+            // Pause on hover
+            slideshowContainer.addEventListener('mouseenter', stopSlideshow);
+            slideshowContainer.addEventListener('mouseleave', startSlideshow);
+
+            // Start the slideshow
+            showSlideshow();
+
+            // Cleanup on page unload
+            window.addEventListener('beforeunload', function() {
+                stopSlideshow();
+            });
+        }
     </script>
 </body>
 </html>

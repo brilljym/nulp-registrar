@@ -755,12 +755,62 @@ class KioskController extends Controller
             
         } catch (\Exception $e) {
             Log::error("Printer test error: " . $e->getMessage());
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Printer test failed: ' . $e->getMessage(),
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Display kiosk queue status by kiosk number
+     */
+    public function showKioskQueue(Request $request, $kioskNumber)
+    {
+        $kioskNumber = trim(strtoupper($kioskNumber));
+
+        // Check OnsiteRequest by ref_code (kiosk number)
+        $onsiteRequest = OnsiteRequest::where('ref_code', $kioskNumber)
+            ->whereIn('status', ['processing', 'ready_for_release', 'completed', 'pending', 'accepted', 'in_queue', 'waiting'])
+            ->with(['document', 'window', 'registrar'])
+            ->first();
+
+        if (!$onsiteRequest) {
+            return redirect('/kiosk')->with('error', 'Kiosk number not found or not ready for tracking.');
+        }
+
+        // Prepare kiosk data for the view
+        $kioskData = [
+            'id' => $onsiteRequest->id,
+            'ref_code' => $onsiteRequest->ref_code,
+            'kiosk_number' => $onsiteRequest->ref_code,
+            'full_name' => $onsiteRequest->full_name,
+            'student_id' => $onsiteRequest->student_id,
+            'course' => $onsiteRequest->course,
+            'year_level' => $onsiteRequest->year_level,
+            'department' => $onsiteRequest->department,
+            'document_name' => $onsiteRequest->document->type_document ?? 'Unknown Document',
+            'documents' => [[
+                'name' => $onsiteRequest->document->type_document ?? 'Unknown Document',
+                'quantity' => $onsiteRequest->quantity,
+                'queue_number' => $onsiteRequest->queue_number
+            ]],
+            'quantity' => $onsiteRequest->quantity,
+            'reason' => $onsiteRequest->reason,
+            'status' => $onsiteRequest->status,
+            'current_step' => $onsiteRequest->current_step,
+            'queue_number' => $onsiteRequest->queue_number,
+            'window_name' => $onsiteRequest->window->name ?? 'Not Assigned',
+            'registrar_name' => $onsiteRequest->registrar ?
+                trim(($onsiteRequest->registrar->first_name ?? '') . ' ' . ($onsiteRequest->registrar->last_name ?? '')) : null,
+            'expected_release_date' => $onsiteRequest->expected_release_date ?
+                $onsiteRequest->expected_release_date->toISOString() : null,
+            'created_at' => $onsiteRequest->created_at,
+            'updated_at' => $onsiteRequest->updated_at,
+        ];
+
+        return view('kiosk.queue', compact('kioskData'));
     }
 }

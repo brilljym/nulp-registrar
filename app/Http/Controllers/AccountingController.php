@@ -321,4 +321,39 @@ class AccountingController extends Controller
 
         return redirect()->back()->with("success", "Payment rejected. User can upload a new receipt.");
     }
+
+    public function history()
+    {
+        // Get approved onsite requests with payment details
+        $approvedOnsiteRequests = OnsiteRequest::where("payment_approved", true)
+            ->with(["requestItems.document", "student", "accountingApprover"])
+            ->orderBy("payment_approved_at", "desc")
+            ->get();
+
+        // Get approved student requests with payment details
+        $approvedStudentRequests = StudentRequest::where("payment_approved", true)
+            ->with(["requestItems.document", "student.user", "approvedByAccounting"])
+            ->orderBy("payment_approved_at", "desc")
+            ->get();
+
+        // Calculate total cost for onsite requests
+        $approvedOnsiteRequests->transform(function ($request) {
+            $totalCost = 0;
+            if ($request->requestItems) {
+                foreach ($request->requestItems as $item) {
+                    $price = $item->document->price ?? 0;
+                    $quantity = $item->quantity ?? 1;
+                    $totalCost += $price * $quantity;
+                }
+            }
+            $request->calculated_total_cost = $totalCost;
+            return $request;
+        });
+
+        // Combine and sort all approved transactions
+        $transactionHistory = $approvedOnsiteRequests->concat($approvedStudentRequests)
+            ->sortByDesc("payment_approved_at");
+
+        return view("accounting.history", compact("transactionHistory"));
+    }
 }

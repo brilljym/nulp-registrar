@@ -377,6 +377,40 @@
             border-left: 4px solid #ef4444;
         }
 
+        /* Privacy Notice Styling */
+        .form-check-input {
+            width: 1.2rem;
+            height: 1.2rem;
+            border-radius: 4px;
+            border: 2px solid var(--nu-blue);
+            background-color: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--nu-blue);
+            border-color: var(--nu-blue);
+        }
+
+        .form-check-input:focus {
+            border-color: var(--nu-blue);
+            box-shadow: 0 0 0 3px rgba(0, 51, 153, 0.1);
+        }
+
+        .form-check-label {
+            margin-left: 0.75rem;
+            cursor: pointer;
+        }
+
+        .form-check-label a {
+            color: var(--nu-blue) !important;
+            text-decoration: underline;
+        }
+
+        .form-check-label a:hover {
+            color: #001f5f !important;
+        }
+
         /* Footer */
         .nu-footer {
             background: var(--nu-blue);
@@ -913,6 +947,23 @@
                             <input type="hidden" id="reason" name="reason" value="">
                         </div>
 
+                        <!-- Privacy Notice and Terms Agreement -->
+                        <div class="form-section">
+                            <div class="alert alert-info border-0" style="background: rgba(0, 51, 153, 0.05); border-left: 4px solid var(--nu-blue);">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="privacy_agreement" name="privacy_agreement" value="1" required style="border-color: var(--nu-blue);">
+                                    <label class="form-check-label" for="privacy_agreement" style="font-size: 0.9rem; color: var(--nu-gray); line-height: 1.5;">
+                                        <strong>Privacy Notice and Terms of Agreement *</strong><br>
+                                        I hereby acknowledge and agree to the following:<br>
+                                        • I understand that the personal information I provide will be used solely for processing my document request.<br>
+                                        • My data will be handled in accordance with the National University Data Privacy Policy and Republic Act No. 10173 (Data Privacy Act of 2012).<br>
+                                        • I consent to the collection, processing, and storage of my personal information for document processing purposes.<br>
+                                        • I have read and understood the <a href="#" style="color: var(--nu-blue); text-decoration: underline;">Privacy Policy</a> and <a href="#" style="color: var(--nu-blue); text-decoration: underline;">Terms of Service</a>.
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
                         <button type="submit" class="btn-submit">
                             <i class="bi bi-send-fill me-2"></i>
                             Submit Document Request
@@ -1329,6 +1380,15 @@
                     // Use display name if available, or generate placeholder
                     fullName = fullNameDisplay || `Student ${studentId || 'Unknown'}`;
                     document.getElementById('full_name').value = fullName;
+                }
+
+                // Validate privacy agreement checkbox
+                const privacyCheckbox = document.getElementById('privacy_agreement');
+                if (!privacyCheckbox.checked) {
+                    e.preventDefault();
+                    alert('Please read and agree to the Privacy Notice and Terms of Agreement before submitting your request.');
+                    privacyCheckbox.focus();
+                    return false;
                 }
 
                 // Submit button loading state

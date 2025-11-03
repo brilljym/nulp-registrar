@@ -220,6 +220,49 @@ class ReferenceController extends Controller
     }
 
     /**
+     * Get a specific onsite request by kiosk number (ref_code)
+     */
+    public function getKioskRequest($kioskNumber)
+    {
+        $request = OnsiteRequest::with(['document', 'window', 'registrar'])
+            ->where('ref_code', $kioskNumber)
+            ->first();
+
+        if (!$request) {
+            return response()->json(['message' => 'Kiosk request not found'], 404);
+        }
+
+        return response()->json([
+            'id' => $request->id,
+            'ref_code' => $request->ref_code,
+            'kiosk_number' => $request->ref_code, // Alias for frontend compatibility
+            'full_name' => $request->full_name,
+            'student_id' => $request->student_id,
+            'course' => $request->course,
+            'year_level' => $request->year_level,
+            'department' => $request->department,
+            'document_name' => $request->document->type_document ?? null, // For backward compatibility
+            'documents' => [[ // New field with documents array
+                'name' => $request->document->type_document ?? 'Unknown Document',
+                'quantity' => $request->quantity,
+                'queue_number' => $request->queue_number
+            ]],
+            'quantity' => $request->quantity,
+            'reason' => $request->reason,
+            'status' => $request->status,
+            'current_step' => $request->current_step,
+            'queue_number' => $request->queue_number,
+            'window_name' => $request->window->name ?? null,
+            'registrar_name' => $request->registrar ?
+                trim(($request->registrar->first_name ?? '') . ' ' . ($request->registrar->last_name ?? '')) : null,
+            'expected_release_date' => $request->expected_release_date ?
+                $request->expected_release_date->toISOString() : null,
+            'created_at' => $request->created_at,
+            'updated_at' => $request->updated_at,
+        ]);
+    }
+
+    /**
      * Debug endpoint to see what student requests and statuses exist
      */
     public function debugTransactions()

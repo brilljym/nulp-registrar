@@ -167,6 +167,7 @@ Route::get('/transactions/search', [ReferenceController::class, 'searchTransacti
 Route::get('/onsite-requests/search', [ReferenceController::class, 'searchOnsiteRequests']);
 Route::get('/transactions/reference/{reference}', [ReferenceController::class, 'getTransactionByReference']);
 Route::get('/onsite-requests/reference/{refCode}', [ReferenceController::class, 'getOnsiteRequestByReference']);
+Route::get('/kiosk/{kioskNumber}', [ReferenceController::class, 'getKioskRequest']);
 
 // Debug endpoint to see transaction statuses
 Route::get('/debug/transactions', [ReferenceController::class, 'debugTransactions']);

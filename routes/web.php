@@ -173,6 +173,7 @@ Route::middleware(['auth'])->prefix('registrar')->name('registrar.')->group(func
 // ✅ Accounting Routes
 Route::middleware(['auth'])->prefix('accounting')->name('accounting.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\AccountingController::class, 'index'])->name('dashboard');
+    Route::get('/history', [App\Http\Controllers\AccountingController::class, 'history'])->name('history');
     Route::post('/approve/onsite/{onsiteRequest}', [App\Http\Controllers\AccountingController::class, 'approveOnsite'])->name('approve.onsite');
     Route::post('/approve/student/{studentRequest}', [App\Http\Controllers\AccountingController::class, 'approveStudent'])->name('approve.student');
     Route::post('/reject/onsite/{onsiteRequest}', [App\Http\Controllers\AccountingController::class, 'rejectOnsite'])->name('reject.onsite');
@@ -316,6 +317,7 @@ Route::prefix('kiosk')->name('kiosk.')->group(function () {
     Route::post('/print-receipt/{type}/{id}', [App\Http\Controllers\KioskController::class, 'printReceipt'])->name('print-receipt');
     Route::post('/test-printer', [App\Http\Controllers\KioskController::class, 'testPrinter'])->name('test-printer');
     Route::get('/status/{queueNumber}', [App\Http\Controllers\KioskController::class, 'status'])->name('status');
+    Route::get('/queue/{kioskNumber}', [App\Http\Controllers\KioskController::class, 'showKioskQueue'])->name('queue');
 });
 
 // Public Queue Display (No Login Required)

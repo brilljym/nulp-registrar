@@ -64,6 +64,7 @@ class WindowController extends Controller
                     'id' => $request->id,
                     'type' => 'onsite',
                     'queue_number' => $request->queue_number,
+                    'kiosk_number' => $request->ref_code, // Add kiosk number for display
                     'name' => $request->full_name ?? ($request->student && $request->student->user ? $request->student->user->first_name . ' ' . $request->student->user->last_name : 'N/A'),
                     'student_id' => $request->student_id ?? 'N/A',
                     'documents' => $request->requestItems->pluck('document.type_document')->join(', '),

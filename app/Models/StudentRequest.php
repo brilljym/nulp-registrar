@@ -32,6 +32,8 @@ class StudentRequest extends Model
 
     protected $casts = [
         'expected_release_date' => 'datetime',
+        'payment_approved_at' => 'datetime',
+        'registrar_approved_at' => 'datetime',
     ];
 
     public function student()
@@ -62,6 +64,11 @@ class StudentRequest extends Model
     public function registrarApprover()
     {
         return $this->belongsTo(User::class, 'approved_by_registrar_id');
+    }
+
+    public function approvedByAccounting()
+    {
+        return $this->belongsTo(User::class, 'approved_by_accounting_id');
     }
 
     public static function generateReferenceNumber()
