@@ -118,6 +118,12 @@ class WindowController extends Controller
         $unassignedRequests = $allKioskRequests->where('assigned_registrar_id', null);
         $waitingRequests = $waitingRequests->merge($unassignedRequests);
 
+        // Sort all waiting requests by creation time and assign sequential positions
+        $waitingRequests = $waitingRequests->sortBy('created_at')->values()->map(function ($request, $index) {
+            $request['position'] = $index + 1; // Position 1, 2, 3, etc. for all waiting requests
+            return $request;
+        });
+
         // For Ready for Pickup, keep the current logic (requests ready for pickup)
         $readyForPickupRequests = collect()
             ->merge(StudentRequest::where('status', 'ready_for_pickup')

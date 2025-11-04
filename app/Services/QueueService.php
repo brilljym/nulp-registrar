@@ -288,15 +288,51 @@ class QueueService
      */
     public function getQueuePositionForRegistrar(int $registrarUserId): int
     {
-        // Get all waiting requests for this registrar, ordered by creation time
-        $waitingRequests = OnsiteRequest::where('assigned_registrar_id', $registrarUserId)
-            ->whereIn('status', ['waiting'])
+        // Get count of all waiting requests across all registrars
+        $totalWaiting = OnsiteRequest::where('status', 'waiting')->count();
+
+        // Return the next position in the unified waiting queue
+        return $totalWaiting + 1;
+    }
+
+    /**
+     * Get the position of a specific onsite request in the unified waiting queue
+     */
+    public function getWaitingPositionForRequest(OnsiteRequest $request): int
+    {
+        if ($request->status !== 'waiting') {
+            return 0; // Not waiting, so no position
+        }
+
+        // Get ALL waiting requests across all registrars, ordered by creation time
+        $allWaitingRequests = OnsiteRequest::where('status', 'waiting')
             ->orderBy('created_at', 'asc')
             ->pluck('id')
             ->toArray();
 
-        // Return the count of waiting requests (position would be the count + 1 for the next one)
-        return count($waitingRequests) + 1;
+        // Find the position of this request in the unified queue
+        $position = array_search($request->id, $allWaitingRequests) + 1;
+        return $position ?: 0;
+    }
+
+    /**
+     * Get the position of a specific student request in the unified waiting queue
+     */
+    public function getWaitingPositionForStudentRequest($studentRequest): int
+    {
+        if ($studentRequest->status !== 'waiting') {
+            return 0; // Not waiting, so no position
+        }
+
+        // Get ALL waiting student requests across all registrars, ordered by creation time
+        $allWaitingRequests = \App\Models\StudentRequest::where('status', 'waiting')
+            ->orderBy('created_at', 'asc')
+            ->pluck('id')
+            ->toArray();
+
+        // Find the position of this request in the unified queue
+        $position = array_search($studentRequest->id, $allWaitingRequests) + 1;
+        return $position ?: 0;
     }
 
     /**

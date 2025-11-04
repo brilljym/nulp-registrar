@@ -7,9 +7,16 @@ use App\Models\StudentRequest;
 use App\Models\OnsiteRequest;
 use App\Events\QueuePlacementConfirmed;
 use Illuminate\Http\Request;
+use App\Services\QueueService;
 
 class ReferenceController extends Controller
 {
+    protected $queueService;
+
+    public function __construct(QueueService $queueService)
+    {
+        $this->queueService = $queueService;
+    }
     /**
      * Search for student requests by reference number
      */
@@ -159,6 +166,12 @@ class ReferenceController extends Controller
         $firstDocument = $studentRequest->requestItems->first();
         $documentName = $firstDocument ? ($firstDocument->document->type_document ?? 'Unknown Document') : 'Unknown Document';
 
+        // Calculate position if status is waiting
+        $position = 0;
+        if ($studentRequest->status === 'waiting' && $studentRequest->assignedRegistrar) {
+            $position = $this->queueService->getWaitingPositionForStudentRequest($studentRequest);
+        }
+
         return response()->json([
             'id' => $studentRequest->id,
             'reference_no' => $studentRequest->reference_no,
@@ -169,6 +182,7 @@ class ReferenceController extends Controller
             'total_cost' => $studentRequest->total_cost,
             'status' => $studentRequest->status,
             'queue_number' => $studentRequest->queue_number,
+            'position' => $position, // Position in waiting queue
             'registrar_name' => $studentRequest->assignedRegistrar ? 
                 trim(($studentRequest->assignedRegistrar->first_name ?? '') . ' ' . ($studentRequest->assignedRegistrar->last_name ?? '')) : null,
             'expected_release_date' => $studentRequest->expected_release_date ? 
@@ -191,6 +205,12 @@ class ReferenceController extends Controller
             return response()->json(['message' => 'Onsite request not found'], 404);
         }
 
+        // Calculate position if status is waiting
+        $position = 0;
+        if ($request->status === 'waiting' && $request->assigned_registrar_id) {
+            $position = $this->queueService->getWaitingPositionForRequest($request);
+        }
+
         return response()->json([
             'id' => $request->id,
             'ref_code' => $request->ref_code,
@@ -210,6 +230,7 @@ class ReferenceController extends Controller
             'status' => $request->status,
             'current_step' => $request->current_step,
             'queue_number' => $request->queue_number,
+            'position' => $position, // Position in waiting queue
             'window_name' => $request->window->name ?? null,
             'registrar_name' => $request->registrar ? 
                 trim(($request->registrar->first_name ?? '') . ' ' . ($request->registrar->last_name ?? '')) : null,
@@ -286,6 +307,12 @@ class ReferenceController extends Controller
         $firstDocument = $studentRequest->requestItems->first();
         $documentName = $firstDocument ? ($firstDocument->document->type_document ?? 'Unknown Document') : 'Unknown Document';
 
+        // Calculate position if status is waiting
+        $position = 0;
+        if ($studentRequest->status === 'waiting' && $studentRequest->assignedRegistrar) {
+            $position = $this->queueService->getWaitingPositionForStudentRequest($studentRequest);
+        }
+
         return response()->json([
             'id' => $studentRequest->id,
             'ref_code' => $studentRequest->reference_no, // Use reference_no as ref_code
@@ -302,6 +329,7 @@ class ReferenceController extends Controller
             'reason' => $studentRequest->reason,
             'status' => $studentRequest->status,
             'current_step' => $this->mapStatusToStep($studentRequest->status),
+            'position' => $position, // Position in waiting queue
             'window_name' => null, // Student requests don't have windows assigned yet
             'registrar_name' => $studentRequest->assignedRegistrar ?
                 trim(($studentRequest->assignedRegistrar->first_name ?? '') . ' ' . ($studentRequest->assignedRegistrar->last_name ?? '')) : null,

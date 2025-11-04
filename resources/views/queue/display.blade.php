@@ -859,12 +859,9 @@
                             @if($waitingRequests->count() > 0)
                                 @foreach($waitingRequests->take(10) as $index => $request)
                                     <div class="waiting-queue-number">
-                                        <div class="position-number">{{ $index + 1 }}</div>
+                                        <div class="position-number">{{ $request['position'] ?? ($index + 1) }}</div>
                                         <div>
                                             <span class="queue-number">{{ $request['queue_number'] }}</span>
-                                            <small style="display: block; color: var(--neutral-500); font-size: 0.75rem; margin-top: 0.25rem;">
-                                                {{ ucfirst($request['type']) }} • {{ $request['name'] }}
-                                            </small>
                                         </div>
                                     </div>
                                 @endforeach
