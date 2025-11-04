@@ -171,10 +171,28 @@ class ReferenceController extends Controller
         $firstDocument = $studentRequest->requestItems->first();
         $documentName = $firstDocument ? ($firstDocument->document->type_document ?? 'Unknown Document') : 'Unknown Document';
 
-        // Calculate position if status is waiting
+        // Calculate position if status is waiting or in_queue
         $position = 0;
-        if ($studentRequest->status === 'waiting' && $studentRequest->assignedRegistrar) {
+        $displayStatus = $studentRequest->status;
+        
+        // For in_queue status, check if this is the first request or waiting
+        if ($studentRequest->status === 'in_queue' && $studentRequest->assignedRegistrar) {
+            // Get all in_queue requests for this registrar
+            $registrarRequests = StudentRequest::where('assigned_registrar_id', $studentRequest->assignedRegistrar->id)
+                ->whereIn('status', ['in_queue', 'waiting'])
+                ->orderBy('created_at', 'asc')
+                ->get();
+            
+            // If this is not the first request, it's actually waiting
+            if ($registrarRequests->isNotEmpty() && $registrarRequests->first()->id !== $studentRequest->id) {
+                $displayStatus = 'waiting';
+                $position = $registrarRequests->search(function($req) use ($studentRequest) {
+                    return $req->id === $studentRequest->id;
+                }) + 1; // Position in queue (1-based)
+            }
+        } elseif ($studentRequest->status === 'waiting' && $studentRequest->assignedRegistrar) {
             $position = $this->queueService->getWaitingPositionForStudentRequest($studentRequest);
+            $displayStatus = 'waiting';
         }
 
         return response()->json([
@@ -185,7 +203,7 @@ class ReferenceController extends Controller
             'document_name' => $documentName, // For backward compatibility
             'documents' => $documents, // New field with all documents
             'total_cost' => $studentRequest->total_cost,
-            'status' => $studentRequest->status,
+            'status' => $displayStatus, // Use display status instead of raw status
             'queue_number' => $studentRequest->queue_number,
             'position' => $position, // Position in waiting queue
             'registrar_name' => $studentRequest->assignedRegistrar ? 
@@ -215,10 +233,28 @@ class ReferenceController extends Controller
             $request->update(['player_id' => $httpRequest->player_id]);
         }
 
-        // Calculate position if status is waiting
+        // Calculate position if status is waiting or in_queue
         $position = 0;
-        if ($request->status === 'waiting' && $request->assigned_registrar_id) {
+        $displayStatus = $request->status;
+        
+        // For in_queue status, check if this is the first request or waiting
+        if ($request->status === 'in_queue' && $request->assigned_registrar_id) {
+            // Get all in_queue/waiting requests for this registrar
+            $registrarRequests = OnsiteRequest::where('assigned_registrar_id', $request->assigned_registrar_id)
+                ->whereIn('status', ['in_queue', 'waiting'])
+                ->orderBy('created_at', 'asc')
+                ->get();
+            
+            // If this is not the first request, it's actually waiting
+            if ($registrarRequests->isNotEmpty() && $registrarRequests->first()->id !== $request->id) {
+                $displayStatus = 'waiting';
+                $position = $registrarRequests->search(function($req) use ($request) {
+                    return $req->id === $request->id;
+                }) + 1; // Position in queue (1-based)
+            }
+        } elseif ($request->status === 'waiting' && $request->assigned_registrar_id) {
             $position = $this->queueService->getWaitingPositionForRequest($request);
+            $displayStatus = 'waiting';
         }
 
         return response()->json([
@@ -319,10 +355,28 @@ class ReferenceController extends Controller
             $firstDocument = $studentRequest->requestItems->first();
             $documentName = $firstDocument ? ($firstDocument->document->type_document ?? 'Unknown Document') : 'Unknown Document';
 
-            // Calculate position if status is waiting
+            // Calculate position if status is waiting or in_queue
             $position = 0;
-            if ($studentRequest->status === 'waiting' && $studentRequest->assignedRegistrar) {
+            $displayStatus = $studentRequest->status;
+            
+            // For in_queue status, check if this is the first request or waiting
+            if ($studentRequest->status === 'in_queue' && $studentRequest->assignedRegistrar) {
+                // Get all in_queue/waiting requests for this registrar
+                $registrarRequests = StudentRequest::where('assigned_registrar_id', $studentRequest->assignedRegistrar->id)
+                    ->whereIn('status', ['in_queue', 'waiting'])
+                    ->orderBy('created_at', 'asc')
+                    ->get();
+                
+                // If this is not the first request, it's actually waiting
+                if ($registrarRequests->isNotEmpty() && $registrarRequests->first()->id !== $studentRequest->id) {
+                    $displayStatus = 'waiting';
+                    $position = $registrarRequests->search(function($req) use ($studentRequest) {
+                        return $req->id === $studentRequest->id;
+                    }) + 1; // Position in queue (1-based)
+                }
+            } elseif ($studentRequest->status === 'waiting' && $studentRequest->assignedRegistrar) {
                 $position = $this->queueService->getWaitingPositionForStudentRequest($studentRequest);
+                $displayStatus = 'waiting';
             }
 
             return response()->json([
@@ -339,8 +393,8 @@ class ReferenceController extends Controller
                 'documents' => $documents, // New field with documents array
                 'quantity' => $studentRequest->requestItems->sum('quantity'),
                 'reason' => $studentRequest->reason,
-                'status' => $studentRequest->status,
-                'current_step' => $this->mapStatusToStep($studentRequest->status),
+                'status' => $displayStatus, // Use display status instead of raw status
+                'current_step' => $this->mapStatusToStep($displayStatus),
                 'position' => $position, // Position in waiting queue
                 'window_name' => null, // Student requests don't have windows assigned yet
                 'registrar_name' => $studentRequest->assignedRegistrar ?
@@ -399,10 +453,28 @@ class ReferenceController extends Controller
         $firstDocument = $onsiteRequest->requestItems->first();
         $documentName = $firstDocument ? ($firstDocument->document->type_document ?? 'Unknown Document') : 'Unknown Document';
 
-        // Calculate position if status is waiting
+        // Calculate position if status is waiting or in_queue
         $position = 0;
-        if ($onsiteRequest->status === 'waiting' && $onsiteRequest->registrar) {
+        $displayStatus = $onsiteRequest->status;
+        
+        // For in_queue status, check if this is the first request or waiting
+        if ($onsiteRequest->status === 'in_queue' && $onsiteRequest->assigned_registrar_id) {
+            // Get all in_queue/waiting requests for this registrar
+            $registrarRequests = OnsiteRequest::where('assigned_registrar_id', $onsiteRequest->assigned_registrar_id)
+                ->whereIn('status', ['in_queue', 'waiting'])
+                ->orderBy('created_at', 'asc')
+                ->get();
+            
+            // If this is not the first request, it's actually waiting
+            if ($registrarRequests->isNotEmpty() && $registrarRequests->first()->id !== $onsiteRequest->id) {
+                $displayStatus = 'waiting';
+                $position = $registrarRequests->search(function($req) use ($onsiteRequest) {
+                    return $req->id === $onsiteRequest->id;
+                }) + 1; // Position in queue (1-based)
+            }
+        } elseif ($onsiteRequest->status === 'waiting' && $onsiteRequest->registrar) {
             $position = $this->queueService->getWaitingPositionForRequest($onsiteRequest);
+            $displayStatus = 'waiting';
         }
 
         return response()->json([
@@ -419,8 +491,8 @@ class ReferenceController extends Controller
             'documents' => $documents, // New field with documents array
             'quantity' => $onsiteRequest->requestItems->sum('quantity'),
             'reason' => $onsiteRequest->reason,
-            'status' => $onsiteRequest->status,
-            'current_step' => $this->mapStatusToStep($onsiteRequest->status),
+            'status' => $displayStatus, // Use display status instead of raw status
+            'current_step' => $this->mapStatusToStep($displayStatus),
             'position' => $position, // Position in waiting queue
             'window_name' => $onsiteRequest->assignedWindow ? $onsiteRequest->assignedWindow->name : null,
             'registrar_name' => $onsiteRequest->registrar ?
