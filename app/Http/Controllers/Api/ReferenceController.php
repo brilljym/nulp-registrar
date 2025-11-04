@@ -8,7 +8,6 @@ use App\Models\OnsiteRequest;
 use App\Events\QueuePlacementConfirmed;
 use Illuminate\Http\Request;
 use App\Services\QueueService;
-use Illuminate\Support\Facades\Log;
 
 class ReferenceController extends Controller
 {
@@ -177,14 +176,12 @@ class ReferenceController extends Controller
         $displayStatus = $studentRequest->status;
         
         // For in_queue status, check if this is the first request or waiting
-        if ($studentRequest->status === 'in_queue' && $studentRequest->assignedRegistrar) {
-            // Get all in_queue requests for this registrar
-            $registrarRequests = StudentRequest::where('assigned_registrar_id', $studentRequest->assignedRegistrar->id)
+        if ($studentRequest->status === 'in_queue' && $studentRequest->assigned_registrar_id) {
+            // Get all in_queue/waiting requests for this registrar
+            $registrarRequests = StudentRequest::where('assigned_registrar_id', $studentRequest->assigned_registrar_id)
                 ->whereIn('status', ['in_queue', 'waiting'])
                 ->orderBy('created_at', 'asc')
                 ->get();
-            
-            Log::info("API Debug - Reference: {$reference}, Status: {$studentRequest->status}, Registrar: {$studentRequest->assignedRegistrar->id}, Total requests: {$registrarRequests->count()}");
             
             // If this is not the first request, it's actually waiting
             if ($registrarRequests->isNotEmpty() && $registrarRequests->first()->id !== $studentRequest->id) {
@@ -192,14 +189,10 @@ class ReferenceController extends Controller
                 $position = $registrarRequests->search(function($req) use ($studentRequest) {
                     return $req->id === $studentRequest->id;
                 }) + 1; // Position in queue (1-based)
-                Log::info("API Debug - Reference: {$reference}, Changed status to 'waiting', Position: {$position}");
-            } else {
-                Log::info("API Debug - Reference: {$reference}, Keeping status 'in_queue' (first in queue)");
             }
-        } elseif ($studentRequest->status === 'waiting' && $studentRequest->assignedRegistrar) {
+        } elseif ($studentRequest->status === 'waiting' && $studentRequest->assigned_registrar_id) {
             $position = $this->queueService->getWaitingPositionForStudentRequest($studentRequest);
             $displayStatus = 'waiting';
-            Log::info("API Debug - Reference: {$reference}, Status is 'waiting', Position: {$position}");
         }
 
         return response()->json([
@@ -252,22 +245,16 @@ class ReferenceController extends Controller
                 ->orderBy('created_at', 'asc')
                 ->get();
             
-            Log::info("API Debug - Onsite Reference: {$refCode}, Status: {$request->status}, Registrar: {$request->assigned_registrar_id}, Total requests: {$registrarRequests->count()}");
-            
             // If this is not the first request, it's actually waiting
             if ($registrarRequests->isNotEmpty() && $registrarRequests->first()->id !== $request->id) {
                 $displayStatus = 'waiting';
                 $position = $registrarRequests->search(function($req) use ($request) {
                     return $req->id === $request->id;
                 }) + 1; // Position in queue (1-based)
-                Log::info("API Debug - Onsite Reference: {$refCode}, Changed status to 'waiting', Position: {$position}");
-            } else {
-                Log::info("API Debug - Onsite Reference: {$refCode}, Keeping status 'in_queue' (first in queue)");
             }
         } elseif ($request->status === 'waiting' && $request->assigned_registrar_id) {
             $position = $this->queueService->getWaitingPositionForRequest($request);
             $displayStatus = 'waiting';
-            Log::info("API Debug - Onsite Reference: {$refCode}, Status is 'waiting', Position: {$position}");
         }
 
         return response()->json([
@@ -485,7 +472,7 @@ class ReferenceController extends Controller
                     return $req->id === $onsiteRequest->id;
                 }) + 1; // Position in queue (1-based)
             }
-        } elseif ($onsiteRequest->status === 'waiting' && $onsiteRequest->registrar) {
+        } elseif ($onsiteRequest->status === 'waiting' && $onsiteRequest->assigned_registrar_id) {
             $position = $this->queueService->getWaitingPositionForRequest($onsiteRequest);
             $displayStatus = 'waiting';
         }
