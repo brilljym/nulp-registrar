@@ -174,6 +174,7 @@ class ReferenceController extends Controller
         // Calculate position if status is waiting or in_queue
         $position = 0;
         $displayStatus = $studentRequest->status;
+        $registrarRequests = null; // Initialize for debug info
         
         // For in_queue status, check if this is the first request or waiting
         if ($studentRequest->status === 'in_queue' && $studentRequest->assigned_registrar_id) {
@@ -189,6 +190,9 @@ class ReferenceController extends Controller
                 $position = $registrarRequests->search(function($req) use ($studentRequest) {
                     return $req->id === $studentRequest->id;
                 }) + 1; // Position in queue (1-based)
+            } elseif ($registrarRequests->isNotEmpty()) {
+                // This is the first request, still calculate position
+                $position = 1;
             }
         } elseif ($studentRequest->status === 'waiting' && $studentRequest->assigned_registrar_id) {
             $position = $this->queueService->getWaitingPositionForStudentRequest($studentRequest);
@@ -204,6 +208,16 @@ class ReferenceController extends Controller
             'documents' => $documents, // New field with all documents
             'total_cost' => $studentRequest->total_cost,
             'status' => $displayStatus, // Use display status instead of raw status
+            'debug_info' => [
+                'raw_status' => $studentRequest->status,
+                'display_status' => $displayStatus,
+                'assigned_registrar_id' => $studentRequest->assigned_registrar_id,
+                'position' => $position,
+                'total_requests_for_registrar' => $registrarRequests ? $registrarRequests->count() : 0,
+                'first_request_id' => $registrarRequests ? $registrarRequests->first()->id : null,
+                'current_request_id' => $studentRequest->id,
+                'is_first' => $registrarRequests ? ($registrarRequests->first()->id === $studentRequest->id) : null,
+            ],
             'queue_number' => $studentRequest->queue_number,
             'position' => $position, // Position in waiting queue
             'registrar_name' => $studentRequest->assignedRegistrar ? 
@@ -236,6 +250,7 @@ class ReferenceController extends Controller
         // Calculate position if status is waiting or in_queue
         $position = 0;
         $displayStatus = $request->status;
+        $registrarRequests = null; // Initialize for debug info
         
         // For in_queue status, check if this is the first request or waiting
         if ($request->status === 'in_queue' && $request->assigned_registrar_id) {
@@ -251,6 +266,9 @@ class ReferenceController extends Controller
                 $position = $registrarRequests->search(function($req) use ($request) {
                     return $req->id === $request->id;
                 }) + 1; // Position in queue (1-based)
+            } elseif ($registrarRequests->isNotEmpty()) {
+                // This is the first request, still calculate position
+                $position = 1;
             }
         } elseif ($request->status === 'waiting' && $request->assigned_registrar_id) {
             $position = $this->queueService->getWaitingPositionForRequest($request);
@@ -273,7 +291,17 @@ class ReferenceController extends Controller
             ]],
             'quantity' => $request->quantity,
             'reason' => $request->reason,
-            'status' => $request->status,
+            'status' => $displayStatus, // Use display status instead of raw status
+            'debug_info' => [
+                'raw_status' => $request->status,
+                'display_status' => $displayStatus,
+                'assigned_registrar_id' => $request->assigned_registrar_id,
+                'position' => $position,
+                'total_requests_for_registrar' => $registrarRequests ? $registrarRequests->count() : 0,
+                'first_request_id' => $registrarRequests ? $registrarRequests->first()->id : null,
+                'current_request_id' => $request->id,
+                'is_first' => $registrarRequests ? ($registrarRequests->first()->id === $request->id) : null,
+            ],
             'current_step' => $request->current_step,
             'queue_number' => $request->queue_number,
             'position' => $position, // Position in waiting queue
