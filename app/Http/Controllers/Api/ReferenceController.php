@@ -120,7 +120,7 @@ class ReferenceController extends Controller
     /**
      * Get a specific student request by reference number
      */
-    public function getTransactionByReference($reference)
+    public function getTransactionByReference(Request $request, $reference)
     {
         // Only return student requests that are ready to be processed or completed
         $acceptableStatuses = [
@@ -142,6 +142,11 @@ class ReferenceController extends Controller
 
         if (!$studentRequest) {
             return response()->json(['message' => 'Student request not found'], 404);
+        }
+
+        // Update player_id if provided
+        if ($request->has('player_id') && $request->player_id) {
+            $studentRequest->update(['player_id' => $request->player_id]);
         }
 
         $studentName = '';
@@ -195,7 +200,7 @@ class ReferenceController extends Controller
     /**
      * Get a specific onsite request by reference code
      */
-    public function getOnsiteRequestByReference($refCode)
+    public function getOnsiteRequestByReference(Request $httpRequest, $refCode)
     {
         $request = OnsiteRequest::with(['document', 'window', 'registrar'])
             ->where('ref_code', $refCode)
@@ -203,6 +208,11 @@ class ReferenceController extends Controller
 
         if (!$request) {
             return response()->json(['message' => 'Onsite request not found'], 404);
+        }
+
+        // Update player_id if provided
+        if ($httpRequest->has('player_id') && $httpRequest->player_id) {
+            $request->update(['player_id' => $httpRequest->player_id]);
         }
 
         // Calculate position if status is waiting
