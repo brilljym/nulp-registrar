@@ -198,6 +198,63 @@ Route::get('/clear-cache', function() {
     }
 });
 
+// Test OneSignal API credentials directly
+Route::get('/test-onesignal-creds', function() {
+    try {
+        $appId = config('onesignal.app_id');
+        $restApiKey = config('onesignal.rest_api_key');
+        
+        if (!$appId || !$restApiKey) {
+            return response()->json([
+                'success' => false,
+                'message' => 'OneSignal credentials not configured',
+                'app_id_set' => !empty($appId),
+                'rest_api_key_set' => !empty($restApiKey)
+            ]);
+        }
+        
+        // Test basic API connectivity
+        $client = new \GuzzleHttp\Client();
+        $response = $client->get('https://api.onesignal.com/apps/' . $appId, [
+            'headers' => [
+                'Authorization' => 'Basic ' . $restApiKey,
+                'Content-Type' => 'application/json'
+            ]
+        ]);
+        
+        $data = json_decode($response->getBody(), true);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'OneSignal API credentials are valid',
+            'app_info' => [
+                'id' => $data['id'] ?? null,
+                'name' => $data['name'] ?? null,
+                'created_at' => $data['created_at'] ?? null
+            ]
+        ]);
+        
+    } catch (\GuzzleHttp\Exception\ClientException $e) {
+        $response = $e->getResponse();
+        $statusCode = $response->getStatusCode();
+        $body = json_decode($response->getBody(), true);
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'OneSignal API authentication failed',
+            'error_code' => $statusCode,
+            'error_details' => $body
+        ], $statusCode);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'OneSignal API test failed: ' . $e->getMessage(),
+            'error_type' => get_class($e)
+        ], 500);
+    }
+});
+
 // Print Job Management API Routes (for local print service)
 Route::prefix('print-jobs')->group(function () {
     Route::get('/pending', [App\Http\Controllers\Api\PrintJobController::class, 'getPendingJobs']);

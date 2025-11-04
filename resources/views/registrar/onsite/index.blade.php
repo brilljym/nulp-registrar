@@ -229,7 +229,58 @@
         @endif
     </h2>
 
-    <div class="table-responsive">
+    @php
+        // Separate requests into onsite and kiosk
+        $onsiteRequests = $requests->filter(function($req) {
+            return in_array($req->status, ['pending', 'registrar_approved', 'processing', 'ready_for_release', 'released']);
+        });
+        
+        $kioskRequests = $requests->filter(function($req) {
+            return in_array($req->status, ['in_queue', 'ready_for_pickup', 'waiting']);
+        });
+        
+        $completedRequests = $requests->filter(function($req) {
+            return $req->status === 'completed';
+        });
+    @endphp
+
+    @if($requests->isEmpty())
+        <div class="alert alert-info text-center">
+            @if(isset($isWindowOccupied) && $isWindowOccupied)
+                Your window is currently occupied. Complete the current request to receive new ones.
+            @elseif(request()->routeIs('registrar.onsite.pending'))
+                @php
+                    $totalPending = \App\Models\OnsiteRequest::where('status', 'pending')
+                        ->whereNull('assigned_registrar_id')
+                        ->whereNull('window_id')
+                        ->count();
+                @endphp
+                @if($totalPending > 0)
+                    <div class="text-warning mb-2">
+                        <i class="bi bi-exclamation-circle"></i> There are {{ $totalPending }} pending request(s) waiting for approval, but none are currently assigned to your window.
+                    </div>
+                    <small class="text-muted">
+                        Pending requests should appear here automatically. If you don't see them, please refresh the page or contact support.
+                    </small>
+                @else
+                    No pending requests assigned to your window at this time.
+                @endif
+            @elseif(request()->routeIs('registrar.onsite.completed'))
+                No completed requests found for your window.
+            @else
+                No requests assigned to your window at this time.
+            @endif
+        </div>
+    @endif
+
+    <!-- Onsite Processing Requests -->
+    @if($onsiteRequests->count() > 0)
+    <div class="mb-5">
+        <h4 class="mb-3">
+            <i class="bi bi-person-workspace text-primary"></i> Onsite Processing Requests
+            <span class="badge bg-primary ms-2">{{ $onsiteRequests->count() }}</span>
+        </h4>
+        <div class="table-responsive">
         <table class="table table-hover align-middle">
             <thead class="table-dark">
                 <tr>
@@ -245,39 +296,7 @@
                 </tr>
             </thead>
             <tbody>
-                @if($requests->isEmpty())
-                    <tr>
-                        <td colspan="9" class="text-center py-4">
-                            <div class="alert alert-info mb-0">
-                                @if(isset($isWindowOccupied) && $isWindowOccupied)
-                                    Your window is currently occupied. Complete the current request to receive new ones.
-                                @elseif(request()->routeIs('registrar.onsite.pending'))
-                                    @php
-                                        $totalPending = \App\Models\OnsiteRequest::where('status', 'pending')
-                                            ->whereNull('assigned_registrar_id')
-                                            ->whereNull('window_id')
-                                            ->count();
-                                    @endphp
-                                    @if($totalPending > 0)
-                                        <div class="text-warning mb-2">
-                                            <i class="bi bi-exclamation-circle"></i> There are {{ $totalPending }} pending request(s) waiting for approval, but none are currently assigned to your window.
-                                        </div>
-                                        <small class="text-muted">
-                                            Pending requests should appear here automatically. If you don't see them, please refresh the page or contact support.
-                                        </small>
-                                    @else
-                                        No pending requests assigned to your window at this time.
-                                    @endif
-                                @elseif(request()->routeIs('registrar.onsite.completed'))
-                                    No completed requests found for your window.
-                                @else
-                                    No requests assigned to your window at this time.
-                                @endif
-                            </div>
-                        </td>
-                    </tr>
-                @else
-                    @foreach ($requests as $index => $req)
+                @forelse ($onsiteRequests as $index => $req)
                 <tr class="table-row">
                     <td class="text-center fw-bold text-muted">{{ $requests->firstItem() + $index }}</td>
                     <td>
@@ -536,21 +555,273 @@
                         @endif
                     </td>
                 </tr>
-                @endforeach
-                @endif
+                @empty
+                <tr>
+                    <td colspan="9" class="text-center text-muted py-4">
+                        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                        No onsite processing requests found.
+                    </td>
+                </tr>
+                @endforelse
             </tbody>
         </table>
-    </div>
-    @if($requests->isEmpty())
-        <div class="text-center py-4">
-            <small class="text-muted">
-                @if(isset($isWindowOccupied) && $isWindowOccupied)
-                    Complete your current request to receive new ones.
-                @else
-                    Refresh the page if you expect to see requests here.
-                @endif
-            </small>
         </div>
+    </div>
+    @endif
+
+    <!-- Kiosk Processing Requests -->
+    @if($kioskRequests->count() > 0)
+    <div class="mb-5">
+        <h4 class="mb-3">
+            <i class="bi bi-display text-info"></i> Kiosk Processing Requests
+            <span class="badge bg-info ms-2">{{ $kioskRequests->count() }}</span>
+        </h4>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="text-center" style="width: 5%;">#</th>
+                        <th>Name & Ticket</th>
+                        <th>Course Details</th>
+                        <th>Document Type</th>
+                        <th>Reason</th>
+                        <th class="text-center">Status</th>
+                        <th>Expected Release Date</th>
+                        <th>Registrar</th>
+                        <th class="text-center" style="width: 15%;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($kioskRequests as $index => $req)
+                    <tr class="table-row">
+                        <td class="text-center fw-bold text-muted">{{ $index + 1 }}</td>
+                        <td>
+                            <div class="fw-semibold">{{ $req->full_name }}</div>
+                            <small class="text-muted">{{ $req->created_at->format('M d, Y') }}</small><br>
+                            <small class="text-monospace text-secondary">
+                                ticket-no:{{ $req->created_at->format('Ymd') }}-i{{ $req->id }}
+                            </small>
+                        </td>
+                        <td>
+                            <div><strong>Course:</strong> {{ $req->course }}</div>
+                            <div><strong>Year:</strong> {{ $req->year_level }}</div>
+                            <div><strong>Dept:</strong> {{ $req->department }}</div>
+                        </td>
+                        <td>
+                            @if ($req->requestItems->count() > 0)
+                                @foreach($req->requestItems as $item)
+                                    <div>{{ $item->document->type_document }} (x{{ $item->quantity }})</div>
+                                @endforeach
+                            @else
+                                <span class="text-muted">Not specified</span>
+                            @endif
+                        </td>
+                        <td>
+                            {{ $req->reason ?? 'Not specified' }}
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-{{ $req->status === 'in_queue' ? 'primary' : ($req->status === 'ready_for_pickup' ? 'warning' : 'secondary') }} rounded-pill px-3">
+                                {{ $req->display_status_label }}
+                            </span><br>
+                            <small class="text-muted">
+                                @if($req->status === 'in_queue')
+                                    In Progress
+                                @elseif($req->status === 'ready_for_pickup')
+                                    In Progress
+                                @else
+                                    Waiting
+                                @endif
+                            </small>
+                        </td>
+                        <td>
+                            @if($req->expected_release_date)
+                                <div><i class="bi bi-calendar-check"></i> {{ \Carbon\Carbon::parse($req->expected_release_date)->format('M j, Y') }}</div>
+                                <small class="text-muted">{{ \Carbon\Carbon::parse($req->expected_release_date)->format('l g:i A') }}</small>
+                            @else
+                                <span class="text-muted"><i class="bi bi-dash-circle"></i> Not set</span>
+                            @endif
+                        </td>
+                        <td>
+                            <div><strong>Registrar:</strong>
+                                @if ($req->registrar)
+                                    {{ $req->registrar->first_name }} {{ $req->registrar->last_name }}
+                                @else
+                                    <span class="text-muted">Not assigned</span>
+                                @endif
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            @if ($req->status === 'in_queue' && (!$req->assigned_registrar_id || $req->assigned_registrar_id === Auth::id()))
+                                <small class="text-muted">Kiosk Processing</small><br>
+                                @if(!isset($isWindowOccupied) || !$isWindowOccupied || (isset($currentRequest) && $currentRequest->id === $req->id))
+                                    @if($req->assigned_registrar_id === Auth::id())
+                                        <form method="POST" action="{{ route('registrar.onsite.ready-pickup', $req->id) }}" class="d-inline">
+                                            @csrf
+                                            <button class="btn btn-warning action-btn">Ready for Pickup</button>
+                                        </form>
+                                    @else
+                                        <button type="button" class="btn btn-primary action-btn" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#takeRequestModal" 
+                                                data-request-id="{{ $req->id }}"
+                                                data-student-name="{{ $req->full_name }}">
+                                            Take Request
+                                        </button>
+                                    @endif
+                                @else
+                                    <small class="text-muted">
+                                        <i class="bi bi-lock-fill"></i> Window occupied
+                                    </small>
+                                @endif
+                            @elseif ($req->status === 'ready_for_pickup' && $req->assigned_registrar_id === Auth::id())
+                                <form method="POST" action="{{ route('registrar.onsite.complete-request', $req->id) }}" class="d-inline">
+                                    @csrf
+                                    <button class="btn btn-success action-btn">Complete Request</button>
+                                </form>
+                            @elseif ($req->status === 'waiting')
+                                <small class="text-muted">Kiosk Processing</small><br>
+                                @if($req->assigned_registrar_id === Auth::id())
+                                    @if(!isset($isWindowOccupied) || !$isWindowOccupied)
+                                        <form method="POST" action="{{ route('registrar.onsite.take', $req->id) }}" class="d-inline">
+                                            @csrf
+                                            <button class="btn btn-primary action-btn">Start Processing</button>
+                                        </form>
+                                    @else
+                                        <small class="text-muted">
+                                            <i class="bi bi-hourglass-split"></i> Window occupied
+                                        </small>
+                                    @endif
+                                @elseif(!$req->assigned_registrar_id)
+                                    @if(!isset($isWindowOccupied) || !$isWindowOccupied)
+                                        <button type="button" class="btn btn-primary action-btn" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#takeRequestModal" 
+                                                data-request-id="{{ $req->id }}"
+                                                data-student-name="{{ $req->full_name }}">
+                                            Take Request
+                                        </button>
+                                    @else
+                                        <small class="text-muted">
+                                            <i class="bi bi-hourglass-split"></i> Waiting in queue
+                                        </small>
+                                    @endif
+                                @else
+                                    <small class="text-muted">
+                                        <i class="bi bi-person-fill"></i> Assigned to another registrar
+                                    </small>
+                                @endif
+                            @endif
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @endif
+
+    <!-- Completed Requests -->
+    @if($completedRequests->count() > 0)
+    <div class="mb-5">
+        <h4 class="mb-3">
+            <i class="bi bi-check-circle-fill text-success"></i> Completed Requests
+            <span class="badge bg-success ms-2">{{ $completedRequests->count() }}</span>
+        </h4>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="text-center" style="width: 5%;">#</th>
+                        <th>Name & Ticket</th>
+                        <th>Course Details</th>
+                        <th>Document Type</th>
+                        <th>Reason</th>
+                        <th class="text-center">Status</th>
+                        <th>Expected Release Date</th>
+                        <th>Registrar</th>
+                        <th class="text-center" style="width: 15%;">Feedback</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($completedRequests as $index => $req)
+                    <tr class="table-row">
+                        <td class="text-center fw-bold text-muted">{{ $index + 1 }}</td>
+                        <td>
+                            <div class="fw-semibold">{{ $req->full_name }}</div>
+                            <small class="text-muted">{{ $req->created_at->format('M d, Y') }}</small><br>
+                            <small class="text-monospace text-secondary">
+                                ticket-no:{{ $req->created_at->format('Ymd') }}-i{{ $req->id }}
+                            </small>
+                        </td>
+                        <td>
+                            <div><strong>Course:</strong> {{ $req->course }}</div>
+                            <div><strong>Year:</strong> {{ $req->year_level }}</div>
+                            <div><strong>Dept:</strong> {{ $req->department }}</div>
+                        </td>
+                        <td>
+                            @if ($req->requestItems->count() > 0)
+                                @foreach($req->requestItems as $item)
+                                    <div>{{ $item->document->type_document }} (x{{ $item->quantity }})</div>
+                                @endforeach
+                            @else
+                                <span class="text-muted">Not specified</span>
+                            @endif
+                        </td>
+                        <td>
+                            {{ $req->reason ?? 'Not specified' }}
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-success rounded-pill px-3">
+                                {{ $req->display_status_label }}
+                            </span><br>
+                            <small class="text-muted">Completed</small>
+                        </td>
+                        <td>
+                            @if($req->expected_release_date)
+                                <div><i class="bi bi-calendar-check"></i> {{ \Carbon\Carbon::parse($req->expected_release_date)->format('M j, Y') }}</div>
+                                <small class="text-muted">{{ \Carbon\Carbon::parse($req->expected_release_date)->format('l g:i A') }}</small>
+                            @else
+                                <span class="text-muted"><i class="bi bi-dash-circle"></i> Not set</span>
+                            @endif
+                        </td>
+                        <td>
+                            <div><strong>Registrar:</strong>
+                                @if ($req->registrar)
+                                    {{ $req->registrar->first_name }} {{ $req->registrar->last_name }}
+                                @else
+                                    <span class="text-muted">Not assigned</span>
+                                @endif
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            @if ($req->feedback)
+                                <div class="text-center">
+                                    <div class="text-warning mb-1">
+                                        @for($i = 1; $i <= $req->feedback->rating; $i++)
+                                            ⭐
+                                        @endfor
+                                    </div>
+                                    <small class="text-success">
+                                        <i class="bi bi-chat-heart"></i> Feedback received
+                                    </small>
+                                    @if($req->feedback->comment)
+                                        <br><small class="text-muted" title="{{ $req->feedback->comment }}">
+                                            "{{ Str::limit($req->feedback->comment, 30) }}"
+                                        </small>
+                                    @endif
+                                </div>
+                            @else
+                                <small class="text-muted">
+                                    <i class="bi bi-chat"></i> No feedback yet
+                                </small>
+                            @endif
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
     @endif
 
     <!-- Laravel Pagination (clean & compact) -->

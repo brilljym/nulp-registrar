@@ -28,9 +28,11 @@ class WindowController extends Controller
      */
     public function queueDisplay()
     {
-        // Get all kiosk-entered requests (those that can be entered in kiosk) - EXCLUDING ready_for_pickup and completed since they're handled separately
+        // Get all kiosk-entered requests (those that can be entered in kiosk)
+        // Only include kiosk processing statuses: in_queue and waiting
+        // Note: ready_for_release is for onsite processing and should not appear in queue display
         $kioskEnteredStatuses = [
-            'student' => ['ready_for_release', 'in_queue', 'waiting'],
+            'student' => ['in_queue', 'waiting'],
             'onsite' => ['in_queue', 'waiting']
         ];
 

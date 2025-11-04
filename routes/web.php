@@ -130,6 +130,7 @@ Route::middleware(['auth'])->prefix('registrar')->name('registrar.')->group(func
         // ✅ Student Transaction Workflow Actions
         Route::post('/approve/{studentRequest}', [RegistrarController::class, 'approveRequest'])->name('approve');
         Route::post('/reject/{studentRequest}', [RegistrarController::class, 'rejectRequest'])->name('reject');
+        Route::post('/take/{studentRequest}', [RegistrarController::class, 'takeRequest'])->name('take');
         Route::post('/release/{studentRequest}', [RegistrarController::class, 'markAsReadyForRelease'])->name('release');
         Route::post('/ready-pickup/{studentRequest}', [RegistrarController::class, 'markAsReadyForPickup'])->name('ready-pickup');
         Route::post('/close/{studentRequest}', [RegistrarController::class, 'closeRequest'])->name('close');

@@ -371,15 +371,6 @@
             letter-spacing: 0.5px;
         }
 
-        .kiosk-indicator {
-            font-size: 0.9rem;
-            color: var(--neutral-600);
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-            margin-top: 0.5rem;
-        }
-
         .no-queue-message {
             color: var(--neutral-400);
             font-style: italic;

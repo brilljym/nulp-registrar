@@ -238,15 +238,16 @@ class RegistrarController extends Controller
         // Find the registrar's assigned window
         $assignedWindow = \App\Models\Window::where('name', 'Window ' . $currentRegistrar->window_number)->first();
         
-        // Check if window is currently occupied
+        // Check if window is currently occupied with an ONSITE request
+        // Note: Kiosk processing (in_queue, ready_for_pickup, waiting) doesn't block window
         if ($assignedWindow) {
             $occupiedRequest = StudentRequest::where('assigned_registrar_id', $currentUser->id)
-                ->whereIn('status', ['registrar_approved', 'processing', 'in_queue', 'ready_for_pickup'])
+                ->whereIn('status', ['registrar_approved', 'processing', 'ready_for_release'])
                 ->whereNotIn('status', ['completed', 'released'])
                 ->first();
                 
             if ($occupiedRequest && $occupiedRequest->id !== $studentRequest->id) {
-                return redirect()->back()->with('error', 'Your window is currently occupied. Please complete the current request first.');
+                return redirect()->back()->with('error', 'Your window is currently occupied with an onsite request. Please complete it first before approving new onsite requests.');
             }
         }
 
@@ -514,6 +515,78 @@ class RegistrarController extends Controller
         // Note: Email notification removed as per request - no email sent when marking as completed
 
         return redirect()->back()->with('success', 'Request marked as completed - documents successfully collected.');
+    }
+
+    /**
+     * Take/assign a student request to the current registrar
+     * Allows taking kiosk requests even when window is occupied (they can be queued)
+     */
+    public function takeRequest(Request $request, StudentRequest $studentRequest)
+    {
+        $currentUser = Auth::user();
+        $currentRegistrar = $currentUser->registrar;
+        
+        if (!$currentRegistrar) {
+            return redirect()->back()->with('error', 'Access denied. You are not assigned as a registrar.');
+        }
+        
+        // Verify the request can be taken (in_queue or waiting status and not assigned)
+        if (!in_array($studentRequest->status, ['in_queue', 'waiting'])) {
+            return redirect()->back()->with('error', 'Only in-queue or waiting requests can be taken.');
+        }
+        
+        // Check if request is already assigned to someone else
+        if ($studentRequest->assigned_registrar_id && $studentRequest->assigned_registrar_id !== $currentUser->id) {
+            return redirect()->back()->with('error', 'This request is already assigned to another registrar.');
+        }
+        
+        // Find the registrar's assigned window
+        $assignedWindow = \App\Models\Window::where('name', 'Window ' . $currentRegistrar->window_number)->first();
+        
+        // For kiosk requests (in_queue, waiting, ready_for_pickup), allow multiple assignments
+        // Only check for duplicate active kiosk requests
+        $hasActiveKioskRequest = StudentRequest::where('assigned_registrar_id', $currentUser->id)
+            ->whereIn('status', ['in_queue', 'ready_for_pickup', 'waiting'])
+            ->where('id', '!=', $studentRequest->id)
+            ->exists();
+        
+        // Allow taking kiosk requests even if there's already one (they can be queued)
+        // Only prevent if trying to take the exact same request twice
+        if ($hasActiveKioskRequest && $studentRequest->assigned_registrar_id === $currentUser->id) {
+            return redirect()->back()->with('error', 'This request is already assigned to you.');
+        }
+        
+        // Assign request to this registrar and window
+        $studentRequest->update([
+            'assigned_registrar_id' => $currentUser->id,
+            'window_id' => $assignedWindow ? $assignedWindow->id : null,
+            'remarks' => $request->input('remarks'),
+            'updated_at' => now(),
+        ]);
+        
+        // If status was waiting, keep it as waiting (will be moved to in_queue by queue system)
+        // Don't automatically move to in_queue to maintain queue order
+        
+        // Broadcast real-time notification
+        $this->notificationService->sendSuccess(
+            "Request #{$studentRequest->reference_no} has been taken by " . $currentUser->first_name . ' ' . $currentUser->last_name,
+            [
+                'request_id' => $studentRequest->reference_no,
+                'status' => $studentRequest->status,
+                'student_name' => $studentRequest->student->user->first_name . ' ' . $studentRequest->student->user->last_name,
+                'document_type' => $studentRequest->requestItems->first()->document->type_document ?? 'Document',
+                'registrar_name' => $currentUser->first_name . ' ' . $currentUser->last_name,
+                'window_number' => $currentRegistrar->window_number,
+                'queue_number' => $studentRequest->queue_number,
+                'status_update' => true
+            ],
+            [
+                'registrar-notifications',
+                "request-{$studentRequest->reference_no}"
+            ]
+        );
+        
+        return redirect()->back()->with('success', 'Request successfully assigned to you. You can process it when your window becomes available.');
     }
 
     /**

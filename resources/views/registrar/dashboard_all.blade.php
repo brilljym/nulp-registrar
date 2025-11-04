@@ -113,14 +113,16 @@
     }
 
     /* Disable hover/focus effects for readonly student name field in modal */
-    #student_name {
+    #student_name, #take_student_name {
         pointer-events: none !important;
         cursor: default !important;
         background-color: #e9ecef !important;
         opacity: 1 !important;
     }
     #student_name:hover,
-    #student_name:focus {
+    #student_name:focus,
+    #take_student_name:hover,
+    #take_student_name:focus {
         background-color: #e9ecef !important;
         border-color: #ced4da !important;
         box-shadow: none !important;
@@ -220,7 +222,29 @@
         </div>
     @endif
 
-    <div class="table-responsive">
+    @php
+        // Separate requests into onsite and kiosk
+        $onsiteRequests = $all->filter(function($request) {
+            return in_array($request->status, ['pending', 'registrar_approved', 'processing', 'ready_for_release']);
+        });
+        
+        $kioskRequests = $all->filter(function($request) {
+            return in_array($request->status, ['in_queue', 'ready_for_pickup', 'waiting']);
+        });
+        
+        $completedRequests = $all->filter(function($request) {
+            return $request->status === 'completed';
+        });
+    @endphp
+
+    <!-- Onsite Processing Requests -->
+    @if($onsiteRequests->count() > 0)
+    <div class="mb-5">
+        <h4 class="mb-3">
+            <i class="bi bi-person-workspace text-primary"></i> Onsite Processing Requests
+            <span class="badge bg-primary ms-2">{{ $onsiteRequests->count() }}</span>
+        </h4>
+        <div class="table-responsive">
         <table class="table table-hover align-middle">
             <thead class="table-dark">
                 <tr>
@@ -237,8 +261,7 @@
                 </tr>
             </thead>
             <tbody>
-
-                @foreach($all as $index => $request)
+                @foreach($onsiteRequests as $index => $request)
                 <tr class="table-row">
                     <td class="text-center fw-bold text-muted">{{ $all->firstItem() + $index }}</td>
                     <td>
@@ -381,7 +404,253 @@
                 @endforeach
             </tbody>
         </table>
+        </div>
     </div>
+    @endif
+
+    <!-- Kiosk Processing Requests -->
+    @if($kioskRequests->count() > 0)
+    <div class="mb-5">
+        <h4 class="mb-3">
+            <i class="bi bi-display text-info"></i> Kiosk Processing Requests
+            <span class="badge bg-info ms-2">{{ $kioskRequests->count() }}</span>
+        </h4>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="text-center" style="width: 5%;">#</th>
+                        <th>Student Details</th>
+                        <th>Document Type</th>
+                        <th>Reason</th>
+                        <th>Remarks</th>
+                        <th class="text-center">Status</th>
+                        <th>Registrar</th>
+                        <th>Request Date</th>
+                        <th>Expected Release Date</th>
+                        <th class="text-center" style="width: 15%;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($kioskRequests as $index => $request)
+                    <tr class="table-row">
+                        <td class="text-center fw-bold text-muted">{{ $index + 1 }}</td>
+                        <td>
+                            <div class="fw-semibold">{{ $request->student->user->first_name }} {{ $request->student->user->last_name }}</div>
+                            <small class="text-muted">{{ $request->student->student_id }}</small><br>
+                            <small class="text-primary">REF: {{ $request->reference_no }}</small>
+                        </td>
+                        <td>
+                            @if($request->requestItems->count() > 0)
+                                @foreach($request->requestItems as $item)
+                                    <div class="fw-semibold">{{ $item->document->type_document }} (x{{ $item->quantity }})</div>
+                                @endforeach
+                            @else
+                                <span class="text-muted">No documents</span>
+                            @endif
+                            <small class="text-muted">Total: ₱{{ number_format($request->total_cost, 2) }}</small>
+                        </td>
+                        <td>
+                            {{ $request->reason ?? 'Not specified' }}
+                        </td>
+                        <td>
+                            @if($request->remarks)
+                                <small class="text-muted">{{ Str::limit($request->remarks, 50) }}</small>
+                            @else
+                                <small class="text-muted">-</small>
+                            @endif
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-{{ $request->status === 'in_queue' ? 'primary' : ($request->status === 'ready_for_pickup' ? 'warning' : 'secondary') }} rounded-pill px-3">
+                                {{ ucfirst(str_replace('_', ' ', $request->status)) }}
+                            </span><br>
+                            <small class="text-muted">
+                                @if($request->status === 'in_queue')
+                                    In Progress
+                                @elseif($request->status === 'ready_for_pickup')
+                                    In Progress
+                                @else
+                                    Waiting
+                                @endif
+                            </small>
+                        </td>
+                        <td>
+                            @if($request->registrar)
+                                <div><i class="bi bi-person-fill"></i> {{ $request->registrar->first_name }} {{ $request->registrar->last_name }}</div>
+                            @else
+                                <span class="text-muted"><i class="bi bi-dash-circle"></i> Not Assigned</span>
+                            @endif
+                        </td>
+                        <td>
+                            <div><i class="bi bi-clock"></i> {{ $request->created_at->format('M j, Y') }}</div>
+                            <small class="text-muted">{{ $request->created_at->format('g:i A') }}</small>
+                        </td>
+                        <td>
+                            @if($request->expected_release_date)
+                                <div><i class="bi bi-calendar-check"></i> {{ \Carbon\Carbon::parse($request->expected_release_date)->format('M j, Y') }}</div>
+                                <small class="text-muted">{{ \Carbon\Carbon::parse($request->expected_release_date)->format('l') }}</small>
+                            @else
+                                <span class="text-muted"><i class="bi bi-dash-circle"></i> Not set</span>
+                            @endif
+                        </td>
+                        <td class="text-center">
+                            @if ($request->status === 'in_queue')
+                                <small class="text-muted">Kiosk Processing</small><br>
+                                @if($request->assigned_registrar_id === Auth::id())
+                                    {{-- Already assigned to current registrar --}}
+                                    <form action="{{ route('registrar.ready-pickup', $request->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        <button class="btn btn-warning action-btn">Ready for Pickup</button>
+                                    </form>
+                                @elseif(!$request->assigned_registrar_id)
+                                    {{-- Not assigned yet, allow taking even if window occupied --}}
+                                    <button type="button" class="btn btn-primary action-btn"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#takeRequestModal"
+                                            data-request-id="{{ $request->id }}"
+                                            data-student-name="{{ $request->student->user->first_name }} {{ $request->student->user->last_name }}">
+                                        Take Request
+                                    </button>
+                                @else
+                                    {{-- Assigned to another registrar --}}
+                                    <small class="text-muted">
+                                        <i class="bi bi-person-fill"></i> Assigned to another registrar
+                                    </small>
+                                @endif
+                            @elseif ($request->status === 'ready_for_pickup')
+                                <small class="text-muted">Kiosk Processing</small><br>
+                                @if($request->assigned_registrar_id === Auth::id())
+                                    <form action="{{ route('registrar.complete', $request->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        <button class="btn btn-success action-btn">Mark as Completed</button>
+                                    </form>
+                                @else
+                                    <small class="text-muted">
+                                        <i class="bi bi-person-fill"></i> Assigned to another registrar
+                                    </small>
+                                @endif
+                            @elseif ($request->status === 'waiting')
+                                <small class="text-muted">Kiosk Processing</small><br>
+                                @if($request->assigned_registrar_id === Auth::id())
+                                    {{-- Assigned to current registrar, allow taking even if window occupied --}}
+                                    <button type="button" class="btn btn-primary action-btn"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#takeRequestModal"
+                                            data-request-id="{{ $request->id }}"
+                                            data-student-name="{{ $request->student->user->first_name }} {{ $request->student->user->last_name }}">
+                                        Start Processing
+                                    </button>
+                                @elseif(!$request->assigned_registrar_id)
+                                    {{-- Not assigned yet, allow taking even if window occupied --}}
+                                    <button type="button" class="btn btn-primary action-btn"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#takeRequestModal"
+                                            data-request-id="{{ $request->id }}"
+                                            data-student-name="{{ $request->student->user->first_name }} {{ $request->student->user->last_name }}">
+                                        Take Request
+                                    </button>
+                                @else
+                                    <small class="text-muted">
+                                        <i class="bi bi-person-fill"></i> Assigned to another registrar
+                                    </small>
+                                @endif
+                            @endif
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @endif
+
+    <!-- Completed Requests -->
+    @if($completedRequests->count() > 0)
+    <div class="mb-5">
+        <h4 class="mb-3">
+            <i class="bi bi-check-circle-fill text-success"></i> Completed Requests
+            <span class="badge bg-success ms-2">{{ $completedRequests->count() }}</span>
+        </h4>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="text-center" style="width: 5%;">#</th>
+                        <th>Student Details</th>
+                        <th>Document Type</th>
+                        <th>Reason</th>
+                        <th>Remarks</th>
+                        <th class="text-center">Status</th>
+                        <th>Registrar</th>
+                        <th>Request Date</th>
+                        <th>Expected Release Date</th>
+                        <th class="text-center" style="width: 15%;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($completedRequests as $index => $request)
+                    <tr class="table-row">
+                        <td class="text-center fw-bold text-muted">{{ $index + 1 }}</td>
+                        <td>
+                            <div class="fw-semibold">{{ $request->student->user->first_name }} {{ $request->student->user->last_name }}</div>
+                            <small class="text-muted">{{ $request->student->student_id }}</small><br>
+                            <small class="text-primary">REF: {{ $request->reference_no }}</small>
+                        </td>
+                        <td>
+                            @if($request->requestItems->count() > 0)
+                                @foreach($request->requestItems as $item)
+                                    <div class="fw-semibold">{{ $item->document->type_document }} (x{{ $item->quantity }})</div>
+                                @endforeach
+                            @else
+                                <span class="text-muted">No documents</span>
+                            @endif
+                            <small class="text-muted">Total: ₱{{ number_format($request->total_cost, 2) }}</small>
+                        </td>
+                        <td>
+                            {{ $request->reason ?? 'Not specified' }}
+                        </td>
+                        <td>
+                            @if($request->remarks)
+                                <small class="text-muted">{{ Str::limit($request->remarks, 50) }}</small>
+                            @else
+                                <small class="text-muted">-</small>
+                            @endif
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-success rounded-pill px-3">
+                                {{ ucfirst(str_replace('_', ' ', $request->status)) }}
+                            </span><br>
+                            <small class="text-muted">Completed</small>
+                        </td>
+                        <td>
+                            @if($request->registrar)
+                                <div><i class="bi bi-person-fill"></i> {{ $request->registrar->first_name }} {{ $request->registrar->last_name }}</div>
+                            @else
+                                <span class="text-muted"><i class="bi bi-dash-circle"></i> Not Assigned</span>
+                            @endif
+                        </td>
+                        <td>
+                            <div><i class="bi bi-clock"></i> {{ $request->created_at->format('M j, Y') }}</div>
+                            <small class="text-muted">{{ $request->created_at->format('g:i A') }}</small>
+                        </td>
+                        <td>
+                            @if($request->expected_release_date)
+                                <div><i class="bi bi-calendar-check"></i> {{ \Carbon\Carbon::parse($request->expected_release_date)->format('M j, Y') }}</div>
+                                <small class="text-muted">{{ \Carbon\Carbon::parse($request->expected_release_date)->format('l') }}</small>
+                            @else
+                                <span class="text-muted"><i class="bi bi-dash-circle"></i> Not set</span>
+                            @endif
+                        </td>
+                        <td class="text-center">
+                            <span class="text-success"><i class="bi bi-check-circle-fill"></i> Completed</span>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @endif
 
     @if($all->isEmpty())
         <div class="alert alert-info text-center mt-4">
@@ -544,6 +813,60 @@ document.addEventListener('DOMContentLoaded', function() {
                 rejectForm.submit();
             }
         };
+    });
+});
+</script>
+
+<!-- Take Request Modal -->
+<div class="modal fade" id="takeRequestModal" tabindex="-1" aria-labelledby="takeRequestModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="takeRequestModalLabel">Take Request</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="takeRequestForm" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="take_student_name" class="form-label">Student</label>
+                        <input type="text" class="form-control" id="take_student_name" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="take_remarks" class="form-label">Remarks/Comments</label>
+                        <textarea class="form-control" id="take_remarks" name="remarks" rows="3" placeholder="Add any remarks or comments about taking this request..."></textarea>
+                        <div class="form-text">Optional: Add notes about taking this request.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Take Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const takeRequestModal = document.getElementById('takeRequestModal');
+    const takeRequestForm = document.getElementById('takeRequestForm');
+    const takeStudentNameInput = document.getElementById('take_student_name');
+    const takeRemarksTextarea = document.getElementById('take_remarks');
+
+    takeRequestModal.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget;
+        const requestId = button.getAttribute('data-request-id');
+        const studentName = button.getAttribute('data-student-name');
+        
+        // Update form action - use the take route
+        takeRequestForm.action = `/registrar/take/${requestId}`;
+        
+        // Set student name
+        takeStudentNameInput.value = studentName;
+        
+        // Clear remarks
+        takeRemarksTextarea.value = '';
     });
 });
 </script>
