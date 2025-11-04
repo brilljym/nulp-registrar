@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\Api\StudentLookupController;
 use App\Http\Controllers\Api\ReferenceController;
 use App\Http\Controllers\Api\QueueController;
@@ -177,6 +178,26 @@ Route::get('/test', function() {
     return response()->json(['message' => 'API is working', 'timestamp' => now()]);
 });
 
+// Cache clearing endpoint for production debugging
+Route::get('/clear-cache', function() {
+    try {
+        Artisan::call('config:clear');
+        Artisan::call('cache:clear');
+        Artisan::call('config:cache');
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Cache cleared successfully',
+            'timestamp' => now()
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to clear cache: ' . $e->getMessage()
+        ], 500);
+    }
+});
+
 // Print Job Management API Routes (for local print service)
 Route::prefix('print-jobs')->group(function () {
     Route::get('/pending', [App\Http\Controllers\Api\PrintJobController::class, 'getPendingJobs']);
@@ -192,28 +213,59 @@ Route::get('/debug/test-notification', function () {
 
         // Test different notification types
         $results = [];
+        $errors = [];
 
         // Test waiting notification with position
-        $result1 = $oneSignalService->sendQueueWaitingNotification('TEST123', 5, 'test request');
-        $results['waiting'] = $result1;
+        try {
+            $result1 = $oneSignalService->sendQueueWaitingNotification('TEST123', 5, 'test request');
+            $results['waiting'] = $result1;
+        } catch (\Exception $e) {
+            $results['waiting'] = null;
+            $errors['waiting'] = $e->getMessage();
+        }
 
         // Test in queue notification
-        $result2 = $oneSignalService->sendQueueStatusNotification('TEST123', 'in queue');
-        $results['in_queue'] = $result2;
+        try {
+            $result2 = $oneSignalService->sendQueueStatusNotification('TEST123', 'in queue');
+            $results['in_queue'] = $result2;
+        } catch (\Exception $e) {
+            $results['in_queue'] = null;
+            $errors['in_queue'] = $e->getMessage();
+        }
 
         // Test ready for pickup notification
-        $result3 = $oneSignalService->sendQueueStatusNotification('TEST123', 'ready for pickup');
-        $results['ready_for_pickup'] = $result3;
+        try {
+            $result3 = $oneSignalService->sendQueueStatusNotification('TEST123', 'ready for pickup');
+            $results['ready_for_pickup'] = $result3;
+        } catch (\Exception $e) {
+            $results['ready_for_pickup'] = null;
+            $errors['ready_for_pickup'] = $e->getMessage();
+        }
+
+        // Debug OneSignal configuration
+        $debug = [
+            'app_id' => config('onesignal.app_id'),
+            'rest_api_key' => config('onesignal.rest_api_key') ? 'SET' : 'NOT SET',
+            'user_auth_key' => config('onesignal.user_auth_key') ? 'SET' : 'NOT SET',
+            'rest_api_url' => config('onesignal.rest_api_url'),
+        ];
 
         return response()->json([
             'success' => true,
-            'message' => 'OneSignal test notifications sent',
-            'results' => $results
+            'message' => 'OneSignal test notifications attempted',
+            'results' => $results,
+            'errors' => $errors,
+            'debug' => $debug
         ]);
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,
-            'message' => 'OneSignal test failed: ' . $e->getMessage()
+            'message' => 'OneSignal test failed: ' . $e->getMessage(),
+            'debug' => [
+                'app_id' => config('onesignal.app_id'),
+                'rest_api_key' => config('onesignal.rest_api_key') ? 'SET' : 'NOT SET',
+                'user_auth_key' => config('onesignal.user_auth_key') ? 'SET' : 'NOT SET',
+            ]
         ], 500);
     }
 });

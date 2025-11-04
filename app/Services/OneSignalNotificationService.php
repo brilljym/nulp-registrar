@@ -63,6 +63,16 @@ class OneSignalNotificationService
     public function sendToPlayers($playerIds, $title, $message, $data = [])
     {
         try {
+            Log::info('OneSignal sendToPlayers called', [
+                'player_ids' => $playerIds,
+                'title' => $title,
+                'message' => $message,
+                'data' => $data,
+                'app_id' => config('onesignal.app_id'),
+                'rest_api_key_set' => !empty(config('onesignal.rest_api_key')),
+                'user_auth_key_set' => !empty(config('onesignal.user_auth_key')),
+            ]);
+
             $params = [
                 'contents' => [
                     'en' => $message
@@ -77,6 +87,8 @@ class OneSignalNotificationService
                 $params['data'] = $data;
             }
 
+            Log::info('OneSignal params prepared', ['params' => $params]);
+
             $response = $this->oneSignal->sendNotificationCustom($params);
 
             Log::info('OneSignal notification sent to specific players', [
@@ -90,9 +102,14 @@ class OneSignalNotificationService
         } catch (\Exception $e) {
             Log::error('Failed to send OneSignal notification to players', [
                 'error' => $e->getMessage(),
+                'error_file' => $e->getFile(),
+                'error_line' => $e->getLine(),
                 'player_ids' => $playerIds,
                 'title' => $title,
-                'message' => $message
+                'message' => $message,
+                'app_id' => config('onesignal.app_id'),
+                'rest_api_key_set' => !empty(config('onesignal.rest_api_key')),
+                'user_auth_key_set' => !empty(config('onesignal.user_auth_key')),
             ]);
 
             return null;
