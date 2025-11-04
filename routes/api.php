@@ -184,3 +184,36 @@ Route::prefix('print-jobs')->group(function () {
     Route::put('/{jobId}/failed', [App\Http\Controllers\Api\PrintJobController::class, 'markFailed']);
     Route::get('/status', [App\Http\Controllers\Api\PrintJobController::class, 'getStatus']);
 });
+
+// Debug OneSignal notification test (temporary for local testing)
+Route::get('/debug/test-notification', function () {
+    try {
+        $oneSignalService = app(\App\Services\OneSignalNotificationService::class);
+
+        // Test different notification types
+        $results = [];
+
+        // Test waiting notification with position
+        $result1 = $oneSignalService->sendQueueWaitingNotification('TEST123', 5, 'test request');
+        $results['waiting'] = $result1;
+
+        // Test in queue notification
+        $result2 = $oneSignalService->sendQueueStatusNotification('TEST123', 'in queue');
+        $results['in_queue'] = $result2;
+
+        // Test ready for pickup notification
+        $result3 = $oneSignalService->sendQueueStatusNotification('TEST123', 'ready for pickup');
+        $results['ready_for_pickup'] = $result3;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'OneSignal test notifications sent',
+            'results' => $results
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'OneSignal test failed: ' . $e->getMessage()
+        ], 500);
+    }
+});
