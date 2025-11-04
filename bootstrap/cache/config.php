@@ -603,8 +603,8 @@
   array (
     'app_id' => '18e19439-6b0b-4afc-8da5-3ce47fc00738',
     'rest_api_url' => 'https://api.onesignal.com',
-    'rest_api_key' => 'YOUR_ACTUAL_REST_API_KEY_HERE',
-    'user_auth_key' => 'YOUR_ACTUAL_USER_AUTH_KEY_HERE',
+    'rest_api_key' => 'os_v2_app_ddqziollbnfpzdnfhtsh7qahhcztwtqvq7tuefmciisxb74cxl6dn4n73evdh43o4urys6e3xhyynpdnnactsfu4yraqdzmla3rlxfy',
+    'user_auth_key' => 'os_v2_app_ddqziollbnfpzdnfhtsh7qahhdg7kq67sigeky5lv7cxtkhf3c242vrxba4psbhk55xioasadantaxxz4z3t75avvkgubldatihta5i',
     'guzzle_client_timeout' => 0,
   ),
   'printing' => 

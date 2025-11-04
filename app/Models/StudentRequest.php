@@ -28,6 +28,7 @@ class StudentRequest extends Model
         'queue_number',
         'window_id',
         'assigned_registrar_id',
+        'player_id', // OneSignal player ID for targeted notifications
     ];
 
     protected $casts = [

@@ -242,12 +242,12 @@ class ReferenceController extends Controller
     }
 
     /**
-     * Get a specific onsite request by queue number (instead of kiosk number)
+     * Get a specific onsite request by queue number
      * Also updates status to "in_queue" when accessed (check-in functionality)
      */
-    public function getKioskRequest($queueNumber)
+    public function getKioskRequest(Request $request, $queueNumber)
     {
-        // Look for student requests by queue number instead of onsite requests
+        // Look for student requests by queue number first
         $acceptableStatuses = [
             'accepted',
             'pending',
@@ -265,78 +265,160 @@ class ReferenceController extends Controller
             ->whereIn('status', $acceptableStatuses)
             ->first();
 
-        if (!$studentRequest) {
+        if ($studentRequest) {
+            // Update player_id if provided
+            if ($request->has('player_id') && $request->player_id) {
+                $studentRequest->update(['player_id' => $request->player_id]);
+            }
+
+            // Check-in functionality: Update status to "in_queue" if it's not already in_queue, processing, or ready_for_release
+            $statusesThatShouldBecomeInQueue = ['accepted', 'pending', 'waiting', 'completed'];
+            if (in_array($studentRequest->status, $statusesThatShouldBecomeInQueue)) {
+                $oldStatus = $studentRequest->status;
+                $studentRequest->update(['status' => 'in_queue']);
+                $studentRequest->refresh(); // Refresh to get updated data
+                
+                // Broadcast queue update event for real-time display
+                event(new QueuePlacementConfirmed(
+                    $studentRequest, 
+                    'student', 
+                    'checkin', 
+                    "Queue number {$queueNumber} checked in from kiosk (status changed from {$oldStatus} to in_queue)"
+                ));
+            }
+
+            $studentName = '';
+            if ($studentRequest->student && $studentRequest->student->user) {
+                $studentName = trim(
+                    ($studentRequest->student->user->first_name ?? '') . ' ' .
+                    ($studentRequest->student->user->last_name ?? '')
+                );
+            }
+
+            // Get all documents for this request
+            $documents = $studentRequest->requestItems->map(function ($item) use ($studentRequest) {
+                return [
+                    'name' => $item->document->type_document ?? 'Unknown Document',
+                    'quantity' => $item->quantity,
+                    'price' => $item->price,
+                    'queue_number' => $studentRequest->queue_number
+                ];
+            });
+
+            // For backward compatibility, return the first document name as document_name
+            $firstDocument = $studentRequest->requestItems->first();
+            $documentName = $firstDocument ? ($firstDocument->document->type_document ?? 'Unknown Document') : 'Unknown Document';
+
+            // Calculate position if status is waiting
+            $position = 0;
+            if ($studentRequest->status === 'waiting' && $studentRequest->assignedRegistrar) {
+                $position = $this->queueService->getWaitingPositionForStudentRequest($studentRequest);
+            }
+
+            return response()->json([
+                'id' => $studentRequest->id,
+                'ref_code' => $studentRequest->reference_no, // Use reference_no as ref_code
+                'queue_number' => $studentRequest->queue_number, // Now the primary identifier
+                'kiosk_number' => $studentRequest->queue_number, // Alias for frontend compatibility
+                'full_name' => $studentName,
+                'student_id' => $studentRequest->student->student_id ?? null,
+                'course' => $studentRequest->student->course ?? 'Not specified',
+                'year_level' => $studentRequest->student->year_level ?? 'Not specified',
+                'department' => $studentRequest->student->department ?? 'Not specified',
+                'document_name' => $documentName, // For backward compatibility
+                'documents' => $documents, // New field with documents array
+                'quantity' => $studentRequest->requestItems->sum('quantity'),
+                'reason' => $studentRequest->reason,
+                'status' => $studentRequest->status,
+                'current_step' => $this->mapStatusToStep($studentRequest->status),
+                'position' => $position, // Position in waiting queue
+                'window_name' => null, // Student requests don't have windows assigned yet
+                'registrar_name' => $studentRequest->assignedRegistrar ?
+                    trim(($studentRequest->assignedRegistrar->first_name ?? '') . ' ' . ($studentRequest->assignedRegistrar->last_name ?? '')) : null,
+                'expected_release_date' => $studentRequest->expected_release_date ?
+                    $studentRequest->expected_release_date->toISOString() : null,
+                'created_at' => $studentRequest->created_at,
+                'updated_at' => $studentRequest->updated_at,
+            ]);
+        }
+
+        // If not a student request, check onsite requests
+        $onsiteRequest = OnsiteRequest::with(['requestItems.document', 'assignedWindow', 'registrar'])
+            ->where('queue_number', $queueNumber)
+            ->whereIn('status', $acceptableStatuses)
+            ->first();
+
+        if (!$onsiteRequest) {
             return response()->json(['message' => 'Queue request not found'], 404);
+        }
+
+        // Update player_id if provided
+        if ($request->has('player_id') && $request->player_id) {
+            $onsiteRequest->update(['player_id' => $request->player_id]);
         }
 
         // Check-in functionality: Update status to "in_queue" if it's not already in_queue, processing, or ready_for_release
         $statusesThatShouldBecomeInQueue = ['accepted', 'pending', 'waiting', 'completed'];
-        if (in_array($studentRequest->status, $statusesThatShouldBecomeInQueue)) {
-            $oldStatus = $studentRequest->status;
-            $studentRequest->update(['status' => 'in_queue']);
-            $studentRequest->refresh(); // Refresh to get updated data
+        if (in_array($onsiteRequest->status, $statusesThatShouldBecomeInQueue)) {
+            $oldStatus = $onsiteRequest->status;
+            $onsiteRequest->update(['status' => 'in_queue']);
+            $onsiteRequest->refresh(); // Refresh to get updated data
             
             // Broadcast queue update event for real-time display
             event(new QueuePlacementConfirmed(
-                $studentRequest, 
-                'student', 
+                $onsiteRequest, 
+                'onsite', 
                 'checkin', 
                 "Queue number {$queueNumber} checked in from kiosk (status changed from {$oldStatus} to in_queue)"
             ));
         }
 
-        $studentName = '';
-        if ($studentRequest->student && $studentRequest->student->user) {
-            $studentName = trim(
-                ($studentRequest->student->user->first_name ?? '') . ' ' .
-                ($studentRequest->student->user->last_name ?? '')
-            );
-        }
+        $studentName = $onsiteRequest->full_name;
 
         // Get all documents for this request
-        $documents = $studentRequest->requestItems->map(function ($item) use ($studentRequest) {
+        $documents = $onsiteRequest->requestItems->map(function ($item) use ($onsiteRequest) {
             return [
                 'name' => $item->document->type_document ?? 'Unknown Document',
                 'quantity' => $item->quantity,
-                'price' => $item->price,
-                'queue_number' => $studentRequest->queue_number
+                'price' => $item->price ?? 0,
+                'queue_number' => $onsiteRequest->queue_number
             ];
         });
 
         // For backward compatibility, return the first document name as document_name
-        $firstDocument = $studentRequest->requestItems->first();
+        $firstDocument = $onsiteRequest->requestItems->first();
         $documentName = $firstDocument ? ($firstDocument->document->type_document ?? 'Unknown Document') : 'Unknown Document';
 
         // Calculate position if status is waiting
         $position = 0;
-        if ($studentRequest->status === 'waiting' && $studentRequest->assignedRegistrar) {
-            $position = $this->queueService->getWaitingPositionForStudentRequest($studentRequest);
+        if ($onsiteRequest->status === 'waiting' && $onsiteRequest->registrar) {
+            $position = $this->queueService->getWaitingPositionForRequest($onsiteRequest);
         }
 
         return response()->json([
-            'id' => $studentRequest->id,
-            'ref_code' => $studentRequest->reference_no, // Use reference_no as ref_code
-            'queue_number' => $studentRequest->queue_number, // Now the primary identifier
-            'kiosk_number' => $studentRequest->queue_number, // Alias for frontend compatibility
+            'id' => $onsiteRequest->id,
+            'ref_code' => $onsiteRequest->ref_code,
+            'queue_number' => $onsiteRequest->queue_number,
+            'kiosk_number' => $onsiteRequest->queue_number, // Alias for frontend compatibility
             'full_name' => $studentName,
-            'student_id' => $studentRequest->student->student_id ?? null,
-            'course' => $studentRequest->student->course ?? 'Not specified',
-            'year_level' => $studentRequest->student->year_level ?? 'Not specified',
-            'department' => $studentRequest->student->department ?? 'Not specified',
+            'student_id' => $onsiteRequest->student_id,
+            'course' => $onsiteRequest->course ?? 'Not specified',
+            'year_level' => $onsiteRequest->year_level ?? 'Not specified',
+            'department' => $onsiteRequest->department ?? 'Not specified',
             'document_name' => $documentName, // For backward compatibility
             'documents' => $documents, // New field with documents array
-            'quantity' => $studentRequest->requestItems->sum('quantity'),
-            'reason' => $studentRequest->reason,
-            'status' => $studentRequest->status,
-            'current_step' => $this->mapStatusToStep($studentRequest->status),
+            'quantity' => $onsiteRequest->requestItems->sum('quantity'),
+            'reason' => $onsiteRequest->reason,
+            'status' => $onsiteRequest->status,
+            'current_step' => $this->mapStatusToStep($onsiteRequest->status),
             'position' => $position, // Position in waiting queue
-            'window_name' => null, // Student requests don't have windows assigned yet
-            'registrar_name' => $studentRequest->assignedRegistrar ?
-                trim(($studentRequest->assignedRegistrar->first_name ?? '') . ' ' . ($studentRequest->assignedRegistrar->last_name ?? '')) : null,
-            'expected_release_date' => $studentRequest->expected_release_date ?
-                $studentRequest->expected_release_date->toISOString() : null,
-            'created_at' => $studentRequest->created_at,
-            'updated_at' => $studentRequest->updated_at,
+            'window_name' => $onsiteRequest->assignedWindow ? $onsiteRequest->assignedWindow->name : null,
+            'registrar_name' => $onsiteRequest->registrar ?
+                trim(($onsiteRequest->registrar->first_name ?? '') . ' ' . ($onsiteRequest->registrar->last_name ?? '')) : null,
+            'expected_release_date' => $onsiteRequest->expected_release_date ?
+                $onsiteRequest->expected_release_date->toISOString() : null,
+            'created_at' => $onsiteRequest->created_at,
+            'updated_at' => $onsiteRequest->updated_at,
         ]);
     }
 

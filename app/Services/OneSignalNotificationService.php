@@ -140,7 +140,7 @@ class OneSignalNotificationService
     public function sendQueueStatusNotification($referenceId, $status, $additionalData = [], $playerIds = [])
     {
         $title = 'Queue Status Update';
-        $message = "Your request status has been updated to: " . ucfirst($status);
+        $message = $this->getStatusMessage($status);
 
         $data = array_merge([
             'type' => 'queue_status_update',
@@ -153,5 +153,20 @@ class OneSignalNotificationService
         } else {
             return $this->sendToAll($title, $message, $data);
         }
+    }
+
+    /**
+     * Get the appropriate message for a status
+     *
+     * @param string $status
+     * @return string
+     */
+    private function getStatusMessage($status)
+    {
+        return match($status) {
+            'in_queue' => 'Your request is now in queue. Please wait for your turn.',
+            'ready_for_pickup' => 'Your request is ready for pickup. Please proceed to the registrar\'s office.',
+            default => "Your request status has been updated to: " . ucfirst(str_replace('_', ' ', $status))
+        };
     }
 }

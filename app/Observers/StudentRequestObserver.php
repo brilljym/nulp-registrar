@@ -2,11 +2,11 @@
 
 namespace App\Observers;
 
-use App\Models\OnsiteRequest;
+use App\Models\StudentRequest;
 use App\Services\OneSignalNotificationService;
 use App\Services\QueueService;
 
-class OnsiteRequestObserver
+class StudentRequestObserver
 {
     protected $oneSignalService;
     protected $queueService;
@@ -18,24 +18,24 @@ class OnsiteRequestObserver
     }
 
     /**
-     * Handle the OnsiteRequest "updated" event.
+     * Handle the StudentRequest "updated" event.
      */
-    public function updated(OnsiteRequest $onsiteRequest): void
+    public function updated(StudentRequest $studentRequest): void
     {
-        if ($onsiteRequest->wasChanged('status')) {
-            $status = $onsiteRequest->status;
-            $refCode = $onsiteRequest->ref_code;
+        if ($studentRequest->wasChanged('status')) {
+            $status = $studentRequest->status;
+            $refCode = $studentRequest->reference_no;
 
             if ($status === 'waiting') {
                 // Calculate sequential queue position across all waiting requests
-                $position = $this->queueService->getWaitingPositionForRequest($onsiteRequest);
+                $position = $this->queueService->getWaitingPositionForStudentRequest($studentRequest);
 
                 // Send OneSignal notification for waiting status with position
                 $this->oneSignalService->sendQueueWaitingNotification(
                     $refCode,
                     $position,
-                    'onsite request',
-                    $onsiteRequest->player_id ? [$onsiteRequest->player_id] : []
+                    'student request',
+                    $studentRequest->player_id ? [$studentRequest->player_id] : []
                 );
             } elseif ($status === 'in_queue') {
                 // Send OneSignal notification for in queue status
@@ -43,7 +43,7 @@ class OnsiteRequestObserver
                     $refCode,
                     'in_queue',
                     [],
-                    $onsiteRequest->player_id ? [$onsiteRequest->player_id] : []
+                    $studentRequest->player_id ? [$studentRequest->player_id] : []
                 );
             } elseif ($status === 'ready_for_pickup') {
                 // Send OneSignal notification for ready for pickup status
@@ -51,7 +51,7 @@ class OnsiteRequestObserver
                     $refCode,
                     'ready_for_pickup',
                     [],
-                    $onsiteRequest->player_id ? [$onsiteRequest->player_id] : []
+                    $studentRequest->player_id ? [$studentRequest->player_id] : []
                 );
             }
         }

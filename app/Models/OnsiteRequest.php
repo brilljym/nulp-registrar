@@ -35,6 +35,7 @@ class OnsiteRequest extends Model
         'registrar_approved',
         'approved_by_registrar_id',
         'registrar_approved_at',
+        'player_id', // OneSignal player ID for targeted notifications
     ];
 
     protected $casts = [

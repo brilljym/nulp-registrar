@@ -5,7 +5,9 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use App\Console\Commands\SyncQueueCommand;
 use App\Models\OnsiteRequest;
+use App\Models\StudentRequest;
 use App\Observers\OnsiteRequestObserver;
+use App\Observers\StudentRequestObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -28,6 +30,9 @@ class AppServiceProvider extends ServiceProvider
     {
         // Register the OnsiteRequest observer
         OnsiteRequest::observe(OnsiteRequestObserver::class);
+
+        // Register the StudentRequest observer
+        StudentRequest::observe(StudentRequestObserver::class);
 
         // Force HTTPS in production
         if (app()->environment('production')) {
