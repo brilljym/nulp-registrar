@@ -911,29 +911,10 @@
 
                             <div class="mb-3">
                                 <label for="reason_select" class="form-label">Reason for Request *</label>
-                                <select name="reason_select" id="reason_select" class="form-select" required>
-                                    <option value="" disabled selected>-- Select Reason --</option>
-                                    <option value="Graduate studies (local or abroad)">Graduate studies (local or abroad)</option>
-                                    <option value="Transfer to another school">Transfer to another school</option>
-                                    <option value="Credential evaluation (e.g., for PR, visa)">Credential evaluation (e.g., for PR, visa)</option>
-                                    <option value="Scholarship applications">Scholarship applications</option>
-                                    <option value="Academic standing verification">Academic standing verification</option>
-                                    <option value="Personal monitoring">Personal monitoring</option>
-                                    <option value="Internship or OJT requirements">Internship or OJT requirements</option>
-                                    <option value="Credit evaluation when transferring or studying abroad">Credit evaluation when transferring or studying abroad</option>
-                                    <option value="CHED or international credential assessments">CHED or international credential assessments</option>
-                                    <option value="Scholarship/grant validation">Scholarship/grant validation</option>
-                                    <option value="Visa applications (student visa proof)">Visa applications (student visa proof)</option>
-                                    <option value="SSS or PhilHealth requirements">SSS or PhilHealth requirements</option>
-                                    <option value="OJT/internship verification">OJT/internship verification</option>
-                                    <option value="Job applications">Job applications</option>
-                                    <option value="Graduate studies">Graduate studies</option>
-                                    <option value="Visa or immigration processes">Visa or immigration processes</option>
-                                    <option value="Lost/damaged original diploma">Lost/damaged original diploma</option>
-                                    <option value="Employment or PR applications">Employment or PR applications</option>
-                                    <option value="Study abroad or licensure exams (e.g., PRC)">Study abroad or licensure exams (e.g., PRC)</option>
-                                    <option value="Other">Other (please specify below)</option>
+                                <select name="reason_select" id="reason_select" class="form-select" required disabled>
+                                    <option value="" disabled selected>-- Please select a document first --</option>
                                 </select>
+                                <small class="text-muted">Select a document type above to see available reasons</small>
                             </div>
 
                             <!-- Show textarea if Other is selected -->
@@ -1222,6 +1203,199 @@
                 }, 10);
             });
 
+            // Document-specific reasons mapping
+            const documentReasons = {
+                'Transcript of Records with Documentary Stamp': [
+                    'Required for transfer to another school or university',
+                    'Needed for employment application or job requirement',
+                    'For evaluation or credential verification abroad',
+                    'Requirement for licensure examination or board exam application',
+                    'Other'
+                ],
+                'Certificates (Any) with Documentary Stamp': [
+                    'For authentication or submission to CHED, DFA, or POEA',
+                    'Requirement for overseas employment or study',
+                    'Needed for official endorsement or verification purposes',
+                    'Other'
+                ],
+                'Certificates (Any) without Documentary Stamp': [
+                    'For personal record or local employment application',
+                    'Needed for scholarship or internship requirements',
+                    'Requirement for organization or club membership verification',
+                    'Other'
+                ],
+                'Form 137': [
+                    'Required for transfer to another academic institution',
+                    'Needed for student record completion or enrollment verification',
+                    'For evaluation of previous academic performance',
+                    'Other'
+                ],
+                'CTC of Grades Per Term (Certified True Copy)': [
+                    'Needed for scholarship renewal or application',
+                    'Requirement for internship or OJT documentation',
+                    'For employment or promotion qualification verification',
+                    'Other'
+                ],
+                'CTC of Diploma (Per Set)': [
+                    'Requirement for employment application or promotion',
+                    'Needed for foreign credential evaluation or visa processing',
+                    'For personal record or framing purposes',
+                    'Other'
+                ],
+                'CTC of TOR (Per Set)': [
+                    'Requirement for graduate school admission',
+                    'For professional licensing or board examination application',
+                    'Needed for job application, especially abroad',
+                    'Other'
+                ],
+                'Copy of Diploma with Documentary Stamp': [
+                    'Requirement for DFA authentication or Apostille',
+                    'Needed for employment abroad or immigration purposes',
+                    'For official submission to an employer or institution',
+                    'Other'
+                ],
+                'Honorable Dismissal (HD / Transfer Credentials with Documentary Stamp)': [
+                    'Required when transferring to another college or university',
+                    'Needed for clearance or exit documentation from previous school',
+                    'For authentication or verification by another institution',
+                    'Other'
+                ],
+                'Reprinting of COR – Stamp Enrolled / CTC / Copy of Grades': [
+                    'Lost or damaged original Certificate of Registration',
+                    'Needed as proof of enrollment for scholarship or internship',
+                    'Requirement for employment or verification of student status',
+                    'Other'
+                ],
+                'Certificate of Good Moral': [
+                    'Requirement for transfer, scholarship, or graduation',
+                    'Needed for employment or internship application',
+                    'Requirement for licensure exam or government application',
+                    'Other'
+                ],
+                'Course Descriptions': [
+                    'Needed for subject evaluation or credit transfer to another institution',
+                    'Requirement for graduate school or foreign credential assessment',
+                    'For employment verification or curriculum equivalency evaluation',
+                    'Other'
+                ],
+                'Documentary Stamp': [
+                    'Required for official authentication or notarization of documents',
+                    'Needed for submission to government agencies or embassies',
+                    'To comply with official certification or verification requirements',
+                    'Other'
+                ]
+            };
+
+            // Function to normalize document name for matching (removes spaces, dashes, etc.)
+            function normalizeDocumentName(name) {
+                return name.toLowerCase()
+                    .replace(/\s+/g, '')
+                    .replace(/-/g, '')
+                    .replace(/–/g, '')
+                    .replace(/\//g, '')
+                    .replace(/\(/g, '')
+                    .replace(/\)/g, '')
+                    .replace(/\./g, '')
+                    .replace(/₱/g, '')
+                    .replace(/[0-9]/g, '');
+            }
+
+            // Function to find matching document reasons with fuzzy matching
+            function findDocumentReasons(documentName) {
+                // First try exact match
+                if (documentReasons[documentName]) {
+                    return documentReasons[documentName];
+                }
+
+                // Try fuzzy match
+                const normalizedSearch = normalizeDocumentName(documentName);
+                
+                for (const [key, reasons] of Object.entries(documentReasons)) {
+                    if (normalizeDocumentName(key) === normalizedSearch) {
+                        return reasons;
+                    }
+                }
+
+                // If still no match, check if document name contains key words
+                const lowerDocName = documentName.toLowerCase();
+                
+                if (lowerDocName.includes('transcript') && lowerDocName.includes('records')) {
+                    return documentReasons['Transcript of Records with Documentary Stamp'];
+                }
+                if (lowerDocName.includes('certificate') && lowerDocName.includes('with') && lowerDocName.includes('stamp')) {
+                    return documentReasons['Certificates (Any) with Documentary Stamp'];
+                }
+                if (lowerDocName.includes('certificate') && lowerDocName.includes('without')) {
+                    return documentReasons['Certificates (Any) without Documentary Stamp'];
+                }
+                if (lowerDocName.includes('form') && lowerDocName.includes('137')) {
+                    return documentReasons['Form 137'];
+                }
+                if (lowerDocName.includes('ctc') && lowerDocName.includes('grades')) {
+                    return documentReasons['CTC of Grades Per Term (Certified True Copy)'];
+                }
+                if (lowerDocName.includes('ctc') && lowerDocName.includes('diploma')) {
+                    return documentReasons['CTC of Diploma (Per Set)'];
+                }
+                if (lowerDocName.includes('ctc') && lowerDocName.includes('tor')) {
+                    return documentReasons['CTC of TOR (Per Set)'];
+                }
+                if (lowerDocName.includes('copy') && lowerDocName.includes('diploma')) {
+                    return documentReasons['Copy of Diploma with Documentary Stamp'];
+                }
+                if (lowerDocName.includes('honorable') && lowerDocName.includes('dismissal')) {
+                    return documentReasons['Honorable Dismissal (HD / Transfer Credentials with Documentary Stamp)'];
+                }
+                if (lowerDocName.includes('reprinting') && lowerDocName.includes('cor')) {
+                    return documentReasons['Reprinting of COR – Stamp Enrolled / CTC / Copy of Grades'];
+                }
+                if (lowerDocName.includes('good') && lowerDocName.includes('moral')) {
+                    return documentReasons['Certificate of Good Moral'];
+                }
+                if (lowerDocName.includes('course') && lowerDocName.includes('description')) {
+                    return documentReasons['Course Descriptions'];
+                }
+                if (lowerDocName.includes('documentary') && lowerDocName.includes('stamp') && !lowerDocName.includes('transcript')) {
+                    return documentReasons['Documentary Stamp'];
+                }
+
+                return null;
+            }
+
+            // Function to update reason dropdown based on selected document
+            function updateReasonOptions(documentName) {
+                const reasonSelect = document.getElementById('reason_select');
+                const reasons = findDocumentReasons(documentName);
+                
+                // Clear existing options
+                reasonSelect.innerHTML = '';
+                
+                if (reasons && reasons.length > 0) {
+                    // Enable the select and add new options
+                    reasonSelect.disabled = false;
+                    reasonSelect.innerHTML = '<option value="" disabled selected>-- Select Reason --</option>';
+                    
+                    reasons.forEach(reason => {
+                        const option = document.createElement('option');
+                        option.value = reason;
+                        option.textContent = reason;
+                        reasonSelect.appendChild(option);
+                    });
+                } else {
+                    // No specific reasons, disable the select
+                    reasonSelect.disabled = true;
+                    reasonSelect.innerHTML = '<option value="" disabled selected>-- Please select a document first --</option>';
+                }
+                
+                // Reset hidden reason field
+                document.getElementById('reason').value = '';
+                
+                // Hide other reason container
+                document.getElementById('other_reason_container').style.display = 'none';
+                document.getElementById('other_reason').disabled = true;
+                document.getElementById('other_reason').value = '';
+            }
+
             // Reason for Request logic
             document.getElementById('reason_select').addEventListener('change', function() {
                 const otherContainer = document.getElementById('other_reason_container');
@@ -1335,13 +1509,37 @@
                 const quantity = item.querySelector('.quantity-input');
                 const removeBtn = item.querySelector('.remove-document');
 
-                select.addEventListener('change', updateTotalCost);
+                select.addEventListener('change', function() {
+                    updateTotalCost();
+                    
+                    // Update reason dropdown based on first selected document
+                    const firstDocumentSelect = document.querySelector('.document-select');
+                    const selectedOption = firstDocumentSelect.options[firstDocumentSelect.selectedIndex];
+                    
+                    if (selectedOption && selectedOption.value) {
+                        const documentName = selectedOption.text.split(' (₱')[0].trim();
+                        updateReasonOptions(documentName);
+                    }
+                });
+                
                 quantity.addEventListener('input', updateTotalCost);
 
                 removeBtn.addEventListener('click', function() {
                     item.remove();
                     updateTotalCost();
                     updateRemoveButtons();
+                    
+                    // Update reason dropdown if this was the first document
+                    const firstDocumentSelect = document.querySelector('.document-select');
+                    if (firstDocumentSelect) {
+                        const selectedOption = firstDocumentSelect.options[firstDocumentSelect.selectedIndex];
+                        if (selectedOption && selectedOption.value) {
+                            const documentName = selectedOption.text.split(' (₱')[0].trim();
+                            updateReasonOptions(documentName);
+                        } else {
+                            updateReasonOptions('');
+                        }
+                    }
                 });
             }
 

@@ -16,6 +16,7 @@ use App\Mail\RequestCompletedMail;
 use App\Mail\RequestRejectedMail;
 use App\Mail\ExpectedReleaseDateUpdatedMail;
 use App\Mail\RequestApprovedMail;
+use App\Jobs\SendFollowUpEmail;
 use Carbon\Carbon;
 
 class RegistrarController extends Controller
@@ -471,6 +472,9 @@ class RegistrarController extends Controller
                 'registrar_name' => Auth::user()->first_name . ' ' . Auth::user()->last_name
             ]
         );
+
+        // Schedule follow-up reminder email to be sent in 2-3 days
+        SendFollowUpEmail::dispatch($studentRequest->id, 'student')->delay(now()->addDays(3));
 
         // Note: Email notification removed as per request - no email sent when marking as completed
 

@@ -19,6 +19,7 @@ use App\Models\User;
 use App\Mail\ExpectedReleaseDateUpdatedMail;
 use App\Mail\RequestReadyForReleaseMail;
 use App\Mail\RequestCompletedMail;
+use App\Jobs\SendFollowUpEmail;
 
 class OnsiteRequestController extends Controller
 {
@@ -583,6 +584,9 @@ class OnsiteRequestController extends Controller
                 }
             }
         }
+
+        // Schedule follow-up reminder email to be sent in 2-3 days
+        SendFollowUpEmail::dispatch($onsiteRequest->id, 'onsite')->delay(now()->addDays(3));
 
         return back()->with('success', 'Request successfully closed and next request processed.');
     }
