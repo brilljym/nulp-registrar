@@ -853,6 +853,12 @@
                                         <div class="position-number">{{ $request['position'] ?? ($index + 1) }}</div>
                                         <div>
                                             <span class="queue-number">{{ $request['queue_number'] }}</span>
+                                            <!-- DEBUG INFO -->
+                                            <small style="display:block; font-size:10px; color:#666; margin-top:2px;">
+                                                Pos: {{ $request['position'] ?? 'N/A' }} | 
+                                                Status: {{ $request['status'] ?? 'N/A' }} | 
+                                                Created: {{ isset($request['created_at']) ? \Carbon\Carbon::parse($request['created_at'])->format('H:i:s') : 'N/A' }}
+                                            </small>
                                         </div>
                                     </div>
                                 @endforeach

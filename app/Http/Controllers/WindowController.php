@@ -123,6 +123,17 @@ class WindowController extends Controller
         // Sort all waiting requests by creation time and assign sequential positions
         $waitingRequests = $waitingRequests->sortBy('created_at')->values()->map(function ($request, $index) {
             $request['position'] = $index + 1; // Position 1, 2, 3, etc. for all waiting requests
+            
+            // DEBUG: Log position assignment
+            \Log::info('WEB POSITION DEBUG', [
+                'queue_number' => $request['queue_number'],
+                'index' => $index,
+                'position' => $request['position'],
+                'status' => $request['status'],
+                'created_at' => $request['created_at'],
+                'assigned_registrar_id' => $request['assigned_registrar_id'] ?? null
+            ]);
+            
             return $request;
         });
 

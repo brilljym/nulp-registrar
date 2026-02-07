@@ -191,6 +191,19 @@ class ReferenceController extends Controller
                 // Convert from 0-based index to 1-based position
                 $position = $position !== false ? $position + 1 : 0;
                 
+                // DEBUG: Log API position calculation
+                \Log::info('API POSITION DEBUG (StudentRequest)', [
+                    'reference_no' => $studentRequest->reference_no,
+                    'queue_number' => $studentRequest->queue_number,
+                    'status' => $studentRequest->status,
+                    'assigned_registrar_id' => $studentRequest->assigned_registrar_id,
+                    'created_at' => $studentRequest->created_at,
+                    'total_waiting' => $allWaitingRequests->count(),
+                    'search_result' => $position !== false ? $position - 1 : 'not found',
+                    'final_position' => $position,
+                    'all_queue_numbers' => $allWaitingRequests->pluck('queue_number')->toArray()
+                ]);
+                
                 // Set display status to waiting for consistency
                 $displayStatus = 'waiting';
                 
