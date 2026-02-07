@@ -939,7 +939,7 @@
                                         • I understand that the personal information I provide will be used solely for processing my document request.<br>
                                         • My data will be handled in accordance with the National University Data Privacy Policy and Republic Act No. 10173 (Data Privacy Act of 2012).<br>
                                         • I consent to the collection, processing, and storage of my personal information for document processing purposes.<br>
-                                        • I have read and understood the <a href="#" style="color: var(--nu-blue); text-decoration: underline;">Privacy Policy</a> and <a href="#" style="color: var(--nu-blue); text-decoration: underline;">Terms of Service</a>.
+                                        • I have read and understood the <a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal" style="color: var(--nu-blue); text-decoration: underline;">Privacy Policy</a> and <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal" style="color: var(--nu-blue); text-decoration: underline;">Terms of Service</a>.
                                     </label>
                                 </div>
                             </div>
@@ -963,6 +963,242 @@
                 NU Bldg, SM City Lipa, JP Laurel Highway, Lipa City, Batangas
             </div>
         </footer>
+    </div>
+
+    <!-- Privacy Policy Modal -->
+    <div class="modal fade" id="privacyModal" tabindex="-1" aria-labelledby="privacyModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-lg">
+            <div class="modal-content">
+                <div class="modal-header" style="background: var(--nu-blue); color: white;">
+                    <h5 class="modal-title" id="privacyModalLabel">
+                        <i class="bi bi-shield-lock-fill me-2"></i>Privacy Policy
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h6 class="fw-bold text-primary">National University Data Privacy Policy</h6>
+                    <p class="text-muted small">Effective Date: January 1, 2024</p>
+                    
+                    <h6 class="fw-bold mt-4">1. Introduction</h6>
+                    <p>National University ("we," "us," or "our") is committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your data in compliance with Republic Act No. 10173 (Data Privacy Act of 2012) and its implementing rules and regulations.</p>
+                    
+                    <h6 class="fw-bold mt-4">2. Information We Collect</h6>
+                    <p>We collect the following types of personal information:</p>
+                    <ul>
+                        <li><strong>Student Identification:</strong> Student ID, full name, course, year level, department</li>
+                        <li><strong>Document Requests:</strong> Type of documents requested, quantity, reason for request</li>
+                        <li><strong>Transaction Data:</strong> Queue number, reference number, request date and time</li>
+                        <li><strong>Technical Information:</strong> IP address, device information, browser type (for security purposes)</li>
+                    </ul>
+                    
+                    <h6 class="fw-bold mt-4">3. How We Use Your Information</h6>
+                    <p>Your personal information is used for the following purposes:</p>
+                    <ul>
+                        <li>Processing and fulfilling your document requests</li>
+                        <li>Maintaining accurate academic and transaction records</li>
+                        <li>Sending notifications about your request status via push notifications</li>
+                        <li>Improving our services and queue management system</li>
+                        <li>Complying with legal and regulatory requirements</li>
+                    </ul>
+                    
+                    <h6 class="fw-bold mt-4">4. Data Sharing and Disclosure</h6>
+                    <p>We do not sell, rent, or trade your personal information. We may share your data only in the following circumstances:</p>
+                    <ul>
+                        <li>With authorized university personnel for document processing</li>
+                        <li>When required by law or legal process</li>
+                        <li>With third-party service providers who assist us in operating our systems (under strict confidentiality agreements)</li>
+                    </ul>
+                    
+                    <h6 class="fw-bold mt-4">5. Data Security</h6>
+                    <p>We implement appropriate technical and organizational security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction. These measures include:</p>
+                    <ul>
+                        <li>Secure encrypted connections (HTTPS/SSL)</li>
+                        <li>Access controls and authentication systems</li>
+                        <li>Regular security audits and monitoring</li>
+                        <li>Staff training on data protection</li>
+                    </ul>
+                    
+                    <h6 class="fw-bold mt-4">6. Data Retention</h6>
+                    <p>We retain your personal information for as long as necessary to fulfill the purposes outlined in this policy, comply with legal obligations, and resolve disputes. Student records are maintained in accordance with NU record retention policies and applicable laws.</p>
+                    
+                    <h6 class="fw-bold mt-4">7. Your Rights</h6>
+                    <p>Under the Data Privacy Act, you have the right to:</p>
+                    <ul>
+                        <li><strong>Access:</strong> Request access to your personal information</li>
+                        <li><strong>Correction:</strong> Request correction of inaccurate or incomplete data</li>
+                        <li><strong>Erasure:</strong> Request deletion of your data (subject to legal requirements)</li>
+                        <li><strong>Object:</strong> Object to the processing of your data</li>
+                        <li><strong>Data Portability:</strong> Request a copy of your data in a structured format</li>
+                        <li><strong>Withdraw Consent:</strong> Withdraw your consent at any time (where processing is based on consent)</li>
+                    </ul>
+                    
+                    <h6 class="fw-bold mt-4">8. Contact Information</h6>
+                    <p>For questions, concerns, or requests regarding this Privacy Policy or your personal information, please contact:</p>
+                    <p class="ms-3">
+                        <strong>Data Protection Officer</strong><br>
+                        National University - Lipa<br>
+                        NU Bldg, SM City Lipa, JP Laurel Highway, Lipa City, Batangas<br>
+                        Email: dpo@nu-lipa.edu.ph<br>
+                        Phone: (043) 756-5555
+                    </p>
+                    
+                    <h6 class="fw-bold mt-4">9. Updates to This Policy</h6>
+                    <p>We may update this Privacy Policy from time to time. We will notify you of any material changes by posting the updated policy on our website and updating the "Effective Date" above.</p>
+                    
+                    <p class="mt-4"><small class="text-muted">Last updated: January 1, 2024</small></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Terms of Service Modal -->
+    <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-lg">
+            <div class="modal-content">
+                <div class="modal-header" style="background: var(--nu-blue); color: white;">
+                    <h5 class="modal-title" id="termsModalLabel">
+                        <i class="bi bi-file-text-fill me-2"></i>Terms of Service
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h6 class="fw-bold text-primary">NU Lipa Document Request Service - Terms of Service</h6>
+                    <p class="text-muted small">Effective Date: January 1, 2024</p>
+                    
+                    <h6 class="fw-bold mt-4">1. Acceptance of Terms</h6>
+                    <p>By accessing and using the National University Lipa Document Request Service ("the Service"), you acknowledge that you have read, understood, and agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the Service.</p>
+                    
+                    <h6 class="fw-bold mt-4">2. Service Description</h6>
+                    <p>The Service provides a digital platform for students and alumni to:</p>
+                    <ul>
+                        <li>Submit on-site document requests</li>
+                        <li>Track the status of document requests</li>
+                        <li>Receive notifications about request progress</li>
+                        <li>Manage queue positions for document pickup</li>
+                    </ul>
+                    
+                    <h6 class="fw-bold mt-4">3. Eligibility</h6>
+                    <p>To use the Service, you must:</p>
+                    <ul>
+                        <li>Be a current or former student of National University - Lipa</li>
+                        <li>Provide accurate and complete information</li>
+                        <li>Have a valid student ID or reference number</li>
+                        <li>Agree to these Terms of Service and our Privacy Policy</li>
+                    </ul>
+                    
+                    <h6 class="fw-bold mt-4">4. User Responsibilities</h6>
+                    <p>When using the Service, you agree to:</p>
+                    <ul>
+                        <li>Provide accurate, current, and complete information about yourself</li>
+                        <li>Maintain the accuracy of your information</li>
+                        <li>Use the Service only for lawful purposes</li>
+                        <li>Not impersonate any person or entity</li>
+                        <li>Not interfere with or disrupt the Service or servers</li>
+                        <li>Comply with all applicable local, state, national, and international laws</li>
+                    </ul>
+                    
+                    <h6 class="fw-bold mt-4">5. Document Request Process</h6>
+                    <p><strong>5.1 Request Submission:</strong> Document requests must be submitted with complete and accurate information. Incomplete or inaccurate requests may be rejected or delayed.</p>
+                    
+                    <p><strong>5.2 Processing Time:</strong> Processing times vary depending on the type of document requested. Estimated processing times are provided for reference only and are not guaranteed.</p>
+                    
+                    <p><strong>5.3 Fees and Payment:</strong> Applicable fees must be paid before document processing. Fee information is displayed at the time of request submission. All payments are non-refundable except in cases of service error.</p>
+                    
+                    <p><strong>5.4 Document Pickup:</strong> Documents must be picked up within the specified timeframe. Unclaimed documents may be subject to additional storage fees or disposal after a reasonable period.</p>
+                    
+                    <h6 class="fw-bold mt-4">6. Queue Management</h6>
+                    <p>Queue positions are assigned automatically and are subject to change based on:</p>
+                    <ul>
+                        <li>Document processing status</li>
+                        <li>Registrar availability</li>
+                        <li>Priority cases (as determined by university policy)</li>
+                    </ul>
+                    <p>The university reserves the right to adjust queue positions as necessary to ensure efficient service delivery.</p>
+                    
+                    <h6 class="fw-bold mt-4">7. Notifications</h6>
+                    <p>By using the Service, you consent to receive notifications via:</p>
+                    <ul>
+                        <li>Push notifications through the mobile application</li>
+                        <li>Email to your registered email address</li>
+                        <li>SMS to your registered mobile number (if applicable)</li>
+                    </ul>
+                    <p>You may opt out of non-essential notifications through your account settings.</p>
+                    
+                    <h6 class="fw-bold mt-4">8. Intellectual Property</h6>
+                    <p>All content, features, and functionality of the Service, including but not limited to text, graphics, logos, icons, images, and software, are the exclusive property of National University and are protected by copyright, trademark, and other intellectual property laws.</p>
+                    
+                    <h6 class="fw-bold mt-4">9. Limitation of Liability</h6>
+                    <p>To the fullest extent permitted by law, National University shall not be liable for:</p>
+                    <ul>
+                        <li>Any indirect, incidental, special, consequential, or punitive damages</li>
+                        <li>Loss of profits, revenues, data, or use</li>
+                        <li>Service interruptions or delays</li>
+                        <li>Errors or inaccuracies in content</li>
+                        <li>Unauthorized access to or alteration of your transmissions or data</li>
+                    </ul>
+                    
+                    <h6 class="fw-bold mt-4">10. Service Availability</h6>
+                    <p>We strive to provide continuous access to the Service. However, we do not guarantee that the Service will be uninterrupted, timely, secure, or error-free. We reserve the right to:</p>
+                    <ul>
+                        <li>Modify or discontinue the Service at any time</li>
+                        <li>Perform scheduled maintenance</li>
+                        <li>Suspend access for technical or security reasons</li>
+                    </ul>
+                    
+                    <h6 class="fw-bold mt-4">11. Prohibited Activities</h6>
+                    <p>You may not:</p>
+                    <ul>
+                        <li>Use the Service for fraudulent purposes</li>
+                        <li>Submit false or misleading information</li>
+                        <li>Attempt to gain unauthorized access to the Service</li>
+                        <li>Use automated systems or software to extract data</li>
+                        <li>Reverse engineer, decompile, or disassemble any part of the Service</li>
+                        <li>Transmit viruses, malware, or other harmful code</li>
+                    </ul>
+                    
+                    <h6 class="fw-bold mt-4">12. Termination</h6>
+                    <p>We reserve the right to terminate or suspend your access to the Service immediately, without prior notice, for any reason, including but not limited to:</p>
+                    <ul>
+                        <li>Violation of these Terms of Service</li>
+                        <li>Fraudulent or illegal activity</li>
+                        <li>Provision of false information</li>
+                        <li>Abuse of the Service or other users</li>
+                    </ul>
+                    
+                    <h6 class="fw-bold mt-4">13. Governing Law</h6>
+                    <p>These Terms of Service shall be governed by and construed in accordance with the laws of the Republic of the Philippines. Any disputes arising from these terms shall be subject to the exclusive jurisdiction of the courts of Lipa City, Batangas.</p>
+                    
+                    <h6 class="fw-bold mt-4">14. Changes to Terms</h6>
+                    <p>We reserve the right to modify these Terms of Service at any time. We will notify you of any material changes by posting the updated terms on our website and updating the "Effective Date" above. Your continued use of the Service after such changes constitutes your acceptance of the new terms.</p>
+                    
+                    <h6 class="fw-bold mt-4">15. Contact Information</h6>
+                    <p>For questions or concerns about these Terms of Service, please contact:</p>
+                    <p class="ms-3">
+                        <strong>Registrar's Office</strong><br>
+                        National University - Lipa<br>
+                        NU Bldg, SM City Lipa, JP Laurel Highway, Lipa City, Batangas<br>
+                        Email: registrar@nu-lipa.edu.ph<br>
+                        Phone: (043) 756-5555
+                    </p>
+                    
+                    <h6 class="fw-bold mt-4">16. Severability</h6>
+                    <p>If any provision of these Terms of Service is found to be invalid or unenforceable, the remaining provisions shall continue in full force and effect.</p>
+                    
+                    <h6 class="fw-bold mt-4">17. Entire Agreement</h6>
+                    <p>These Terms of Service, together with our Privacy Policy, constitute the entire agreement between you and National University regarding the use of the Service.</p>
+                    
+                    <p class="mt-4 text-center fw-bold">By using the Service, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.</p>
+                    
+                    <p class="mt-4"><small class="text-muted">Last updated: January 1, 2024</small></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Bootstrap JS -->
