@@ -1,6 +1,4 @@
-@extends('layouts.registrar')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
 <style>
     /* Header bar styling to match screenshot */
     .navbar, .header-bar, .admin-header {
@@ -174,62 +172,62 @@
 
 <div class="container mt-5">
     <!-- Window Status Alert -->
-    @if(isset($isWindowOccupied) && isset($windowNumber))
-        <div class="alert {{ $isWindowOccupied ? 'alert-warning' : 'alert-info' }} mb-4">
+    <?php if(isset($isWindowOccupied) && isset($windowNumber)): ?>
+        <div class="alert <?php echo e($isWindowOccupied ? 'alert-warning' : 'alert-info'); ?> mb-4">
             <div class="d-flex align-items-center">
-                <i class="bi {{ $isWindowOccupied ? 'bi-exclamation-triangle-fill' : 'bi-check-circle-fill' }} me-2"></i>
+                <i class="bi <?php echo e($isWindowOccupied ? 'bi-exclamation-triangle-fill' : 'bi-check-circle-fill'); ?> me-2"></i>
                 <div>
-                    <strong>Window {{ $windowNumber }} Status:</strong>
-                    @if($isWindowOccupied && isset($currentRequest))
+                    <strong>Window <?php echo e($windowNumber); ?> Status:</strong>
+                    <?php if($isWindowOccupied && isset($currentRequest)): ?>
                         <span class="text-warning">Currently Occupied</span> - Processing 
-                        @if(isset($currentRequestType) && $currentRequestType === 'student')
+                        <?php if(isset($currentRequestType) && $currentRequestType === 'student'): ?>
                             <strong>student request</strong> from 
-                            <strong>{{ $currentRequest->student->user->first_name }} {{ $currentRequest->student->user->last_name }}</strong>
-                        @else
+                            <strong><?php echo e($currentRequest->student->user->first_name); ?> <?php echo e($currentRequest->student->user->last_name); ?></strong>
+                        <?php else: ?>
                             <strong>onsite request</strong> from 
-                            <strong>{{ $currentRequest->full_name }}</strong>
-                        @endif
-                        ({{ $currentRequest->created_at->format('M d, Y') }})
+                            <strong><?php echo e($currentRequest->full_name); ?></strong>
+                        <?php endif; ?>
+                        (<?php echo e($currentRequest->created_at->format('M d, Y')); ?>)
                         <br><small class="text-muted">Complete this request to receive new ones.</small>
-                    @else
+                    <?php else: ?>
                         <span class="text-success">Available</span> - Ready to receive new requests
-                        @php
+                        <?php
                             $pendingCount = \App\Models\OnsiteRequest::where('status', 'pending')
                                 ->whereNull('assigned_registrar_id')
                                 ->whereNull('window_id')
                                 ->count();
-                        @endphp
-                        @if($pendingCount > 0)
+                        ?>
+                        <?php if($pendingCount > 0): ?>
                             <br><small class="text-info">
-                                <i class="bi bi-clock-fill"></i> {{ $pendingCount }} pending request(s) available for approval
+                                <i class="bi bi-clock-fill"></i> <?php echo e($pendingCount); ?> pending request(s) available for approval
                             </small>
-                        @endif
-                    @endif
+                        <?php endif; ?>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
-    @endif
+    <?php endif; ?>
 
     <h2 class="mb-4">
-        @if(request()->routeIs('registrar.onsite.pending'))
+        <?php if(request()->routeIs('registrar.onsite.pending')): ?>
             <i class="bi bi-clock-fill text-warning"></i> My Pending Requests 
-            @if(isset($windowNumber))
-                <small class="text-muted">(Window {{ $windowNumber }})</small>
-            @endif
-        @elseif(request()->routeIs('registrar.onsite.completed'))
+            <?php if(isset($windowNumber)): ?>
+                <small class="text-muted">(Window <?php echo e($windowNumber); ?>)</small>
+            <?php endif; ?>
+        <?php elseif(request()->routeIs('registrar.onsite.completed')): ?>
             <i class="bi bi-check-circle-fill text-success"></i> My Completed Requests
-            @if(isset($windowNumber))
-                <small class="text-muted">(Window {{ $windowNumber }})</small>
-            @endif
-        @else
+            <?php if(isset($windowNumber)): ?>
+                <small class="text-muted">(Window <?php echo e($windowNumber); ?>)</small>
+            <?php endif; ?>
+        <?php else: ?>
             <i class="bi bi-building-check text-info"></i> My Window Queue
-            @if(isset($windowNumber))
-                <small class="text-muted">(Window {{ $windowNumber }})</small>
-            @endif
-        @endif
+            <?php if(isset($windowNumber)): ?>
+                <small class="text-muted">(Window <?php echo e($windowNumber); ?>)</small>
+            <?php endif; ?>
+        <?php endif; ?>
     </h2>
 
-    @php
+    <?php
         // Separate requests into onsite and kiosk
         $onsiteRequests = $requests->filter(function($req) {
             return in_array($req->status, ['pending', 'registrar_approved', 'processing', 'ready_for_release', 'released']);
@@ -242,43 +240,43 @@
         $completedRequests = $requests->filter(function($req) {
             return $req->status === 'completed';
         });
-    @endphp
+    ?>
 
-    @if($requests->isEmpty())
+    <?php if($requests->isEmpty()): ?>
         <div class="alert alert-info text-center">
-            @if(isset($isWindowOccupied) && $isWindowOccupied)
+            <?php if(isset($isWindowOccupied) && $isWindowOccupied): ?>
                 Your window is currently occupied. Complete the current request to receive new ones.
-            @elseif(request()->routeIs('registrar.onsite.pending'))
-                @php
+            <?php elseif(request()->routeIs('registrar.onsite.pending')): ?>
+                <?php
                     $totalPending = \App\Models\OnsiteRequest::where('status', 'pending')
                         ->whereNull('assigned_registrar_id')
                         ->whereNull('window_id')
                         ->count();
-                @endphp
-                @if($totalPending > 0)
+                ?>
+                <?php if($totalPending > 0): ?>
                     <div class="text-warning mb-2">
-                        <i class="bi bi-exclamation-circle"></i> There are {{ $totalPending }} pending request(s) waiting for approval, but none are currently assigned to your window.
+                        <i class="bi bi-exclamation-circle"></i> There are <?php echo e($totalPending); ?> pending request(s) waiting for approval, but none are currently assigned to your window.
                     </div>
                     <small class="text-muted">
                         Pending requests should appear here automatically. If you don't see them, please refresh the page or contact support.
                     </small>
-                @else
+                <?php else: ?>
                     No pending requests assigned to your window at this time.
-                @endif
-            @elseif(request()->routeIs('registrar.onsite.completed'))
+                <?php endif; ?>
+            <?php elseif(request()->routeIs('registrar.onsite.completed')): ?>
                 No completed requests found for your window.
-            @else
+            <?php else: ?>
                 No requests assigned to your window at this time.
-            @endif
+            <?php endif; ?>
         </div>
-    @endif
+    <?php endif; ?>
 
     <!-- Onsite Processing Requests -->
-    @if($onsiteRequests->count() > 0)
+    <?php if($onsiteRequests->count() > 0): ?>
     <div class="mb-5">
         <h4 class="mb-3">
             <i class="bi bi-person-workspace text-primary"></i> Onsite Processing Requests
-            <span class="badge bg-primary ms-2">{{ $onsiteRequests->count() }}</span>
+            <span class="badge bg-primary ms-2"><?php echo e($onsiteRequests->count()); ?></span>
         </h4>
         <div class="table-responsive">
         <table class="table table-hover align-middle">
@@ -296,288 +294,293 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse ($onsiteRequests as $index => $req)
+                <?php $__empty_1 = true; $__currentLoopData = $onsiteRequests; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $req): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                 <tr class="table-row">
-                    <td class="text-center fw-bold text-muted">{{ $requests->firstItem() + $index }}</td>
+                    <td class="text-center fw-bold text-muted"><?php echo e($requests->firstItem() + $index); ?></td>
                     <td>
-                        <div class="fw-semibold">{{ $req->full_name }}</div>
-                        <small class="text-muted">{{ $req->created_at->format('M d, Y') }}</small><br>
+                        <div class="fw-semibold"><?php echo e($req->full_name); ?></div>
+                        <small class="text-muted"><?php echo e($req->created_at->format('M d, Y')); ?></small><br>
                         <small class="text-monospace text-secondary">
-                            ticket-no:{{ $req->created_at->format('Ymd') }}-i{{ $req->id }}
+                            ticket-no:<?php echo e($req->created_at->format('Ymd')); ?>-i<?php echo e($req->id); ?>
+
                         </small>
                     </td>
                     <td>
-                        <div><strong>Course:</strong> {{ $req->course }}</div>
-                        <div><strong>Year:</strong> {{ $req->year_level }}</div>
-                        <div><strong>Dept:</strong> {{ $req->department }}</div>
+                        <div><strong>Course:</strong> <?php echo e($req->course); ?></div>
+                        <div><strong>Year:</strong> <?php echo e($req->year_level); ?></div>
+                        <div><strong>Dept:</strong> <?php echo e($req->department); ?></div>
                     </td>
                     <td>
-                        @if ($req->requestItems->count() > 0)
-                            @foreach($req->requestItems as $item)
-                                <div class="fw-semibold">{{ $item->document->type_document }} (x{{ $item->quantity }})</div>
-                                <small class="text-muted">₱{{ number_format($item->document->price, 2) }} each = ₱{{ number_format($item->document->price * $item->quantity, 2) }}</small>
-                            @endforeach
+                        <?php if($req->requestItems->count() > 0): ?>
+                            <?php $__currentLoopData = $req->requestItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <div class="fw-semibold"><?php echo e($item->document->type_document); ?> (x<?php echo e($item->quantity); ?>)</div>
+                                <small class="text-muted">₱<?php echo e(number_format($item->document->price, 2)); ?> each = ₱<?php echo e(number_format($item->document->price * $item->quantity, 2)); ?></small>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             <hr class="my-1">
-                            <small class="text-primary fw-bold">Total: ₱{{ number_format($req->requestItems->sum(function($item) { return $item->document->price * $item->quantity; }), 2) }}</small>
-                        @else
+                            <small class="text-primary fw-bold">Total: ₱<?php echo e(number_format($req->requestItems->sum(function($item) { return $item->document->price * $item->quantity; }), 2)); ?></small>
+                        <?php else: ?>
                             <span class="text-muted">Not specified</span>
-                        @endif
+                        <?php endif; ?>
                     </td>
                     <td>
-                        {{ $req->reason ?? 'Not specified' }}
+                        <?php echo e($req->reason ?? 'Not specified'); ?>
+
                     </td>
                     <td class="text-center">
-                        <span class="badge bg-{{ $req->display_status === 'completed' ? 'success' : ($req->display_status === 'pending' ? 'warning' : ($req->display_status === 'registrar_approved' ? 'info' : ($req->display_status === 'processing' ? 'primary' : ($req->display_status === 'released' ? 'success' : ($req->display_status === 'in_queue' ? 'primary' : ($req->display_status === 'ready_for_pickup' ? 'warning' : ($req->display_status === 'waiting' ? 'secondary' : 'secondary'))))))) }} rounded-pill px-3">
-                            {{ $req->display_status_label }}
+                        <span class="badge bg-<?php echo e($req->display_status === 'completed' ? 'success' : ($req->display_status === 'pending' ? 'warning' : ($req->display_status === 'registrar_approved' ? 'info' : ($req->display_status === 'processing' ? 'primary' : ($req->display_status === 'released' ? 'success' : ($req->display_status === 'in_queue' ? 'primary' : ($req->display_status === 'ready_for_pickup' ? 'warning' : ($req->display_status === 'waiting' ? 'secondary' : 'secondary')))))))); ?> rounded-pill px-3">
+                            <?php echo e($req->display_status_label); ?>
+
                         </span><br>
                         <small class="text-muted">
-                            @if($req->display_status === 'in_queue')
+                            <?php if($req->display_status === 'in_queue'): ?>
                                 In Progress
-                            @elseif($req->display_status === 'ready_for_pickup')
+                            <?php elseif($req->display_status === 'ready_for_pickup'): ?>
                                 In Progress
-                            @elseif($req->status === 'waiting')
+                            <?php elseif($req->status === 'waiting'): ?>
                                 Waiting
-                            @elseif($req->current_step === 'start')
+                            <?php elseif($req->current_step === 'start'): ?>
                                 In Progress
-                            @else
-                                {{ ucfirst($req->current_step) }}
-                            @endif
+                            <?php else: ?>
+                                <?php echo e(ucfirst($req->current_step)); ?>
+
+                            <?php endif; ?>
                         </small>
                     </td>
                     <td>
-                        @if($req->expected_release_date)
-                            <div><i class="bi bi-calendar-check"></i> {{ \Carbon\Carbon::parse($req->expected_release_date)->format('M j, Y') }}</div>
-                            <small class="text-muted">{{ \Carbon\Carbon::parse($req->expected_release_date)->format('l g:i A') }}</small>
-                            @if(in_array($req->status, ['completed', 'processing']))
+                        <?php if($req->expected_release_date): ?>
+                            <div><i class="bi bi-calendar-check"></i> <?php echo e(\Carbon\Carbon::parse($req->expected_release_date)->format('M j, Y')); ?></div>
+                            <small class="text-muted"><?php echo e(\Carbon\Carbon::parse($req->expected_release_date)->format('l g:i A')); ?></small>
+                            <?php if(in_array($req->status, ['completed', 'processing'])): ?>
                                 <br>
                                 <button class="btn btn-sm btn-outline-primary mt-1" 
                                         data-bs-toggle="modal" 
                                         data-bs-target="#editReleaseDateModal" 
-                                        data-request-id="{{ $req->id }}"
-                                        data-current-date="{{ $req->expected_release_date->format('Y-m-d\TH:i') }}">
+                                        data-request-id="<?php echo e($req->id); ?>"
+                                        data-current-date="<?php echo e($req->expected_release_date->format('Y-m-d\TH:i')); ?>">
                                     <i class="bi bi-pencil"></i> Edit
                                 </button>
-                            @endif
-                        @else
+                            <?php endif; ?>
+                        <?php else: ?>
                             <span class="text-muted"><i class="bi bi-dash-circle"></i> Not set</span>
-                            @if(in_array($req->status, ['completed', 'processing']))
+                            <?php if(in_array($req->status, ['completed', 'processing'])): ?>
                                 <br>
                                 <button class="btn btn-sm btn-outline-primary mt-1" 
                                         data-bs-toggle="modal" 
                                         data-bs-target="#editReleaseDateModal" 
-                                        data-request-id="{{ $req->id }}"
+                                        data-request-id="<?php echo e($req->id); ?>"
                                         data-current-date="">
                                     <i class="bi bi-plus-circle"></i> Set Date
                                 </button>
-                            @endif
-                        @endif
+                            <?php endif; ?>
+                        <?php endif; ?>
                     </td>
                     <td>
                         <div><strong>Registrar:</strong>
-                            @if ($req->registrar)
-                                {{ $req->registrar->first_name }} {{ $req->registrar->last_name }}
-                            @else
+                            <?php if($req->registrar): ?>
+                                <?php echo e($req->registrar->first_name); ?> <?php echo e($req->registrar->last_name); ?>
+
+                            <?php else: ?>
                                 <span class="text-muted">Not assigned</span>
-                            @endif
+                            <?php endif; ?>
                         </div>
                     </td>
                     <td class="text-center">
-                        @if ($req->status === 'completed')
-                            @if ($req->feedback)
+                        <?php if($req->status === 'completed'): ?>
+                            <?php if($req->feedback): ?>
                                 <div class="text-center">
                                     <div class="text-warning mb-1">
-                                        @for($i = 1; $i <= $req->feedback->rating; $i++)
+                                        <?php for($i = 1; $i <= $req->feedback->rating; $i++): ?>
                                             ⭐
-                                        @endfor
+                                        <?php endfor; ?>
                                     </div>
                                     <small class="text-success">
                                         <i class="bi bi-chat-heart"></i> Feedback received
                                     </small>
-                                    @if($req->feedback->comment)
-                                        <br><small class="text-muted" title="{{ $req->feedback->comment }}">
-                                            "{{ Str::limit($req->feedback->comment, 30) }}"
+                                    <?php if($req->feedback->comment): ?>
+                                        <br><small class="text-muted" title="<?php echo e($req->feedback->comment); ?>">
+                                            "<?php echo e(Str::limit($req->feedback->comment, 30)); ?>"
                                         </small>
-                                    @endif
+                                    <?php endif; ?>
                                 </div>
-                            @else
+                            <?php else: ?>
                                 <small class="text-muted">
                                     <i class="bi bi-chat"></i> No feedback yet
                                 </small>
-                            @endif
-                        @elseif ($req->status === 'pending')
+                            <?php endif; ?>
+                        <?php elseif($req->status === 'pending'): ?>
                             <small class="text-muted">Onsite Processing</small><br>
-                            @if(isset($hasActiveOnsiteRequest) && $hasActiveOnsiteRequest)
+                            <?php if(isset($hasActiveOnsiteRequest) && $hasActiveOnsiteRequest): ?>
                                 <div class="text-center">
                                     <span class="badge bg-secondary rounded-pill px-3 mb-1">Waiting</span><br>
                                     <small class="text-muted">
                                         <i class="bi bi-hourglass-split"></i> You have an active onsite request - complete it first to approve new ones
                                     </small>
                                 </div>
-                            @else
+                            <?php else: ?>
                                 <button type="button" class="btn btn-success action-btn" 
                                         data-bs-toggle="modal" 
                                         data-bs-target="#approveRequestModal" 
-                                        data-request-id="{{ $req->id }}"
-                                        data-student-name="{{ $req->full_name }}">
+                                        data-request-id="<?php echo e($req->id); ?>"
+                                        data-student-name="<?php echo e($req->full_name); ?>">
                                     Approve & Take Request
                                 </button>
-                            @endif
-                        @elseif ($req->status === 'registrar_approved')
+                            <?php endif; ?>
+                        <?php elseif($req->status === 'registrar_approved'): ?>
                             <small class="text-muted">Onsite Processing</small><br>
                             <span class="text-info"><i class="bi bi-check-circle"></i> Approved - Awaiting Payment</span>
-                        @elseif ($req->status === 'processing' && $req->assigned_registrar_id === Auth::id())
+                        <?php elseif($req->status === 'processing' && $req->assigned_registrar_id === Auth::id()): ?>
                             <small class="text-muted">Onsite Processing</small><br>
-                            <form method="POST" action="{{ route('registrar.onsite.release', $req->id) }}" class="d-inline">
-                                @csrf
+                            <form method="POST" action="<?php echo e(route('registrar.onsite.release', $req->id)); ?>" class="d-inline">
+                                <?php echo csrf_field(); ?>
                                 <button class="btn btn-warning action-btn">Mark as Ready</button>
                             </form>
-                        @elseif ($req->current_step === 'release' && $req->assigned_registrar_id === Auth::id())
-                            <form method="POST" action="{{ route('registrar.onsite.close', $req->id) }}" class="d-inline">
-                                @csrf
+                        <?php elseif($req->current_step === 'release' && $req->assigned_registrar_id === Auth::id()): ?>
+                            <form method="POST" action="<?php echo e(route('registrar.onsite.close', $req->id)); ?>" class="d-inline">
+                                <?php echo csrf_field(); ?>
                                 <button class="btn btn-primary action-btn">Close</button>
                             </form>
-                        @elseif ($req->status === 'released' && $req->assigned_registrar_id === Auth::id())
+                        <?php elseif($req->status === 'released' && $req->assigned_registrar_id === Auth::id()): ?>
                             <small class="text-muted">Onsite Processing</small><br>
-                            <form method="POST" action="{{ route('registrar.onsite.complete', $req->id) }}" class="d-inline">
-                                @csrf
+                            <form method="POST" action="<?php echo e(route('registrar.onsite.complete', $req->id)); ?>" class="d-inline">
+                                <?php echo csrf_field(); ?>
                                 <button class="btn btn-success action-btn">Mark as Completed</button>
                             </form>
-                        @elseif ($req->status === 'ready_for_release')
+                        <?php elseif($req->status === 'ready_for_release'): ?>
                             <small class="text-muted">Onsite Processing</small><br>
-                            <form method="POST" action="{{ route('registrar.onsite.complete', $req->id) }}" class="d-inline">
-                                @csrf
+                            <form method="POST" action="<?php echo e(route('registrar.onsite.complete', $req->id)); ?>" class="d-inline">
+                                <?php echo csrf_field(); ?>
                                 <button class="btn btn-success action-btn">Mark as Completed</button>
                             </form>
-                        @elseif ($req->status === 'in_queue' && (!$req->assigned_registrar_id || $req->assigned_registrar_id === Auth::id()))
+                        <?php elseif($req->status === 'in_queue' && (!$req->assigned_registrar_id || $req->assigned_registrar_id === Auth::id())): ?>
                             <small class="text-muted">Kiosk Processing</small><br>
-                            @if(!isset($isWindowOccupied) || !$isWindowOccupied || (isset($currentRequest) && $currentRequest->id === $req->id))
-                                @if($req->assigned_registrar_id === Auth::id())
-                                    {{-- Request is assigned to current registrar --}}
-                                    <form method="POST" action="{{ route('registrar.onsite.ready-pickup', $req->id) }}" class="d-inline">
-                                        @csrf
+                            <?php if(!isset($isWindowOccupied) || !$isWindowOccupied || (isset($currentRequest) && $currentRequest->id === $req->id)): ?>
+                                <?php if($req->assigned_registrar_id === Auth::id()): ?>
+                                    
+                                    <form method="POST" action="<?php echo e(route('registrar.onsite.ready-pickup', $req->id)); ?>" class="d-inline">
+                                        <?php echo csrf_field(); ?>
                                         <button class="btn btn-warning action-btn">Ready for Pickup</button>
                                     </form>
-                                @else
-                                    {{-- Request is not assigned yet, show take request button --}}
+                                <?php else: ?>
+                                    
                                     <button type="button" class="btn btn-primary action-btn" 
                                             data-bs-toggle="modal" 
                                             data-bs-target="#takeRequestModal" 
-                                            data-request-id="{{ $req->id }}"
-                                            data-student-name="{{ $req->full_name }}">
+                                            data-request-id="<?php echo e($req->id); ?>"
+                                            data-student-name="<?php echo e($req->full_name); ?>">
                                         Take Request
                                     </button>
-                                @endif
-                            @else
+                                <?php endif; ?>
+                            <?php else: ?>
                                 <small class="text-muted">
                                     <i class="bi bi-lock-fill"></i> Window occupied
                                 </small>
-                            @endif
-                        @elseif ($req->status === 'ready_for_pickup' && $req->assigned_registrar_id === Auth::id())
-                            <form method="POST" action="{{ route('registrar.onsite.complete-request', $req->id) }}" class="d-inline">
-                                @csrf
+                            <?php endif; ?>
+                        <?php elseif($req->status === 'ready_for_pickup' && $req->assigned_registrar_id === Auth::id()): ?>
+                            <form method="POST" action="<?php echo e(route('registrar.onsite.complete-request', $req->id)); ?>" class="d-inline">
+                                <?php echo csrf_field(); ?>
                                 <button class="btn btn-success action-btn">Complete Request</button>
                             </form>
-                        @elseif ($req->status === 'ready_for_pickup' && !$req->assigned_registrar_id)
-                            {{-- Ready for pickup requests entered via kiosk can be taken by any registrar --}}
-                            @if(!isset($isWindowOccupied) || !$isWindowOccupied)
+                        <?php elseif($req->status === 'ready_for_pickup' && !$req->assigned_registrar_id): ?>
+                            
+                            <?php if(!isset($isWindowOccupied) || !$isWindowOccupied): ?>
                                 <div class="d-flex flex-column gap-1">
                                     <button type="button" class="btn btn-success action-btn"
                                             data-bs-toggle="modal"
                                             data-bs-target="#approveRequestModal"
-                                            data-request-id="{{ $req->id }}"
-                                            data-student-name="{{ $req->full_name }}">
+                                            data-request-id="<?php echo e($req->id); ?>"
+                                            data-student-name="<?php echo e($req->full_name); ?>">
                                         Approve & Take Request
                                     </button>
                                     <button type="button" class="btn btn-primary action-btn"
                                             data-bs-toggle="modal"
                                             data-bs-target="#takeRequestModal"
-                                            data-request-id="{{ $req->id }}"
-                                            data-student-name="{{ $req->full_name }}">
+                                            data-request-id="<?php echo e($req->id); ?>"
+                                            data-student-name="<?php echo e($req->full_name); ?>">
                                         Take Request
                                     </button>
                                 </div>
-                            @else
+                            <?php else: ?>
                                 <small class="text-muted">
                                     <i class="bi bi-hourglass-split"></i> Window occupied - will be available when current request is completed
                                 </small>
-                            @endif
-                        @elseif ($req->status === 'waiting' || $req->display_status === 'waiting')
+                            <?php endif; ?>
+                        <?php elseif($req->status === 'waiting' || $req->display_status === 'waiting'): ?>
                             <small class="text-muted">Kiosk Processing</small><br>
-                            @if($req->assigned_registrar_id === Auth::id())
-                                {{-- Request is assigned to current registrar but in waiting status --}}
-                                @if(!isset($isWindowOccupied) || !$isWindowOccupied)
+                            <?php if($req->assigned_registrar_id === Auth::id()): ?>
+                                
+                                <?php if(!isset($isWindowOccupied) || !$isWindowOccupied): ?>
                                     <div class="d-flex flex-column gap-1">
-                                        <form method="POST" action="{{ route('registrar.onsite.take', $req->id) }}" class="d-inline">
-                                            @csrf
+                                        <form method="POST" action="<?php echo e(route('registrar.onsite.take', $req->id)); ?>" class="d-inline">
+                                            <?php echo csrf_field(); ?>
                                             <button class="btn btn-primary action-btn">Start Processing</button>
                                         </form>
                                     </div>
-                                @else
+                                <?php else: ?>
                                     <small class="text-muted">
                                         <i class="bi bi-hourglass-split"></i> Window occupied - will start when current request is completed
                                     </small>
-                                @endif
-                            @elseif(!$req->assigned_registrar_id)
-                                {{-- Request is not assigned to anyone yet --}}
-                                @if(!isset($isWindowOccupied) || !$isWindowOccupied)
+                                <?php endif; ?>
+                            <?php elseif(!$req->assigned_registrar_id): ?>
+                                
+                                <?php if(!isset($isWindowOccupied) || !$isWindowOccupied): ?>
                                     <div class="d-flex flex-column gap-1">
                                         <button type="button" class="btn btn-success action-btn" 
                                                 data-bs-toggle="modal" 
                                                 data-bs-target="#approveRequestModal" 
-                                                data-request-id="{{ $req->id }}"
-                                                data-student-name="{{ $req->full_name }}">
+                                                data-request-id="<?php echo e($req->id); ?>"
+                                                data-student-name="<?php echo e($req->full_name); ?>">
                                             Approve & Take Request
                                         </button>
                                         <button type="button" class="btn btn-primary action-btn" 
                                                 data-bs-toggle="modal" 
                                                 data-bs-target="#takeRequestModal" 
-                                                data-request-id="{{ $req->id }}"
-                                                data-student-name="{{ $req->full_name }}">
+                                                data-request-id="<?php echo e($req->id); ?>"
+                                                data-student-name="<?php echo e($req->full_name); ?>">
                                             Take Request
                                         </button>
                                     </div>
-                                @else
+                                <?php else: ?>
                                     <small class="text-muted">
                                         <i class="bi bi-hourglass-split"></i> Waiting in queue - will be available when your window is free
                                     </small>
-                                @endif
-                            @else
-                                {{-- Request is assigned to another registrar --}}
+                                <?php endif; ?>
+                            <?php else: ?>
+                                
                                 <small class="text-muted">
                                     <i class="bi bi-person-fill"></i> Assigned to another registrar - waiting for them to process
                                 </small>
-                            @endif
-                        @elseif ($req->assigned_registrar_id && $req->assigned_registrar_id !== Auth::id())
+                            <?php endif; ?>
+                        <?php elseif($req->assigned_registrar_id && $req->assigned_registrar_id !== Auth::id()): ?>
                             <small class="text-muted">
                                 <i class="bi bi-person-fill"></i> Assigned to another registrar
                             </small>
-                        @else
+                        <?php else: ?>
                             <small class="text-muted">
                                 <i class="bi bi-clock"></i> Pending assignment
                             </small>
-                        @endif
+                        <?php endif; ?>
                     </td>
                 </tr>
-                @empty
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                 <tr>
                     <td colspan="9" class="text-center text-muted py-4">
                         <i class="bi bi-inbox fs-1 d-block mb-2"></i>
                         No onsite processing requests found.
                     </td>
                 </tr>
-                @endforelse
+                <?php endif; ?>
             </tbody>
         </table>
         </div>
     </div>
-    @endif
+    <?php endif; ?>
 
     <!-- Kiosk Processing Requests -->
-    @if($kioskRequests->count() > 0)
+    <?php if($kioskRequests->count() > 0): ?>
     <div class="mb-5">
         <h4 class="mb-3">
             <i class="bi bi-display text-info"></i> Kiosk Processing Requests
-            <span class="badge bg-info ms-2">{{ $kioskRequests->count() }}</span>
+            <span class="badge bg-info ms-2"><?php echo e($kioskRequests->count()); ?></span>
         </h4>
         <div class="table-responsive">
             <table class="table table-hover align-middle">
@@ -595,143 +598,147 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($kioskRequests as $index => $req)
+                    <?php $__currentLoopData = $kioskRequests; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $req): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                     <tr class="table-row">
-                        <td class="text-center fw-bold text-muted">{{ $index + 1 }}</td>
+                        <td class="text-center fw-bold text-muted"><?php echo e($index + 1); ?></td>
                         <td>
-                            <div class="fw-semibold">{{ $req->full_name }}</div>
-                            <small class="text-muted">{{ $req->created_at->format('M d, Y') }}</small><br>
+                            <div class="fw-semibold"><?php echo e($req->full_name); ?></div>
+                            <small class="text-muted"><?php echo e($req->created_at->format('M d, Y')); ?></small><br>
                             <small class="text-monospace text-secondary">
-                                ticket-no:{{ $req->created_at->format('Ymd') }}-i{{ $req->id }}
+                                ticket-no:<?php echo e($req->created_at->format('Ymd')); ?>-i<?php echo e($req->id); ?>
+
                             </small>
                         </td>
                         <td>
-                            <div><strong>Course:</strong> {{ $req->course }}</div>
-                            <div><strong>Year:</strong> {{ $req->year_level }}</div>
-                            <div><strong>Dept:</strong> {{ $req->department }}</div>
+                            <div><strong>Course:</strong> <?php echo e($req->course); ?></div>
+                            <div><strong>Year:</strong> <?php echo e($req->year_level); ?></div>
+                            <div><strong>Dept:</strong> <?php echo e($req->department); ?></div>
                         </td>
                         <td>
-                            @if ($req->requestItems->count() > 0)
-                                @foreach($req->requestItems as $item)
-                                    <div class="fw-semibold">{{ $item->document->type_document }} (x{{ $item->quantity }})</div>
-                                    <small class="text-muted">₱{{ number_format($item->document->price, 2) }} each = ₱{{ number_format($item->document->price * $item->quantity, 2) }}</small>
-                                @endforeach
+                            <?php if($req->requestItems->count() > 0): ?>
+                                <?php $__currentLoopData = $req->requestItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <div class="fw-semibold"><?php echo e($item->document->type_document); ?> (x<?php echo e($item->quantity); ?>)</div>
+                                    <small class="text-muted">₱<?php echo e(number_format($item->document->price, 2)); ?> each = ₱<?php echo e(number_format($item->document->price * $item->quantity, 2)); ?></small>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 <hr class="my-1">
-                                <small class="text-primary fw-bold">Total: ₱{{ number_format($req->requestItems->sum(function($item) { return $item->document->price * $item->quantity; }), 2) }}</small>
-                            @else
+                                <small class="text-primary fw-bold">Total: ₱<?php echo e(number_format($req->requestItems->sum(function($item) { return $item->document->price * $item->quantity; }), 2)); ?></small>
+                            <?php else: ?>
                                 <span class="text-muted">Not specified</span>
-                            @endif
+                            <?php endif; ?>
                         </td>
                         <td>
-                            {{ $req->reason ?? 'Not specified' }}
+                            <?php echo e($req->reason ?? 'Not specified'); ?>
+
                         </td>
                         <td class="text-center">
-                            <span class="badge bg-{{ $req->status === 'in_queue' ? 'primary' : ($req->status === 'ready_for_pickup' ? 'warning' : 'secondary') }} rounded-pill px-3">
-                                {{ $req->display_status_label }}
+                            <span class="badge bg-<?php echo e($req->status === 'in_queue' ? 'primary' : ($req->status === 'ready_for_pickup' ? 'warning' : 'secondary')); ?> rounded-pill px-3">
+                                <?php echo e($req->display_status_label); ?>
+
                             </span><br>
                             <small class="text-muted">
-                                @if($req->status === 'in_queue')
+                                <?php if($req->status === 'in_queue'): ?>
                                     In Progress
-                                @elseif($req->status === 'ready_for_pickup')
+                                <?php elseif($req->status === 'ready_for_pickup'): ?>
                                     In Progress
-                                @else
+                                <?php else: ?>
                                     Waiting
-                                @endif
+                                <?php endif; ?>
                             </small>
                         </td>
                         <td>
-                            @if($req->expected_release_date)
-                                <div><i class="bi bi-calendar-check"></i> {{ \Carbon\Carbon::parse($req->expected_release_date)->format('M j, Y') }}</div>
-                                <small class="text-muted">{{ \Carbon\Carbon::parse($req->expected_release_date)->format('l g:i A') }}</small>
-                            @else
+                            <?php if($req->expected_release_date): ?>
+                                <div><i class="bi bi-calendar-check"></i> <?php echo e(\Carbon\Carbon::parse($req->expected_release_date)->format('M j, Y')); ?></div>
+                                <small class="text-muted"><?php echo e(\Carbon\Carbon::parse($req->expected_release_date)->format('l g:i A')); ?></small>
+                            <?php else: ?>
                                 <span class="text-muted"><i class="bi bi-dash-circle"></i> Not set</span>
-                            @endif
+                            <?php endif; ?>
                         </td>
                         <td>
                             <div><strong>Registrar:</strong>
-                                @if ($req->registrar)
-                                    {{ $req->registrar->first_name }} {{ $req->registrar->last_name }}
-                                @else
+                                <?php if($req->registrar): ?>
+                                    <?php echo e($req->registrar->first_name); ?> <?php echo e($req->registrar->last_name); ?>
+
+                                <?php else: ?>
                                     <span class="text-muted">Not assigned</span>
-                                @endif
+                                <?php endif; ?>
                             </div>
                         </td>
                         <td class="text-center">
-                            @if ($req->status === 'in_queue' && (!$req->assigned_registrar_id || $req->assigned_registrar_id === Auth::id()))
+                            <?php if($req->status === 'in_queue' && (!$req->assigned_registrar_id || $req->assigned_registrar_id === Auth::id())): ?>
                                 <small class="text-muted">Kiosk Processing</small><br>
-                                @if(!isset($isWindowOccupied) || !$isWindowOccupied || (isset($currentRequest) && $currentRequest->id === $req->id))
-                                    @if($req->assigned_registrar_id === Auth::id())
-                                        <form method="POST" action="{{ route('registrar.onsite.ready-pickup', $req->id) }}" class="d-inline">
-                                            @csrf
+                                <?php if(!isset($isWindowOccupied) || !$isWindowOccupied || (isset($currentRequest) && $currentRequest->id === $req->id)): ?>
+                                    <?php if($req->assigned_registrar_id === Auth::id()): ?>
+                                        <form method="POST" action="<?php echo e(route('registrar.onsite.ready-pickup', $req->id)); ?>" class="d-inline">
+                                            <?php echo csrf_field(); ?>
                                             <button class="btn btn-warning action-btn">Ready for Pickup</button>
                                         </form>
-                                    @else
+                                    <?php else: ?>
                                         <button type="button" class="btn btn-primary action-btn" 
                                                 data-bs-toggle="modal" 
                                                 data-bs-target="#takeRequestModal" 
-                                                data-request-id="{{ $req->id }}"
-                                                data-student-name="{{ $req->full_name }}">
+                                                data-request-id="<?php echo e($req->id); ?>"
+                                                data-student-name="<?php echo e($req->full_name); ?>">
                                             Take Request
                                         </button>
-                                    @endif
-                                @else
+                                    <?php endif; ?>
+                                <?php else: ?>
                                     <small class="text-muted">
                                         <i class="bi bi-lock-fill"></i> Window occupied
                                     </small>
-                                @endif
-                            @elseif ($req->status === 'ready_for_pickup' && $req->assigned_registrar_id === Auth::id())
-                                <form method="POST" action="{{ route('registrar.onsite.complete-request', $req->id) }}" class="d-inline">
-                                    @csrf
+                                <?php endif; ?>
+                            <?php elseif($req->status === 'ready_for_pickup' && $req->assigned_registrar_id === Auth::id()): ?>
+                                <form method="POST" action="<?php echo e(route('registrar.onsite.complete-request', $req->id)); ?>" class="d-inline">
+                                    <?php echo csrf_field(); ?>
                                     <button class="btn btn-success action-btn">Complete Request</button>
                                 </form>
-                            @elseif ($req->status === 'waiting')
+                            <?php elseif($req->status === 'waiting'): ?>
                                 <small class="text-muted">Kiosk Processing</small><br>
-                                @if($req->assigned_registrar_id === Auth::id())
-                                    @if(!isset($isWindowOccupied) || !$isWindowOccupied)
-                                        <form method="POST" action="{{ route('registrar.onsite.take', $req->id) }}" class="d-inline">
-                                            @csrf
+                                <?php if($req->assigned_registrar_id === Auth::id()): ?>
+                                    <?php if(!isset($isWindowOccupied) || !$isWindowOccupied): ?>
+                                        <form method="POST" action="<?php echo e(route('registrar.onsite.take', $req->id)); ?>" class="d-inline">
+                                            <?php echo csrf_field(); ?>
                                             <button class="btn btn-primary action-btn">Start Processing</button>
                                         </form>
-                                    @else
+                                    <?php else: ?>
                                         <small class="text-muted">
                                             <i class="bi bi-hourglass-split"></i> Window occupied
                                         </small>
-                                    @endif
-                                @elseif(!$req->assigned_registrar_id)
-                                    @if(!isset($isWindowOccupied) || !$isWindowOccupied)
+                                    <?php endif; ?>
+                                <?php elseif(!$req->assigned_registrar_id): ?>
+                                    <?php if(!isset($isWindowOccupied) || !$isWindowOccupied): ?>
                                         <button type="button" class="btn btn-primary action-btn" 
                                                 data-bs-toggle="modal" 
                                                 data-bs-target="#takeRequestModal" 
-                                                data-request-id="{{ $req->id }}"
-                                                data-student-name="{{ $req->full_name }}">
+                                                data-request-id="<?php echo e($req->id); ?>"
+                                                data-student-name="<?php echo e($req->full_name); ?>">
                                             Take Request
                                         </button>
-                                    @else
+                                    <?php else: ?>
                                         <small class="text-muted">
                                             <i class="bi bi-hourglass-split"></i> Waiting in queue
                                         </small>
-                                    @endif
-                                @else
+                                    <?php endif; ?>
+                                <?php else: ?>
                                     <small class="text-muted">
                                         <i class="bi bi-person-fill"></i> Assigned to another registrar
                                     </small>
-                                @endif
-                            @endif
+                                <?php endif; ?>
+                            <?php endif; ?>
                         </td>
                     </tr>
-                    @endforeach
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </tbody>
             </table>
         </div>
     </div>
-    @endif
+    <?php endif; ?>
 
     <!-- Completed Requests -->
-    @if($completedRequests->count() > 0)
+    <?php if($completedRequests->count() > 0): ?>
     <div class="mb-5">
         <h4 class="mb-3">
             <i class="bi bi-check-circle-fill text-success"></i> Completed Requests
-            <span class="badge bg-success ms-2">{{ $completedRequests->count() }}</span>
+            <span class="badge bg-success ms-2"><?php echo e($completedRequests->count()); ?></span>
         </h4>
         <div class="table-responsive">
             <table class="table table-hover align-middle">
@@ -749,99 +756,104 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($completedRequests as $index => $req)
+                    <?php $__currentLoopData = $completedRequests; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $req): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                     <tr class="table-row">
-                        <td class="text-center fw-bold text-muted">{{ $index + 1 }}</td>
+                        <td class="text-center fw-bold text-muted"><?php echo e($index + 1); ?></td>
                         <td>
-                            <div class="fw-semibold">{{ $req->full_name }}</div>
-                            <small class="text-muted">{{ $req->created_at->format('M d, Y') }}</small><br>
+                            <div class="fw-semibold"><?php echo e($req->full_name); ?></div>
+                            <small class="text-muted"><?php echo e($req->created_at->format('M d, Y')); ?></small><br>
                             <small class="text-monospace text-secondary">
-                                ticket-no:{{ $req->created_at->format('Ymd') }}-i{{ $req->id }}
+                                ticket-no:<?php echo e($req->created_at->format('Ymd')); ?>-i<?php echo e($req->id); ?>
+
                             </small>
                         </td>
                         <td>
-                            <div><strong>Course:</strong> {{ $req->course }}</div>
-                            <div><strong>Year:</strong> {{ $req->year_level }}</div>
-                            <div><strong>Dept:</strong> {{ $req->department }}</div>
+                            <div><strong>Course:</strong> <?php echo e($req->course); ?></div>
+                            <div><strong>Year:</strong> <?php echo e($req->year_level); ?></div>
+                            <div><strong>Dept:</strong> <?php echo e($req->department); ?></div>
                         </td>
                         <td>
-                            @if ($req->requestItems->count() > 0)
-                                @foreach($req->requestItems as $item)
-                                    <div class="fw-semibold">{{ $item->document->type_document }} (x{{ $item->quantity }})</div>
-                                    <small class="text-muted">₱{{ number_format($item->document->price, 2) }} each = ₱{{ number_format($item->document->price * $item->quantity, 2) }}</small>
-                                @endforeach
+                            <?php if($req->requestItems->count() > 0): ?>
+                                <?php $__currentLoopData = $req->requestItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <div class="fw-semibold"><?php echo e($item->document->type_document); ?> (x<?php echo e($item->quantity); ?>)</div>
+                                    <small class="text-muted">₱<?php echo e(number_format($item->document->price, 2)); ?> each = ₱<?php echo e(number_format($item->document->price * $item->quantity, 2)); ?></small>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 <hr class="my-1">
-                                <small class="text-primary fw-bold">Total: ₱{{ number_format($req->requestItems->sum(function($item) { return $item->document->price * $item->quantity; }), 2) }}</small>
-                            @else
+                                <small class="text-primary fw-bold">Total: ₱<?php echo e(number_format($req->requestItems->sum(function($item) { return $item->document->price * $item->quantity; }), 2)); ?></small>
+                            <?php else: ?>
                                 <span class="text-muted">Not specified</span>
-                            @endif
+                            <?php endif; ?>
                         </td>
                         <td>
-                            {{ $req->reason ?? 'Not specified' }}
+                            <?php echo e($req->reason ?? 'Not specified'); ?>
+
                         </td>
                         <td class="text-center">
                             <span class="badge bg-success rounded-pill px-3">
-                                {{ $req->display_status_label }}
+                                <?php echo e($req->display_status_label); ?>
+
                             </span><br>
                             <small class="text-muted">Completed</small>
                         </td>
                         <td>
-                            @if($req->expected_release_date)
-                                <div><i class="bi bi-calendar-check"></i> {{ \Carbon\Carbon::parse($req->expected_release_date)->format('M j, Y') }}</div>
-                                <small class="text-muted">{{ \Carbon\Carbon::parse($req->expected_release_date)->format('l g:i A') }}</small>
-                            @else
+                            <?php if($req->expected_release_date): ?>
+                                <div><i class="bi bi-calendar-check"></i> <?php echo e(\Carbon\Carbon::parse($req->expected_release_date)->format('M j, Y')); ?></div>
+                                <small class="text-muted"><?php echo e(\Carbon\Carbon::parse($req->expected_release_date)->format('l g:i A')); ?></small>
+                            <?php else: ?>
                                 <span class="text-muted"><i class="bi bi-dash-circle"></i> Not set</span>
-                            @endif
+                            <?php endif; ?>
                         </td>
                         <td>
                             <div><strong>Registrar:</strong>
-                                @if ($req->registrar)
-                                    {{ $req->registrar->first_name }} {{ $req->registrar->last_name }}
-                                @else
+                                <?php if($req->registrar): ?>
+                                    <?php echo e($req->registrar->first_name); ?> <?php echo e($req->registrar->last_name); ?>
+
+                                <?php else: ?>
                                     <span class="text-muted">Not assigned</span>
-                                @endif
+                                <?php endif; ?>
                             </div>
                         </td>
                         <td class="text-center">
-                            @if ($req->feedback)
+                            <?php if($req->feedback): ?>
                                 <div class="text-center">
                                     <div class="text-warning mb-1">
-                                        @for($i = 1; $i <= $req->feedback->rating; $i++)
+                                        <?php for($i = 1; $i <= $req->feedback->rating; $i++): ?>
                                             ⭐
-                                        @endfor
+                                        <?php endfor; ?>
                                     </div>
                                     <small class="text-success">
                                         <i class="bi bi-chat-heart"></i> Feedback received
                                     </small>
-                                    @if($req->feedback->comment)
-                                        <br><small class="text-muted" title="{{ $req->feedback->comment }}">
-                                            "{{ Str::limit($req->feedback->comment, 30) }}"
+                                    <?php if($req->feedback->comment): ?>
+                                        <br><small class="text-muted" title="<?php echo e($req->feedback->comment); ?>">
+                                            "<?php echo e(Str::limit($req->feedback->comment, 30)); ?>"
                                         </small>
-                                    @endif
+                                    <?php endif; ?>
                                 </div>
-                            @else
+                            <?php else: ?>
                                 <small class="text-muted">
                                     <i class="bi bi-chat"></i> No feedback yet
                                 </small>
-                            @endif
+                            <?php endif; ?>
                         </td>
                     </tr>
-                    @endforeach
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </tbody>
             </table>
         </div>
     </div>
-    @endif
+    <?php endif; ?>
 
     <!-- Laravel Pagination (clean & compact) -->
     <div class="d-flex justify-content-between align-items-center mt-4">
         <div class="pagination-info">
             <small class="text-muted">
-                Showing {{ $requests->firstItem() }} to {{ $requests->lastItem() }} of {{ $requests->total() }} requests
+                Showing <?php echo e($requests->firstItem()); ?> to <?php echo e($requests->lastItem()); ?> of <?php echo e($requests->total()); ?> requests
             </small>
         </div>
         <div class="pagination-wrapper">
-            {{ $requests->links('vendor.pagination.bootstrap-5') }}
+            <?php echo e($requests->links('vendor.pagination.bootstrap-5')); ?>
+
         </div>
     </div>
 </div>
@@ -855,7 +867,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="editReleaseDateForm" method="POST">
-                @csrf
+                <?php echo csrf_field(); ?>
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="expected_release_date" class="form-label">Expected Release Date & Time</label>
@@ -908,7 +920,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="approveRequestForm" method="POST">
-                @csrf
+                <?php echo csrf_field(); ?>
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="student_name" class="form-label">Student</label>
@@ -966,7 +978,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const csrfInput = document.createElement('input');
                 csrfInput.type = 'hidden';
                 csrfInput.name = '_token';
-                csrfInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content') || '{{ csrf_token() }}';
+                csrfInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content') || '<?php echo e(csrf_token()); ?>';
                 rejectForm.appendChild(csrfInput);
                 
                 // Add remarks (always include the field, even if empty)
@@ -993,7 +1005,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="takeRequestForm" method="POST">
-                @csrf
+                <?php echo csrf_field(); ?>
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="take_student_name" class="form-label">Student</label>
@@ -1038,4 +1050,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.registrar', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\Nu-Regisv2\resources\views/registrar/onsite/index.blade.php ENDPATH**/ ?>

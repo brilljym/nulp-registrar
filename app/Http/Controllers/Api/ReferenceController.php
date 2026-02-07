@@ -171,34 +171,37 @@ class ReferenceController extends Controller
         $firstDocument = $studentRequest->requestItems->first();
         $documentName = $firstDocument ? ($firstDocument->document->type_document ?? 'Unknown Document') : 'Unknown Document';
 
-        // Calculate position if status is waiting or in_queue
-        $position = 0;
-        $displayStatus = $studentRequest->status;
-        $registrarRequests = null; // Initialize for debug info
-        
-        // For in_queue status, check if this is the first request or waiting
-        if ($studentRequest->status === 'in_queue' && $studentRequest->assigned_registrar_id) {
-            // Get all in_queue/waiting requests for this registrar
-            $registrarRequests = StudentRequest::where('assigned_registrar_id', $studentRequest->assigned_registrar_id)
-                ->whereIn('status', ['in_queue', 'waiting'])
-                ->orderBy('created_at', 'asc')
-                ->get();
+            // Calculate position if status is waiting or in_queue
+            $position = 0;
+            $displayStatus = $studentRequest->status;
+            $registrarRequests = null; // Initialize for debug info
             
-            // If this is not the first request, it's actually waiting
-            if ($registrarRequests->isNotEmpty() && $registrarRequests->first()->id !== $studentRequest->id) {
-                $displayStatus = 'waiting';
-                $position = $registrarRequests->search(function($req) use ($studentRequest) {
+            // For both in_queue and waiting status, calculate position in the overall waiting queue
+            if (in_array($studentRequest->status, ['in_queue', 'waiting'])) {
+                // Get ALL waiting requests (both in_queue and waiting) across all registrars, sorted by creation time
+                $allWaitingRequests = StudentRequest::whereIn('status', ['in_queue', 'waiting'])
+                    ->orderBy('created_at', 'asc')
+                    ->get();
+                
+                // Find the position of this request in the unified waiting queue (1-based)
+                $position = $allWaitingRequests->search(function($req) use ($studentRequest) {
                     return $req->id === $studentRequest->id;
-                }) + 1; // Position in queue (1-based)
-            } elseif ($registrarRequests->isNotEmpty()) {
-                // This is the first request, still calculate position
-                $position = 1;
+                });
+                
+                // Convert from 0-based index to 1-based position
+                $position = $position !== false ? $position + 1 : 0;
+                
+                // Set display status to waiting for consistency
+                $displayStatus = 'waiting';
+                
+                // Get registrar-specific info for debug
+                if ($studentRequest->assigned_registrar_id) {
+                    $registrarRequests = StudentRequest::where('assigned_registrar_id', $studentRequest->assigned_registrar_id)
+                        ->whereIn('status', ['in_queue', 'waiting'])
+                        ->orderBy('created_at', 'asc')
+                        ->get();
+                }
             }
-        } elseif ($studentRequest->status === 'waiting' && $studentRequest->assigned_registrar_id) {
-            $position = $this->queueService->getWaitingPositionForStudentRequest($studentRequest);
-            $displayStatus = 'waiting';
-        }
-
         return response()->json([
             'id' => $studentRequest->id,
             'reference_no' => $studentRequest->reference_no,
@@ -252,27 +255,31 @@ class ReferenceController extends Controller
         $displayStatus = $request->status;
         $registrarRequests = null; // Initialize for debug info
         
-        // For in_queue status, check if this is the first request or waiting
-        if ($request->status === 'in_queue' && $request->assigned_registrar_id) {
-            // Get all in_queue/waiting requests for this registrar
-            $registrarRequests = OnsiteRequest::where('assigned_registrar_id', $request->assigned_registrar_id)
-                ->whereIn('status', ['in_queue', 'waiting'])
+        // For both in_queue and waiting status, calculate position in the overall waiting queue
+        if (in_array($request->status, ['in_queue', 'waiting'])) {
+            // Get ALL waiting requests (both in_queue and waiting) across all registrars, sorted by creation time
+            $allWaitingRequests = OnsiteRequest::whereIn('status', ['in_queue', 'waiting'])
                 ->orderBy('created_at', 'asc')
                 ->get();
             
-            // If this is not the first request, it's actually waiting
-            if ($registrarRequests->isNotEmpty() && $registrarRequests->first()->id !== $request->id) {
-                $displayStatus = 'waiting';
-                $position = $registrarRequests->search(function($req) use ($request) {
-                    return $req->id === $request->id;
-                }) + 1; // Position in queue (1-based)
-            } elseif ($registrarRequests->isNotEmpty()) {
-                // This is the first request, still calculate position
-                $position = 1;
-            }
-        } elseif ($request->status === 'waiting' && $request->assigned_registrar_id) {
-            $position = $this->queueService->getWaitingPositionForRequest($request);
+            // Find the position of this request in the unified waiting queue (1-based)
+            $position = $allWaitingRequests->search(function($req) use ($request) {
+                return $req->id === $request->id;
+            });
+            
+            // Convert from 0-based index to 1-based position
+            $position = $position !== false ? $position + 1 : 0;
+            
+            // Set display status to waiting for consistency
             $displayStatus = 'waiting';
+            
+            // Get registrar-specific info for debug
+            if ($request->assigned_registrar_id) {
+                $registrarRequests = OnsiteRequest::where('assigned_registrar_id', $request->assigned_registrar_id)
+                    ->whereIn('status', ['in_queue', 'waiting'])
+                    ->orderBy('created_at', 'asc')
+                    ->get();
+            }
         }
 
         return response()->json([
@@ -387,23 +394,22 @@ class ReferenceController extends Controller
             $position = 0;
             $displayStatus = $studentRequest->status;
             
-            // For in_queue status, check if this is the first request or waiting
-            if ($studentRequest->status === 'in_queue' && $studentRequest->assignedRegistrar) {
-                // Get all in_queue/waiting requests for this registrar
-                $registrarRequests = StudentRequest::where('assigned_registrar_id', $studentRequest->assignedRegistrar->id)
-                    ->whereIn('status', ['in_queue', 'waiting'])
+            // For both in_queue and waiting status, calculate position in the overall waiting queue
+            if (in_array($studentRequest->status, ['in_queue', 'waiting'])) {
+                // Get ALL waiting requests (both in_queue and waiting) across all registrars, sorted by creation time
+                $allWaitingRequests = StudentRequest::whereIn('status', ['in_queue', 'waiting'])
                     ->orderBy('created_at', 'asc')
                     ->get();
                 
-                // If this is not the first request, it's actually waiting
-                if ($registrarRequests->isNotEmpty() && $registrarRequests->first()->id !== $studentRequest->id) {
-                    $displayStatus = 'waiting';
-                    $position = $registrarRequests->search(function($req) use ($studentRequest) {
-                        return $req->id === $studentRequest->id;
-                    }) + 1; // Position in queue (1-based)
-                }
-            } elseif ($studentRequest->status === 'waiting' && $studentRequest->assignedRegistrar) {
-                $position = $this->queueService->getWaitingPositionForStudentRequest($studentRequest);
+                // Find the position of this request in the unified waiting queue (1-based)
+                $position = $allWaitingRequests->search(function($req) use ($studentRequest) {
+                    return $req->id === $studentRequest->id;
+                });
+                
+                // Convert from 0-based index to 1-based position
+                $position = $position !== false ? $position + 1 : 0;
+                
+                // Set display status to waiting for consistency
                 $displayStatus = 'waiting';
             }
 
@@ -485,23 +491,22 @@ class ReferenceController extends Controller
         $position = 0;
         $displayStatus = $onsiteRequest->status;
         
-        // For in_queue status, check if this is the first request or waiting
-        if ($onsiteRequest->status === 'in_queue' && $onsiteRequest->assigned_registrar_id) {
-            // Get all in_queue/waiting requests for this registrar
-            $registrarRequests = OnsiteRequest::where('assigned_registrar_id', $onsiteRequest->assigned_registrar_id)
-                ->whereIn('status', ['in_queue', 'waiting'])
+        // For both in_queue and waiting status, calculate position in the overall waiting queue
+        if (in_array($onsiteRequest->status, ['in_queue', 'waiting'])) {
+            // Get ALL waiting requests (both in_queue and waiting) across all registrars, sorted by creation time
+            $allWaitingRequests = OnsiteRequest::whereIn('status', ['in_queue', 'waiting'])
                 ->orderBy('created_at', 'asc')
                 ->get();
             
-            // If this is not the first request, it's actually waiting
-            if ($registrarRequests->isNotEmpty() && $registrarRequests->first()->id !== $onsiteRequest->id) {
-                $displayStatus = 'waiting';
-                $position = $registrarRequests->search(function($req) use ($onsiteRequest) {
-                    return $req->id === $onsiteRequest->id;
-                }) + 1; // Position in queue (1-based)
-            }
-        } elseif ($onsiteRequest->status === 'waiting' && $onsiteRequest->assigned_registrar_id) {
-            $position = $this->queueService->getWaitingPositionForRequest($onsiteRequest);
+            // Find the position of this request in the unified waiting queue (1-based)
+            $position = $allWaitingRequests->search(function($req) use ($onsiteRequest) {
+                return $req->id === $onsiteRequest->id;
+            });
+            
+            // Convert from 0-based index to 1-based position
+            $position = $position !== false ? $position + 1 : 0;
+            
+            // Set display status to waiting for consistency
             $displayStatus = 'waiting';
         }
 

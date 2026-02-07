@@ -273,11 +273,13 @@
                         @if($request->requestItems->count() > 0)
                             @foreach($request->requestItems as $item)
                                 <div class="fw-semibold">{{ $item->document->type_document }} (x{{ $item->quantity }})</div>
+                                <small class="text-muted">₱{{ number_format($item->document->price, 2) }} each = ₱{{ number_format($item->document->price * $item->quantity, 2) }}</small>
                             @endforeach
+                            <hr class="my-1">
+                            <small class="text-primary fw-bold">Total: ₱{{ number_format($request->total_cost, 2) }}</small>
                         @else
                             <span class="text-muted">No documents</span>
                         @endif
-                        <small class="text-muted">Total: ₱{{ number_format($request->total_cost, 2) }}</small>
                     </td>
                     <td>
                         {{ $request->reason ?? 'Not specified' }}
@@ -444,11 +446,13 @@
                             @if($request->requestItems->count() > 0)
                                 @foreach($request->requestItems as $item)
                                     <div class="fw-semibold">{{ $item->document->type_document }} (x{{ $item->quantity }})</div>
+                                    <small class="text-muted">₱{{ number_format($item->document->price, 2) }} each = ₱{{ number_format($item->document->price * $item->quantity, 2) }}</small>
                                 @endforeach
+                                <hr class="my-1">
+                                <small class="text-primary fw-bold">Total: ₱{{ number_format($request->total_cost, 2) }}</small>
                             @else
                                 <span class="text-muted">No documents</span>
                             @endif
-                            <small class="text-muted">Total: ₱{{ number_format($request->total_cost, 2) }}</small>
                         </td>
                         <td>
                             {{ $request->reason ?? 'Not specified' }}
@@ -600,11 +604,13 @@
                             @if($request->requestItems->count() > 0)
                                 @foreach($request->requestItems as $item)
                                     <div class="fw-semibold">{{ $item->document->type_document }} (x{{ $item->quantity }})</div>
+                                    <small class="text-muted">₱{{ number_format($item->document->price, 2) }} each = ₱{{ number_format($item->document->price * $item->quantity, 2) }}</small>
                                 @endforeach
+                                <hr class="my-1">
+                                <small class="text-primary fw-bold">Total: ₱{{ number_format($request->total_cost, 2) }}</small>
                             @else
                                 <span class="text-muted">No documents</span>
                             @endif
-                            <small class="text-muted">Total: ₱{{ number_format($request->total_cost, 2) }}</small>
                         </td>
                         <td>
                             {{ $request->reason ?? 'Not specified' }}

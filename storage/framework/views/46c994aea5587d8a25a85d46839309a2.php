@@ -111,14 +111,16 @@
     }
 
     /* Disable hover/focus effects for readonly student name field in modal */
-    #student_name {
+    #student_name, #take_student_name {
         pointer-events: none !important;
         cursor: default !important;
         background-color: #e9ecef !important;
         opacity: 1 !important;
     }
     #student_name:hover,
-    #student_name:focus {
+    #student_name:focus,
+    #take_student_name:hover,
+    #take_student_name:focus {
         background-color: #e9ecef !important;
         border-color: #ced4da !important;
         box-shadow: none !important;
@@ -219,7 +221,29 @@
         </div>
     <?php endif; ?>
 
-    <div class="table-responsive">
+    <?php
+        // Separate requests into onsite and kiosk
+        $onsiteRequests = $all->filter(function($request) {
+            return in_array($request->status, ['pending', 'registrar_approved', 'processing', 'ready_for_release']);
+        });
+        
+        $kioskRequests = $all->filter(function($request) {
+            return in_array($request->status, ['in_queue', 'ready_for_pickup', 'waiting']);
+        });
+        
+        $completedRequests = $all->filter(function($request) {
+            return $request->status === 'completed';
+        });
+    ?>
+
+    <!-- Onsite Processing Requests -->
+    <?php if($onsiteRequests->count() > 0): ?>
+    <div class="mb-5">
+        <h4 class="mb-3">
+            <i class="bi bi-person-workspace text-primary"></i> Onsite Processing Requests
+            <span class="badge bg-primary ms-2"><?php echo e($onsiteRequests->count()); ?></span>
+        </h4>
+        <div class="table-responsive">
         <table class="table table-hover align-middle">
             <thead class="table-dark">
                 <tr>
@@ -227,16 +251,16 @@
                     <th>Student Details</th>
                     <th>Document Type</th>
                     <th>Reason</th>
+                    <th>Remarks</th>
                     <th class="text-center">Status</th>
-                    <th>Window / Registrar</th>
+                    <th>Registrar</th>
                     <th>Request Date</th>
                     <th>Expected Release Date</th>
                     <th class="text-center" style="width: 15%;">Actions</th>
                 </tr>
             </thead>
             <tbody>
-
-                <?php $__currentLoopData = $all; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $request): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <?php $__currentLoopData = $onsiteRequests; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $request): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                 <tr class="table-row">
                     <td class="text-center fw-bold text-muted"><?php echo e($all->firstItem() + $index); ?></td>
                     <td>
@@ -248,15 +272,24 @@
                         <?php if($request->requestItems->count() > 0): ?>
                             <?php $__currentLoopData = $request->requestItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                 <div class="fw-semibold"><?php echo e($item->document->type_document); ?> (x<?php echo e($item->quantity); ?>)</div>
+                                <small class="text-muted">₱<?php echo e(number_format($item->document->price, 2)); ?> each = ₱<?php echo e(number_format($item->document->price * $item->quantity, 2)); ?></small>
                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            <hr class="my-1">
+                            <small class="text-primary fw-bold">Total: ₱<?php echo e(number_format($request->total_cost, 2)); ?></small>
                         <?php else: ?>
                             <span class="text-muted">No documents</span>
                         <?php endif; ?>
-                        <small class="text-muted">Total: ₱<?php echo e(number_format($request->total_cost, 2)); ?></small>
                     </td>
                     <td>
                         <?php echo e($request->reason ?? 'Not specified'); ?>
 
+                    </td>
+                    <td>
+                        <?php if($request->remarks): ?>
+                            <small class="text-muted"><?php echo e(Str::limit($request->remarks, 50)); ?></small>
+                        <?php else: ?>
+                            <small class="text-muted">-</small>
+                        <?php endif; ?>
                     </td>
                     <td class="text-center">
                         <span class="badge bg-<?php echo e($request->status === 'completed' ? 'success' : ($request->status === 'pending' ? 'warning' : ($request->status === 'registrar_approved' ? 'info' : ($request->status === 'processing' ? 'info' : ($request->status === 'ready_for_release' ? 'primary' : ($request->status === 'ready_for_pickup' ? 'warning' : ($request->status === 'in_queue' ? 'primary' : ($request->status === 'waiting' ? 'secondary' : 'secondary')))))))); ?> rounded-pill px-3">
@@ -278,10 +311,7 @@
                         </small>
                     </td>
                     <td>
-                        <?php if($request->window && $request->window->window_number): ?>
-                            <div class="fw-semibold"><i class="bi bi-grid-1x2"></i> Window <?php echo e($request->window->window_number); ?></div>
-                            <small class="text-muted"><?php echo e($request->registrar ? $request->registrar->first_name . ' ' . $request->registrar->last_name : 'Unassigned'); ?></small>
-                        <?php elseif($request->registrar): ?>
+                        <?php if($request->registrar): ?>
                             <div><i class="bi bi-person-fill"></i> <?php echo e($request->registrar->first_name); ?> <?php echo e($request->registrar->last_name); ?></div>
                         <?php else: ?>
                             <span class="text-muted"><i class="bi bi-dash-circle"></i> Not Assigned</span>
@@ -377,7 +407,261 @@
                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </tbody>
         </table>
+        </div>
     </div>
+    <?php endif; ?>
+
+    <!-- Kiosk Processing Requests -->
+    <?php if($kioskRequests->count() > 0): ?>
+    <div class="mb-5">
+        <h4 class="mb-3">
+            <i class="bi bi-display text-info"></i> Kiosk Processing Requests
+            <span class="badge bg-info ms-2"><?php echo e($kioskRequests->count()); ?></span>
+        </h4>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="text-center" style="width: 5%;">#</th>
+                        <th>Student Details</th>
+                        <th>Document Type</th>
+                        <th>Reason</th>
+                        <th>Remarks</th>
+                        <th class="text-center">Status</th>
+                        <th>Registrar</th>
+                        <th>Request Date</th>
+                        <th>Expected Release Date</th>
+                        <th class="text-center" style="width: 15%;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php $__currentLoopData = $kioskRequests; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $request): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <tr class="table-row">
+                        <td class="text-center fw-bold text-muted"><?php echo e($index + 1); ?></td>
+                        <td>
+                            <div class="fw-semibold"><?php echo e($request->student->user->first_name); ?> <?php echo e($request->student->user->last_name); ?></div>
+                            <small class="text-muted"><?php echo e($request->student->student_id); ?></small><br>
+                            <small class="text-primary">REF: <?php echo e($request->reference_no); ?></small>
+                        </td>
+                        <td>
+                            <?php if($request->requestItems->count() > 0): ?>
+                                <?php $__currentLoopData = $request->requestItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <div class="fw-semibold"><?php echo e($item->document->type_document); ?> (x<?php echo e($item->quantity); ?>)</div>
+                                    <small class="text-muted">₱<?php echo e(number_format($item->document->price, 2)); ?> each = ₱<?php echo e(number_format($item->document->price * $item->quantity, 2)); ?></small>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                <hr class="my-1">
+                                <small class="text-primary fw-bold">Total: ₱<?php echo e(number_format($request->total_cost, 2)); ?></small>
+                            <?php else: ?>
+                                <span class="text-muted">No documents</span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <?php echo e($request->reason ?? 'Not specified'); ?>
+
+                        </td>
+                        <td>
+                            <?php if($request->remarks): ?>
+                                <small class="text-muted"><?php echo e(Str::limit($request->remarks, 50)); ?></small>
+                            <?php else: ?>
+                                <small class="text-muted">-</small>
+                            <?php endif; ?>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-<?php echo e($request->status === 'in_queue' ? 'primary' : ($request->status === 'ready_for_pickup' ? 'warning' : 'secondary')); ?> rounded-pill px-3">
+                                <?php echo e(ucfirst(str_replace('_', ' ', $request->status))); ?>
+
+                            </span><br>
+                            <small class="text-muted">
+                                <?php if($request->status === 'in_queue'): ?>
+                                    In Progress
+                                <?php elseif($request->status === 'ready_for_pickup'): ?>
+                                    In Progress
+                                <?php else: ?>
+                                    Waiting
+                                <?php endif; ?>
+                            </small>
+                        </td>
+                        <td>
+                            <?php if($request->registrar): ?>
+                                <div><i class="bi bi-person-fill"></i> <?php echo e($request->registrar->first_name); ?> <?php echo e($request->registrar->last_name); ?></div>
+                            <?php else: ?>
+                                <span class="text-muted"><i class="bi bi-dash-circle"></i> Not Assigned</span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <div><i class="bi bi-clock"></i> <?php echo e($request->created_at->format('M j, Y')); ?></div>
+                            <small class="text-muted"><?php echo e($request->created_at->format('g:i A')); ?></small>
+                        </td>
+                        <td>
+                            <?php if($request->expected_release_date): ?>
+                                <div><i class="bi bi-calendar-check"></i> <?php echo e(\Carbon\Carbon::parse($request->expected_release_date)->format('M j, Y')); ?></div>
+                                <small class="text-muted"><?php echo e(\Carbon\Carbon::parse($request->expected_release_date)->format('l')); ?></small>
+                            <?php else: ?>
+                                <span class="text-muted"><i class="bi bi-dash-circle"></i> Not set</span>
+                            <?php endif; ?>
+                        </td>
+                        <td class="text-center">
+                            <?php if($request->status === 'in_queue'): ?>
+                                <small class="text-muted">Kiosk Processing</small><br>
+                                <?php if($request->assigned_registrar_id === Auth::id()): ?>
+                                    
+                                    <form action="<?php echo e(route('registrar.ready-pickup', $request->id)); ?>" method="POST" class="d-inline">
+                                        <?php echo csrf_field(); ?>
+                                        <button class="btn btn-warning action-btn">Ready for Pickup</button>
+                                    </form>
+                                <?php elseif(!$request->assigned_registrar_id): ?>
+                                    
+                                    <button type="button" class="btn btn-primary action-btn"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#takeRequestModal"
+                                            data-request-id="<?php echo e($request->id); ?>"
+                                            data-student-name="<?php echo e($request->student->user->first_name); ?> <?php echo e($request->student->user->last_name); ?>">
+                                        Take Request
+                                    </button>
+                                <?php else: ?>
+                                    
+                                    <small class="text-muted">
+                                        <i class="bi bi-person-fill"></i> Assigned to another registrar
+                                    </small>
+                                <?php endif; ?>
+                            <?php elseif($request->status === 'ready_for_pickup'): ?>
+                                <small class="text-muted">Kiosk Processing</small><br>
+                                <?php if($request->assigned_registrar_id === Auth::id()): ?>
+                                    <form action="<?php echo e(route('registrar.complete', $request->id)); ?>" method="POST" class="d-inline">
+                                        <?php echo csrf_field(); ?>
+                                        <button class="btn btn-success action-btn">Mark as Completed</button>
+                                    </form>
+                                <?php else: ?>
+                                    <small class="text-muted">
+                                        <i class="bi bi-person-fill"></i> Assigned to another registrar
+                                    </small>
+                                <?php endif; ?>
+                            <?php elseif($request->status === 'waiting'): ?>
+                                <small class="text-muted">Kiosk Processing</small><br>
+                                <?php if($request->assigned_registrar_id === Auth::id()): ?>
+                                    
+                                    <button type="button" class="btn btn-primary action-btn"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#takeRequestModal"
+                                            data-request-id="<?php echo e($request->id); ?>"
+                                            data-student-name="<?php echo e($request->student->user->first_name); ?> <?php echo e($request->student->user->last_name); ?>">
+                                        Start Processing
+                                    </button>
+                                <?php elseif(!$request->assigned_registrar_id): ?>
+                                    
+                                    <button type="button" class="btn btn-primary action-btn"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#takeRequestModal"
+                                            data-request-id="<?php echo e($request->id); ?>"
+                                            data-student-name="<?php echo e($request->student->user->first_name); ?> <?php echo e($request->student->user->last_name); ?>">
+                                        Take Request
+                                    </button>
+                                <?php else: ?>
+                                    <small class="text-muted">
+                                        <i class="bi bi-person-fill"></i> Assigned to another registrar
+                                    </small>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <?php endif; ?>
+
+    <!-- Completed Requests -->
+    <?php if($completedRequests->count() > 0): ?>
+    <div class="mb-5">
+        <h4 class="mb-3">
+            <i class="bi bi-check-circle-fill text-success"></i> Completed Requests
+            <span class="badge bg-success ms-2"><?php echo e($completedRequests->count()); ?></span>
+        </h4>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="text-center" style="width: 5%;">#</th>
+                        <th>Student Details</th>
+                        <th>Document Type</th>
+                        <th>Reason</th>
+                        <th>Remarks</th>
+                        <th class="text-center">Status</th>
+                        <th>Registrar</th>
+                        <th>Request Date</th>
+                        <th>Expected Release Date</th>
+                        <th class="text-center" style="width: 15%;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php $__currentLoopData = $completedRequests; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $request): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <tr class="table-row">
+                        <td class="text-center fw-bold text-muted"><?php echo e($index + 1); ?></td>
+                        <td>
+                            <div class="fw-semibold"><?php echo e($request->student->user->first_name); ?> <?php echo e($request->student->user->last_name); ?></div>
+                            <small class="text-muted"><?php echo e($request->student->student_id); ?></small><br>
+                            <small class="text-primary">REF: <?php echo e($request->reference_no); ?></small>
+                        </td>
+                        <td>
+                            <?php if($request->requestItems->count() > 0): ?>
+                                <?php $__currentLoopData = $request->requestItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <div class="fw-semibold"><?php echo e($item->document->type_document); ?> (x<?php echo e($item->quantity); ?>)</div>
+                                    <small class="text-muted">₱<?php echo e(number_format($item->document->price, 2)); ?> each = ₱<?php echo e(number_format($item->document->price * $item->quantity, 2)); ?></small>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                <hr class="my-1">
+                                <small class="text-primary fw-bold">Total: ₱<?php echo e(number_format($request->total_cost, 2)); ?></small>
+                            <?php else: ?>
+                                <span class="text-muted">No documents</span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <?php echo e($request->reason ?? 'Not specified'); ?>
+
+                        </td>
+                        <td>
+                            <?php if($request->remarks): ?>
+                                <small class="text-muted"><?php echo e(Str::limit($request->remarks, 50)); ?></small>
+                            <?php else: ?>
+                                <small class="text-muted">-</small>
+                            <?php endif; ?>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-success rounded-pill px-3">
+                                <?php echo e(ucfirst(str_replace('_', ' ', $request->status))); ?>
+
+                            </span><br>
+                            <small class="text-muted">Completed</small>
+                        </td>
+                        <td>
+                            <?php if($request->registrar): ?>
+                                <div><i class="bi bi-person-fill"></i> <?php echo e($request->registrar->first_name); ?> <?php echo e($request->registrar->last_name); ?></div>
+                            <?php else: ?>
+                                <span class="text-muted"><i class="bi bi-dash-circle"></i> Not Assigned</span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <div><i class="bi bi-clock"></i> <?php echo e($request->created_at->format('M j, Y')); ?></div>
+                            <small class="text-muted"><?php echo e($request->created_at->format('g:i A')); ?></small>
+                        </td>
+                        <td>
+                            <?php if($request->expected_release_date): ?>
+                                <div><i class="bi bi-calendar-check"></i> <?php echo e(\Carbon\Carbon::parse($request->expected_release_date)->format('M j, Y')); ?></div>
+                                <small class="text-muted"><?php echo e(\Carbon\Carbon::parse($request->expected_release_date)->format('l')); ?></small>
+                            <?php else: ?>
+                                <span class="text-muted"><i class="bi bi-dash-circle"></i> Not set</span>
+                            <?php endif; ?>
+                        </td>
+                        <td class="text-center">
+                            <span class="text-success"><i class="bi bi-check-circle-fill"></i> Completed</span>
+                        </td>
+                    </tr>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <?php endif; ?>
 
     <?php if($all->isEmpty()): ?>
         <div class="alert alert-info text-center mt-4">
@@ -542,6 +826,60 @@ document.addEventListener('DOMContentLoaded', function() {
                 rejectForm.submit();
             }
         };
+    });
+});
+</script>
+
+<!-- Take Request Modal -->
+<div class="modal fade" id="takeRequestModal" tabindex="-1" aria-labelledby="takeRequestModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="takeRequestModalLabel">Take Request</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="takeRequestForm" method="POST">
+                <?php echo csrf_field(); ?>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="take_student_name" class="form-label">Student</label>
+                        <input type="text" class="form-control" id="take_student_name" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="take_remarks" class="form-label">Remarks/Comments</label>
+                        <textarea class="form-control" id="take_remarks" name="remarks" rows="3" placeholder="Add any remarks or comments about taking this request..."></textarea>
+                        <div class="form-text">Optional: Add notes about taking this request.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Take Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const takeRequestModal = document.getElementById('takeRequestModal');
+    const takeRequestForm = document.getElementById('takeRequestForm');
+    const takeStudentNameInput = document.getElementById('take_student_name');
+    const takeRemarksTextarea = document.getElementById('take_remarks');
+
+    takeRequestModal.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget;
+        const requestId = button.getAttribute('data-request-id');
+        const studentName = button.getAttribute('data-student-name');
+        
+        // Update form action - use the take route
+        takeRequestForm.action = `/registrar/take/${requestId}`;
+        
+        // Set student name
+        takeStudentNameInput.value = studentName;
+        
+        // Clear remarks
+        takeRemarksTextarea.value = '';
     });
 });
 </script>
