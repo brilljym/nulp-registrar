@@ -367,3 +367,13 @@ Route::get('/debug/queue-positions', function () {
         'total_waiting' => $studentRequests->count() + $onsiteRequests->count()
     ]);
 });
+
+// Version check endpoint
+Route::get('/debug/version-check', function () {
+    return response()->json([
+        'version' => 'v2.0-registrar-based-position',
+        'timestamp' => now()->toIso8601String(),
+        'logic' => 'Position calculated per registrar (first=0, rest=1,2,3...)',
+        'updated' => '2026-02-07'
+    ]);
+});
