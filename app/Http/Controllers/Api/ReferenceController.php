@@ -194,7 +194,7 @@ class ReferenceController extends Controller
                         $displayStatus = 'in_queue';
                     } else {
                         // Calculate position among waiting requests for this registrar (excluding the first)
-                        $waitingForRegistrar = $registrarRequests->skip(1);
+                        \$waitingForRegistrar = \$registrarRequests->skip(1)->values(); // Re-index after skip
                         $position = $waitingForRegistrar->search(function($req) use ($studentRequest) {
                             return $req->id === $studentRequest->id;
                         });
@@ -311,7 +311,7 @@ class ReferenceController extends Controller
                     $displayStatus = 'in_queue';
                 } else {
                     // Calculate position among waiting requests for this registrar (excluding the first)
-                    $waitingForRegistrar = $registrarRequests->skip(1);
+                    $waitingForRegistrar = $registrarRequests->skip(1)->values(); // Re-index after skip
                     $position = $waitingForRegistrar->search(function($req) use ($request) {
                         return $req->id === $request->id;
                     });
@@ -466,7 +466,7 @@ class ReferenceController extends Controller
                         $displayStatus = 'in_queue';
                     } else {
                         // Calculate position among waiting requests for this registrar (excluding the first)
-                        $waitingForRegistrar = $registrarRequests->skip(1);
+                        \$waitingForRegistrar = \$registrarRequests->skip(1)->values(); // Re-index after skip
                         $position = $waitingForRegistrar->search(function($req) use ($studentRequest) {
                             return $req->id === $studentRequest->id;
                         });
@@ -587,7 +587,7 @@ class ReferenceController extends Controller
                     $displayStatus = 'in_queue';
                 } else {
                     // Calculate position among waiting requests for this registrar (excluding the first)
-                    $waitingForRegistrar = $registrarRequests->skip(1);
+                    $waitingForRegistrar = $registrarRequests->skip(1)->values(); // Re-index after skip
                     $position = $waitingForRegistrar->search(function($req) use ($onsiteRequest) {
                         return $req->id === $onsiteRequest->id;
                     });
