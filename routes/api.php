@@ -326,3 +326,44 @@ Route::get('/debug/test-notification', function () {
         ], 500);
     }
 });
+
+// Debug endpoint to check queue positions
+Route::get('/debug/queue-positions', function () {
+    $studentRequests = \App\Models\StudentRequest::whereIn('status', ['in_queue', 'waiting'])
+        ->orderBy('created_at', 'asc')
+        ->get(['id', 'queue_number', 'status', 'assigned_registrar_id', 'created_at', 'reference_no']);
+    
+    $onsiteRequests = \App\Models\OnsiteRequest::whereIn('status', ['in_queue', 'waiting'])
+        ->orderBy('created_at', 'asc')
+        ->get(['id', 'queue_number', 'status', 'assigned_registrar_id', 'created_at', 'ref_code']);
+    
+    $studentList = $studentRequests->map(function($req, $index) {
+        return [
+            'position' => $index + 1,
+            'queue_number' => $req->queue_number,
+            'status' => $req->status,
+            'registrar_id' => $req->assigned_registrar_id,
+            'created_at' => $req->created_at->format('Y-m-d H:i:s'),
+            'reference_no' => $req->reference_no,
+            'type' => 'student'
+        ];
+    });
+    
+    $onsiteList = $onsiteRequests->map(function($req, $index) {
+        return [
+            'position' => $index + 1,
+            'queue_number' => $req->queue_number,
+            'status' => $req->status,
+            'registrar_id' => $req->assigned_registrar_id,
+            'created_at' => $req->created_at->format('Y-m-d H:i:s'),
+            'ref_code' => $req->ref_code,
+            'type' => 'onsite'
+        ];
+    });
+    
+    return response()->json([
+        'student_requests' => $studentList,
+        'onsite_requests' => $onsiteList,
+        'total_waiting' => $studentRequests->count() + $onsiteRequests->count()
+    ]);
+});
