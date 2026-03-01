@@ -708,7 +708,7 @@
         }
     </style>
 </head>
-<<body>
+<body>
     <!-- Background overlay with blur -->
     <div class="bg-overlay"></div>
     

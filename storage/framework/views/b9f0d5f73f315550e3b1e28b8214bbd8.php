@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forgot Password - NU Document Request - NU Lipa</title>
+    <title>Login - NU Document Request - NU Lipa</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -169,7 +169,6 @@
             font-size: 1.75rem;
             font-weight: 700;
             margin-bottom: 0.5rem;
-            margin-top: 1rem;
             letter-spacing: -0.025em;
             line-height: 1.2;
         }
@@ -588,6 +587,8 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+
     </style>
 </head>
 <body>
@@ -602,7 +603,7 @@
                 <img src="<?php echo e(asset('images/NU_shield.svg.png')); ?>" alt="NU Shield" class="nu-shield">
                 <span class="nu-title">NU LIPA</span>
             </div>
-            <span class="nu-welcome">Password Recovery</span>
+            <span class="nu-welcome">Secure Login</span>
         </header>
 
         <!-- Main content area -->
@@ -610,11 +611,11 @@
             <div class="document-request-card">
                 <a href="<?php echo e(route('login')); ?>" class="back-link">
                     <i class="bi bi-arrow-left"></i>
-                    Back to Login
+                    Back to Options
                 </a>
 
-                <h1 class="card-title">Forgot Password</h1>
-                <p class="card-subtitle">Enter your personal email to receive a password reset link</p>
+                <h1 class="card-title">Login</h1>
+                <p class="card-subtitle">Enter your credentials to access your account</p>
 
                 <?php if(session('status')): ?>
                     <div class="alert alert-success">
@@ -632,34 +633,57 @@
                     </div>
                 <?php endif; ?>
 
-                <form method="POST" action="<?php echo e(route('password.email')); ?>" novalidate>
+                <form method="POST" action="<?php echo e(route('login.post')); ?>" novalidate>
                     <?php echo csrf_field(); ?>
-                    <div class="mb-4">
-                        <label for="email" class="form-label">
-                            <i class="bi bi-envelope" aria-hidden="true"></i>Personal Email
+                    <div class="mb-3">
+                        <label for="school_email" class="form-label">
+                            School Email
                         </label>
-                        <input type="email" 
-                               class="form-control" 
-                               id="email" 
-                               name="email" 
-                               placeholder="your.email@example.com"
-                               value="<?php echo e(old('email')); ?>"
+                        <input type="email"
+                               class="form-control"
+                               id="school_email"
+                               name="school_email"
+                               placeholder="your.email@nulipa.edu.ph"
+                               value="<?php echo e(old('school_email')); ?>"
                                required
                                autofocus
                                aria-describedby="email-help">
                         <small id="email-help" class="form-text text-muted visually-hidden">
-                            Enter your personal email address
+                            Enter your school email address
                         </small>
-                    </div>                    <button type="submit" class="btn-primary-custom mb-3" aria-label="Send password reset link">
-                        <i class="bi bi-send"></i>
-                        <span>Send Reset Link</span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="password" class="form-label">
+                            Password
+                        </label>
+                        <div class="password-toggle">
+                            <input type="password"
+                                   class="form-control"
+                                   id="password"
+                                   name="password"
+                                   placeholder="Enter your password"
+                                   required
+                                   aria-describedby="password-help">
+                            <button type="button" class="btn-link" id="togglePassword" aria-label="Toggle password visibility">
+                                <i class="bi bi-eye" id="passwordIcon"></i>
+                            </button>
+                        </div>
+                        <small id="password-help" class="form-text text-muted visually-hidden">
+                            Enter your account password
+                        </small>
+                    </div>
+
+                    <button type="submit" class="btn-primary-custom mb-3" aria-label="Sign in to your account">
+                        <i class="bi bi-box-arrow-in-right"></i>
+                        <span>Sign In</span>
                     </button>
                 </form>
 
                 <p class="text-muted reset-link" style="font-size: 0.875rem; margin-top: 1rem;">
-                    Remember your password?
-                    <a href="<?php echo e(route('login')); ?>" class="text-decoration-none" style="color: var(--primary-blue); font-weight: 500;">
-                        Sign In
+                    Forgot your password?
+                    <a href="<?php echo e(route('password.request')); ?>" class="text-decoration-none" style="color: var(--primary-blue); font-weight: 500;">
+                        Reset Password
                     </a>
                 </p>
             </div>
@@ -681,134 +705,47 @@
 
     <!-- Custom JavaScript for enhanced interactions -->
     <script>
-        // Enhanced form validation and loading states
         document.addEventListener('DOMContentLoaded', function() {
-            const forgotForm = document.querySelector('form[action*="forgot-password"]');
-            if (forgotForm) {
-                forgotForm.addEventListener('submit', function(e) {
+            const loginForm = document.querySelector('form[action*="login"]');
+            if (loginForm) {
+                loginForm.addEventListener('submit', function(e) {
                     const submitBtn = this.querySelector('button[type="submit"]');
-
-                    // Add loading state
-                    submitBtn.classList.add('btn-loading');
+                    submitBtn.innerHTML = '<i class="bi bi-arrow-repeat spinning"></i><span>Signing In...</span>';
                     submitBtn.disabled = true;
-
-                    // Basic validation
-                    const email = this.querySelector('#email');
-
-                    if (!email.value) {
+                    const email = this.querySelector('#school_email');
+                    const password = this.querySelector('#password');
+                    if (!email.value || !password.value) {
                         e.preventDefault();
-                        submitBtn.classList.remove('btn-loading');
+                        submitBtn.innerHTML = '<i class="bi bi-box-arrow-in-right"></i><span>Sign In</span>';
                         submitBtn.disabled = false;
-
-                        email.focus();
-                        email.style.borderColor = 'var(--error-color)';
-
-                        setTimeout(() => {
-                            email.style.borderColor = '';
-                        }, 3000);
+                        if (!email.value) email.focus();
+                        else password.focus();
+                        return;
                     }
                 });
             }
 
-            // Add CSS for enhanced interactions
+            // Password visibility toggle
+            const togglePassword = document.getElementById('togglePassword');
+            const passwordInput = document.getElementById('password');
+            const passwordIcon = document.getElementById('passwordIcon');
+            if (togglePassword && passwordInput && passwordIcon) {
+                togglePassword.addEventListener('click', function() {
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+                    passwordIcon.className = type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
+                });
+            }
+
             const style = document.createElement('style');
             style.textContent = `
-                @keyframes fadeInUp {
-                    from {
-                        opacity: 0;
-                        transform: translateY(20px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-
-                .document-request-card {
-                    animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-                }
-
-                .btn-loading {
-                    position: relative;
-                    color: transparent !important;
-                    cursor: not-allowed;
-                }
-
-                .btn-loading::after {
-                    content: '';
-                    position: absolute;
-                    width: 16px;
-                    height: 16px;
-                    top: 50%;
-                    left: 50%;
-                    margin-left: -8px;
-                    margin-top: -8px;
-                    border: 2px solid transparent;
-                    border-top-color: currentColor;
-                    border-radius: 50%;
-                    animation: spin 1s linear infinite;
-                }
-
-                @keyframes spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                }
-
-                /* Enhanced focus indicators for accessibility */
-                .btn-primary-custom:focus-visible,
-                .btn-secondary-custom:focus-visible,
-                .back-link:focus-visible {
-                    outline: 2px solid var(--primary-blue);
-                    outline-offset: 2px;
-                    border-radius: var(--border-radius-md);
-                }
-
-                /* Modal animations and improvements */
-                .modal.fade .modal-dialog {
-                    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                }
-
-                /* Error state styling */
-                .form-control[aria-invalid="true"] {
-                    border-color: var(--error-color) !important;
-                    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
-                }
-
-                /* Better mobile modal positioning */
-                @media (max-width: 576px) {
-                    .modal-dialog {
-                        margin: 0.5rem auto;
-                        max-width: calc(100vw - 1rem);
-                        width: auto;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        min-height: calc(100vh - 1rem);
-                    }
-                }
-
-                /* Perfect centering for all screen sizes */
-                .main-content {
-                    display: flex !important;
-                    align-items: center !important;
-                    justify-content: center !important;
-                }
-
-                .document-request-card {
-                    margin: 0 auto !important;
-                }
-
-                /* Reduce motion for users who prefer it */
-                @media (prefers-reduced-motion: reduce) {
-                    * {
-                        animation-duration: 0.01ms !important;
-                        animation-iteration-count: 1 !important;
-                        transition-duration: 0.01ms !important;
-                    }
-                }
+                .spinning { animation: spin 1s linear infinite; }
+                @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+                .form-control[aria-invalid="true"] { border-color: var(--error-color) !important; }
             `;
             document.head.appendChild(style);
         });
     </script>
 </body>
-</html><?php /**PATH D:\Nu-Regisv2\resources\views/auth/forgot-password.blade.php ENDPATH**/ ?>
+</html>
+<?php /**PATH D:\Nu-Regisv2\resources\views/auth/login-form.blade.php ENDPATH**/ ?>
