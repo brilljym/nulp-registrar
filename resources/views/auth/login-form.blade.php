@@ -587,6 +587,182 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* =============================================
+           FLOATING INSTRUCTIONS PANEL
+        ============================================= */
+        .help-panel {
+            position: fixed;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 9999;
+            display: flex;
+            align-items: stretch;
+            filter: drop-shadow(-4px 4px 20px rgba(0,0,0,0.35));
+        }
+
+        /* Toggle tab on the left side of the panel */
+        .help-tab {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            background: var(--nu-blue);
+            color: #fff;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            padding: 1.25rem 0.6rem;
+            cursor: pointer;
+            border-radius: 10px 0 0 10px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            user-select: none;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+        .help-tab:hover { background: #002277; }
+        .help-tab i {
+            writing-mode: horizontal-tb;
+            font-size: 1rem;
+        }
+
+        /* The sliding content area — VISIBLE BY DEFAULT */
+        .help-body {
+            width: 320px;
+            max-height: calc(100vh - 10rem);
+            background: #fff;
+            border-radius: 12px 0 0 12px;
+            overflow: hidden;
+            flex-direction: column;
+            opacity: 1;
+        }
+        /* Show by default via ID — cannot be overridden */
+        #helpBody {
+            display: flex !important;
+        }
+        /* Hide only when .closed class is added by JS */
+        .help-panel.closed #helpBody {
+            display: none !important;
+        }
+
+        .help-header {
+            background: var(--nu-blue);
+            color: #fff;
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-shrink: 0;
+        }
+        .help-header .help-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            line-height: 1.3;
+            flex: 1;
+        }
+        .help-header .help-badge {
+            background: rgba(255,255,255,0.2);
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 0.2rem 0.5rem;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+
+        .help-steps {
+            overflow-y: auto;
+            flex: 1;
+            padding: 1rem;
+            scroll-behavior: smooth;
+        }
+        .help-steps::-webkit-scrollbar { width: 4px; }
+        .help-steps::-webkit-scrollbar-track { background: var(--neutral-100); }
+        .help-steps::-webkit-scrollbar-thumb { background: var(--neutral-300); border-radius: 2px; }
+
+        /* Step card */
+        .step-card {
+            border-radius: 10px;
+            padding: 0.85rem 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-start;
+            border: 1px solid var(--neutral-200);
+            background: #fff;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .step-card:hover {
+            transform: translateX(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .step-card:last-child { margin-bottom: 0; }
+        .step-num {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .step-content .step-title {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--neutral-800);
+            margin-bottom: 0.2rem;
+        }
+        .step-content .step-desc {
+            font-size: 0.77rem;
+            color: var(--neutral-500);
+            line-height: 1.45;
+            margin: 0;
+        }
+
+        /* Section label inside steps */
+        .step-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--neutral-400);
+            margin: 0.9rem 0 0.4rem;
+            padding-left: 0.25rem;
+        }
+
+        /* Contact footer inside panel */
+        .help-footer {
+            background: var(--neutral-50);
+            border-top: 1px solid var(--neutral-200);
+            padding: 0.75rem 1rem;
+            flex-shrink: 0;
+        }
+        .help-footer p {
+            font-size: 0.72rem;
+            color: var(--neutral-500);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .help-footer p + p { margin-top: 0.3rem; }
+        .help-footer a { color: var(--primary-blue); text-decoration: none; }
+        .help-footer a:hover { text-decoration: underline; }
+
+        @media (max-width: 768px) {
+            .help-body { width: 270px; }
+        }
+        @media (max-width: 480px) {
+            .help-body { width: calc(100vw - 3rem); max-height: 70vh; }
+            .help-panel {
+                top: auto;
+                bottom: 5rem;
+                transform: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -696,8 +872,155 @@
         </footer>
     </div>
 
+    <!-- ===== FLOATING INSTRUCTIONS PANEL ===== -->
+    <div class="help-panel" id="helpPanel">
+
+        <!-- Clickable tab -->
+        <div class="help-tab" id="helpTab" role="button" aria-label="Toggle instructions" tabindex="0">
+            <i class="bi bi-info-circle-fill"></i>
+            HOW TO USE
+        </div>
+
+        <!-- Panel body -->
+        <div class="help-body" id="helpBody" style="display:flex;">
+
+            <!-- Panel header -->
+            <div class="help-header">
+                <i class="bi bi-book" style="font-size:1.1rem;"></i>
+                <span class="help-title">How to Use the<br>NU Document Request System</span>
+                <span class="help-badge">Guide</span>
+            </div>
+
+            <!-- Scrollable steps -->
+            <div class="help-steps">
+
+                <p class="step-label">Getting Started</p>
+
+                <div class="step-card">
+                    <div class="step-num" style="background:#eff6ff;color:#2563eb;">1</div>
+                    <div class="step-content">
+                        <p class="step-title">Login to Your Account</p>
+                        <p class="step-desc">Enter your <strong>school email</strong> (e.g., name@nulipa.edu.ph) and password, then click <em>Sign In</em>.</p>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-num" style="background:#f0fdf4;color:#10b981;">2</div>
+                    <div class="step-content">
+                        <p class="step-title">Forgot Your Password?</p>
+                        <p class="step-desc">Click <strong>Reset Password</strong> below the sign-in button. A reset link will be sent to your school email.</p>
+                    </div>
+                </div>
+
+                <p class="step-label">Requesting Documents</p>
+
+                <div class="step-card">
+                    <div class="step-num" style="background:#eff6ff;color:#2563eb;">3</div>
+                    <div class="step-content">
+                        <p class="step-title">Go to Request Document</p>
+                        <p class="step-desc">After login, navigate to <strong>Request Document</strong> from your student dashboard.</p>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-num" style="background:#eff6ff;color:#2563eb;">4</div>
+                    <div class="step-content">
+                        <p class="step-title">Fill Out the Form</p>
+                        <p class="step-desc">Choose your <strong>document type</strong>, number of copies, and purpose. Review all details before submitting.</p>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-num" style="background:#eff6ff;color:#2563eb;">5</div>
+                    <div class="step-content">
+                        <p class="step-title">Save Your Reference Number</p>
+                        <p class="step-desc">After submitting, you’ll receive a <strong>reference number</strong> (e.g., SR-YYYYMMDD-XXXX). Keep it for tracking and pickup.</p>
+                    </div>
+                </div>
+
+                <p class="step-label">Tracking &amp; Status</p>
+
+                <div class="step-card">
+                    <div class="step-num" style="background:#fefce8;color:#d97706;">6</div>
+                    <div class="step-content">
+                        <p class="step-title">Track via Web or Mobile App</p>
+                        <p class="step-desc">Check <em>My Requests</em> on the portal or use the <strong>NU Document Request mobile app</strong> for real-time queue updates.</p>
+                    </div>
+                </div>
+
+                <div class="step-card" style="border-left: 3px solid #0ea5e9;">
+                    <div class="step-content" style="width:100%;">
+                        <p class="step-title" style="font-size:0.78rem;margin-bottom:0.4rem;"><i class="bi bi-grid-3x3 me-1 text-info"></i>Status Reference</p>
+                        <div style="display:flex;flex-direction:column;gap:0.3rem;">
+                            <div style="display:flex;align-items:center;gap:0.5rem;">
+                                <span style="width:10px;height:10px;border-radius:50%;background:#f59e0b;flex-shrink:0;"></span>
+                                <span style="font-size:0.74rem;color:var(--neutral-600);"><strong>Pending</strong> — Awaiting assignment</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:0.5rem;">
+                                <span style="width:10px;height:10px;border-radius:50%;background:#0ea5e9;flex-shrink:0;"></span>
+                                <span style="font-size:0.74rem;color:var(--neutral-600);"><strong>In Queue</strong> — Assigned, in line</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:0.5rem;">
+                                <span style="width:10px;height:10px;border-radius:50%;background:#2563eb;flex-shrink:0;"></span>
+                                <span style="font-size:0.74rem;color:var(--neutral-600);"><strong>Processing</strong> — Being worked on</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:0.5rem;">
+                                <span style="width:10px;height:10px;border-radius:50%;background:#10b981;flex-shrink:0;"></span>
+                                <span style="font-size:0.74rem;color:var(--neutral-600);"><strong>Ready for Pickup</strong> — Visit office</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:0.5rem;">
+                                <span style="width:10px;height:10px;border-radius:50%;background:#ef4444;flex-shrink:0;"></span>
+                                <span style="font-size:0.74rem;color:var(--neutral-600);"><strong>Rejected</strong> — See reason provided</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="step-label">Pickup &amp; Payment</p>
+
+                <div class="step-card">
+                    <div class="step-num" style="background:#f0fdf4;color:#10b981;">7</div>
+                    <div class="step-content">
+                        <p class="step-title">Claim Your Document</p>
+                        <p class="step-desc">Bring your <strong>valid school ID</strong> and <strong>reference number</strong>. Pay any applicable fees at the cashier window before claiming.</p>
+                    </div>
+                </div>
+
+                <div class="step-card" style="border-left:3px solid var(--warning-color);">
+                    <div class="step-content" style="width:100%;">
+                        <p class="step-title" style="font-size:0.78rem;"><i class="bi bi-clock me-1" style="color:var(--warning-color);"></i>Processing Time</p>
+                        <p class="step-desc">Standard: <strong>3–5 business days</strong>. Office hours: <strong>Mon–Fri, 8 AM – 5 PM</strong>.</p>
+                    </div>
+                </div>
+
+            </div><!-- /help-steps -->
+
+            <!-- Contact footer -->
+            <div class="help-footer">
+                <p><i class="bi bi-envelope" style="color:var(--primary-blue);"></i> <a href="mailto:registrar@nu-lipa.edu.ph">registrar@nu-lipa.edu.ph</a></p>
+                <p><i class="bi bi-geo-alt" style="color:var(--primary-blue);"></i> NU Bldg, SM City Lipa, Batangas</p>
+            </div>
+
+        </div><!-- /help-body -->
+    </div><!-- /help-panel -->
+
     <!-- Bootstrap JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Help Panel Toggle -->
+    <script>
+        (function () {
+            var panel = document.getElementById('helpPanel');
+            var tab   = document.getElementById('helpTab');
+            // Panel is OPEN by default — clicking tab toggles .closed class to hide/show
+            tab.addEventListener('click', function () {
+                panel.classList.toggle('closed');
+            });
+            tab.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); panel.classList.toggle('closed'); }
+            });
+        })();
+    </script>
 
     <!-- Custom JavaScript for enhanced interactions -->
     <script>

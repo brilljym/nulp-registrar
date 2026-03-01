@@ -609,6 +609,103 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Floating Help Button */
+        .floating-help-btn {
+            position: fixed;
+            bottom: 5rem;
+            right: 1.75rem;
+            z-index: 100;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-blue), var(--accent-color));
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 16px rgba(37,99,235,0.35);
+            transition: transform 0.25s cubic-bezier(0.4,0,0.2,1), box-shadow 0.25s;
+            animation: helpPulse 2.5s ease-in-out infinite;
+        }
+        .floating-help-btn:hover {
+            transform: scale(1.12) translateY(-2px);
+            box-shadow: 0 8px 24px rgba(37,99,235,0.45);
+        }
+        .floating-help-btn:active { transform: scale(0.95); }
+        .floating-help-tooltip {
+            position: fixed;
+            bottom: 9.5rem;
+            right: 1.75rem;
+            background: var(--neutral-800);
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(6px);
+            transition: opacity 0.2s, transform 0.2s;
+            z-index: 101;
+        }
+        .floating-help-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            right: 1.25rem;
+            border: 5px solid transparent;
+            border-top-color: var(--neutral-800);
+        }
+        .floating-help-btn:hover + .floating-help-tooltip,
+        .floating-help-btn:focus + .floating-help-tooltip {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        @keyframes helpPulse {
+            0%, 100% { box-shadow: 0 4px 16px rgba(37,99,235,0.35); }
+            50%        { box-shadow: 0 4px 24px rgba(37,99,235,0.55), 0 0 0 8px rgba(37,99,235,0.12); }
+        }
+
+        /* Instructions Modal */
+        .instr-section {
+            padding: 1rem 1.25rem;
+            border-radius: 0.625rem;
+            background: var(--neutral-50);
+            margin-bottom: 1.25rem;
+        }
+        .instr-section h6 {
+            font-weight: 700;
+            color: var(--neutral-800);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .instr-section ul, .instr-section ol {
+            padding-left: 1.4rem;
+            margin-bottom: 0;
+        }
+        .instr-section li { margin-bottom: 0.4rem; color: var(--neutral-700); font-size: 0.9rem; }
+        .instr-bl-blue    { border-left: 4px solid var(--primary-blue); }
+        .instr-bl-green   { border-left: 4px solid var(--accent-color); }
+        .instr-bl-yellow  { border-left: 4px solid var(--warning-color); }
+        .status-pill {
+            display: inline-block;
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0.2rem 0.55rem;
+            border-radius: 999px;
+            color: #fff;
+        }
+        @media (max-width: 576px) {
+            .floating-help-btn { bottom: 4.5rem; right: 1rem; width: 50px; height: 50px; font-size: 1.25rem; }
+            .floating-help-tooltip { display: none; }
+        }
     </style>
 </head>
 <<body>
@@ -661,6 +758,151 @@
                 NU Bldg, SM City Lipa, JP Laurel Highway, Lipa City, Batangas
             </div>
         </footer>
+
+        <!-- Floating Help Button -->
+        <button type="button" class="floating-help-btn" data-bs-toggle="modal" data-bs-target="#instructionsModal" aria-label="How to use this system">
+            <i class="bi bi-question-lg"></i>
+        </button>
+        <span class="floating-help-tooltip">How to use</span>
+    </div>
+
+    <!-- ====== Instructions Modal ====== -->
+    <div class="modal fade" id="instructionsModal" tabindex="-1" aria-labelledby="instrModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+
+                <!-- Header -->
+                <div class="modal-header" style="background: var(--nu-blue); color: #fff;">
+                    <h5 class="modal-title fw-bold d-flex align-items-center gap-2" id="instrModalLabel">
+                        <i class="bi bi-book"></i> How to Use the NU Document Request System
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <!-- Body -->
+                <div class="modal-body">
+
+                    <!-- Intro -->
+                    <p class="text-muted mb-3" style="font-size:0.9rem;">
+                        Welcome to the <strong>NU Lipa Document Request System</strong>. Follow the guide below to request, track, and receive your academic documents.
+                    </p>
+
+                    <!-- 1. Who Can Use -->
+                    <div class="instr-section instr-bl-blue">
+                        <h6><i class="bi bi-people text-primary"></i> Who Can Use This System?</h6>
+                        <ul>
+                            <li><strong>NU Students</strong> — log in with your school email to request documents online</li>
+                            <li><strong>Walk-in Visitors</strong> — use the <em>Walk-In Request</em> option; no account needed</li>
+                            <li><strong>Alumni</strong> — visit the registrar in person or use the walk-in form</li>
+                        </ul>
+                    </div>
+
+                    <!-- 2. Logging In -->
+                    <div class="instr-section instr-bl-blue">
+                        <h6><i class="bi bi-box-arrow-in-right text-primary"></i> Logging In (For Students)</h6>
+                        <ol>
+                            <li>Click the <strong>Login</strong> button on this page</li>
+                            <li>Enter your <strong>school email</strong> (e.g., <code>yourname@nulipa.edu.ph</code>)</li>
+                            <li>Enter your <strong>password</strong> and click <em>Sign In</em></li>
+                            <li>If you forgot your password, click <strong>Reset Password</strong> on the login page</li>
+                        </ol>
+                    </div>
+
+                    <!-- 3. Requesting Documents -->
+                    <div class="instr-section instr-bl-green">
+                        <h6><i class="bi bi-file-earmark-plus" style="color:var(--accent-color);"></i> Requesting a Document</h6>
+                        <ol>
+                            <li>After logging in, go to <strong>Request Document</strong> from your dashboard</li>
+                            <li>Select the <strong>document type</strong> (Transcript of Records, Certification, Diploma, etc.)</li>
+                            <li>Choose the <strong>number of copies</strong> needed</li>
+                            <li>State the <strong>purpose</strong> of your request</li>
+                            <li>Review the details and click <strong>Submit Request</strong></li>
+                            <li>You will receive a <strong>Reference Number</strong> (e.g., <code>SR-20251104-0002</code>) — <em>save this!</em></li>
+                        </ol>
+                    </div>
+
+                    <!-- 4. Walk-in Request -->
+                    <div class="instr-section instr-bl-green">
+                        <h6><i class="bi bi-person-walking" style="color:var(--accent-color);"></i> Walk-In Request (No Login Required)</h6>
+                        <ol>
+                            <li>Click <strong>Walk-In Request</strong> on this page</li>
+                            <li>Fill in your <strong>name, student ID, and contact details</strong></li>
+                            <li>Choose your document type and number of copies</li>
+                            <li>Submit the form — a <strong>queue number</strong> will be issued</li>
+                            <li>Wait for your number to be called at the registrar's window</li>
+                        </ol>
+                    </div>
+
+                    <!-- 5. Tracking -->
+                    <div class="instr-section instr-bl-blue">
+                        <h6><i class="bi bi-geo-alt text-primary"></i> Tracking Your Request</h6>
+                        <ul>
+                            <li><strong>Web Portal:</strong> Log in and open <em>My Requests</em> to check the latest status</li>
+                            <li><strong>Mobile App:</strong> Download the <em>NU Document Request</em> app to see your live queue position and get push notifications</li>
+                            <li><strong>Reference Number:</strong> Use it any time to look up your request status</li>
+                        </ul>
+                    </div>
+
+                    <!-- 6. Status Guide -->
+                    <div class="instr-section">
+                        <h6><i class="bi bi-list-check text-info"></i> Request Status Guide</h6>
+                        <table class="table table-sm table-bordered mb-0" style="font-size:0.85rem;">
+                            <thead class="table-light">
+                                <tr><th>Status</th><th>Meaning</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td><span class="status-pill" style="background:#f59e0b;">Pending</span></td><td>Submitted — waiting for a registrar to pick it up</td></tr>
+                                <tr><td><span class="status-pill" style="background:#0ea5e9;">In Queue</span></td><td>Assigned to a registrar, in processing line</td></tr>
+                                <tr><td><span class="status-pill" style="background:#2563eb;">Processing</span></td><td>Registrar is actively working on your document</td></tr>
+                                <tr><td><span class="status-pill" style="background:#10b981;">Ready for Pickup</span></td><td>Document is done — visit the office to collect it</td></tr>
+                                <tr><td><span class="status-pill" style="background:#6b7280;">Completed</span></td><td>Document has been picked up and the request is closed</td></tr>
+                                <tr><td><span class="status-pill" style="background:#ef4444;">Rejected</span></td><td>Request could not be fulfilled (reason will be provided)</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 7. Payment & Pickup -->
+                    <div class="instr-section instr-bl-yellow">
+                        <h6><i class="bi bi-cash-coin" style="color:var(--warning-color);"></i> Payment &amp; Document Pickup</h6>
+                        <ul>
+                            <li><strong>Fees:</strong> Applicable fees will be shown in your request details. Pay at the registrar's cashier window before claiming your document.</li>
+                            <li><strong>Processing Time:</strong> Standard — 3 to 5 business days. Rush requests may be accommodated upon request.</li>
+                            <li><strong>Pickup:</strong> Bring a <em>valid school ID</em> and your <em>reference number</em>. Unclaimed documents after 30 days require re-requesting.</li>
+                        </ul>
+                    </div>
+
+                    <!-- 8. Reminders -->
+                    <div class="instr-section instr-bl-yellow">
+                        <h6><i class="bi bi-exclamation-triangle" style="color:var(--warning-color);"></i> Important Reminders</h6>
+                        <ul>
+                            <li>Never share your login credentials with anyone</li>
+                            <li>Double-check all details before submitting — corrections may cause delays</li>
+                            <li>Office hours: <strong>Monday – Friday, 8:00 AM – 5:00 PM</strong></li>
+                            <li>Your data is protected under <strong>RA 10173 (Data Privacy Act of 2012)</strong></li>
+                        </ul>
+                    </div>
+
+                    <!-- 9. Contact -->
+                    <div class="instr-section" style="background: linear-gradient(135deg,rgba(37,99,235,0.06),rgba(16,185,129,0.06)); border: 1.5px solid var(--primary-blue);">
+                        <h6><i class="bi bi-headset text-primary"></i> Need Help?</h6>
+                        <div class="d-flex flex-column gap-1" style="font-size:0.9rem;">
+                            <div><i class="bi bi-envelope me-2 text-primary"></i><strong>Email:</strong> piquizon@nu-lipa.edu.ph</div>
+                            <div><i class="bi bi-geo-alt me-2 text-primary"></i><strong>Location:</strong> NU Building, SM City Lipa, JP Laurel Highway, Lipa City, Batangas</div>
+                            <div><i class="bi bi-clock me-2 text-primary"></i><strong>Office Hours:</strong> Monday – Friday, 8:00 AM – 5:00 PM</div>
+                        </div>
+                    </div>
+
+                </div><!-- /modal-body -->
+
+                <!-- Footer -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" style="background:var(--nu-blue);border-color:var(--nu-blue);">
+                        <i class="bi bi-check-circle me-1"></i> Got It!
+                    </button>
+                </div>
+
+            </div>
+        </div>
     </div>
 
     <!-- Bootstrap JavaScript -->
