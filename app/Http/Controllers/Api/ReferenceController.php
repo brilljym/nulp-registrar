@@ -171,10 +171,18 @@ class ReferenceController extends Controller
         $firstDocument = $studentRequest->requestItems->first();
         $documentName = $firstDocument ? ($firstDocument->document->type_document ?? 'Unknown Document') : 'Unknown Document';
 
-            // Calculate position if status is waiting or in_queue
+            // Calculate position if status is pending, waiting or in_queue
             $position = 0;
             $displayStatus = $studentRequest->status;
             $registrarRequests = null; // Initialize for debug info
+            
+            // For pending status - count all pending/in_queue/waiting requests created before this one
+            if ($studentRequest->status === 'pending') {
+                $position = StudentRequest::whereIn('status', ['pending', 'in_queue', 'waiting'])
+                    ->where('created_at', '<', $studentRequest->created_at)
+                    ->count() + 1;
+                $displayStatus = 'pending';
+            }
             
             // For both in_queue and waiting status, calculate position matching web display logic
             if (in_array($studentRequest->status, ['in_queue', 'waiting'])) {
@@ -288,10 +296,18 @@ class ReferenceController extends Controller
             $request->update(['player_id' => $httpRequest->player_id]);
         }
 
-        // Calculate position if status is waiting or in_queue
+        // Calculate position if status is pending, waiting or in_queue
         $position = 0;
         $displayStatus = $request->status;
         $registrarRequests = null; // Initialize for debug info
+        
+        // For pending status - count all pending/in_queue/waiting requests created before this one
+        if ($request->status === 'pending') {
+            $position = OnsiteRequest::whereIn('status', ['pending', 'in_queue', 'waiting'])
+                ->where('created_at', '<', $request->created_at)
+                ->count() + 1;
+            $displayStatus = 'pending';
+        }
         
         // For both in_queue and waiting status, calculate position matching web display logic
         if (in_array($request->status, ['in_queue', 'waiting'])) {
