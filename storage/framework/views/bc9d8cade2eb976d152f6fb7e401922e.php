@@ -1007,7 +1007,7 @@
                             <li>Choose the <strong>number of copies</strong> needed</li>
                             <li>State the <strong>purpose</strong> of your request</li>
                             <li>Review the details and click <strong>Submit Request</strong></li>
-                            <li>You will receive a <strong>Reference Number</strong> (e.g., <code>SR-20251104-0002</code>) — <em>save this!</em></li>
+                            <li>You will receive a <strong>Reference Number</strong> (e.g., <code>SR-********-****</code>) — <em>save this!</em></li>
                         </ol>
                     </div>
 
@@ -1076,7 +1076,7 @@
                     <div class="instr-section" style="background: linear-gradient(135deg,rgba(37,99,235,0.06),rgba(16,185,129,0.06)); border: 1.5px solid var(--primary-blue);">
                         <h6><i class="bi bi-headset text-primary"></i> Need Help?</h6>
                         <div class="d-flex flex-column gap-1" style="font-size:0.9rem;">
-                            <div><i class="bi bi-envelope me-2 text-primary"></i><strong>Email:</strong> piquizon@nu-lipa.edu.ph</div>
+                            <div><i class="bi bi-envelope me-2 text-primary"></i><strong>Email:</strong> registrar@nu-lipa.edu.ph</div>
                             <div><i class="bi bi-geo-alt me-2 text-primary"></i><strong>Location:</strong> NU Building, SM City Lipa, JP Laurel Highway, Lipa City, Batangas</div>
                             <div><i class="bi bi-clock me-2 text-primary"></i><strong>Office Hours:</strong> Monday – Friday, 8:00 AM – 5:00 PM</div>
                         </div>
