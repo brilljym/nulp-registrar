@@ -706,6 +706,196 @@
             .floating-help-btn { bottom: 4.5rem; right: 1rem; width: 50px; height: 50px; font-size: 1.25rem; }
             .floating-help-tooltip { display: none; }
         }
+
+        /* =============================================
+           INSTRUCTION SLIDESHOW MODAL
+        ============================================= */
+        .instr-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.65);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            animation: fadeInOverlay 0.4s ease;
+        }
+        @keyframes fadeInOverlay {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+        .instr-modal-overlay.hide {
+            animation: fadeOutOverlay 0.35s ease forwards;
+        }
+        @keyframes fadeOutOverlay {
+            from { opacity: 1; }
+            to   { opacity: 0; pointer-events: none; }
+        }
+
+        .instr-modal-box {
+            background: #fff;
+            border-radius: 1.25rem;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+            width: 100%;
+            max-width: 780px;
+            overflow: hidden;
+            animation: slideUpModal 0.4s cubic-bezier(0.34,1.56,0.64,1);
+            position: relative;
+        }
+        @keyframes slideUpModal {
+            from { opacity:0; transform: translateY(40px) scale(0.95); }
+            to   { opacity:1; transform: translateY(0) scale(1); }
+        }
+
+        /* Header strip */
+        .instr-modal-header {
+            background: var(--nu-blue);
+            color: #fff;
+            padding: 1rem 1.5rem 0.875rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .instr-modal-header .instr-modal-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .instr-modal-close {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: #fff;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        .instr-modal-close:hover { background: rgba(255,255,255,0.3); }
+
+        /* Slide image area */
+        .instr-slides {
+            position: relative;
+            overflow: hidden;
+            background: var(--neutral-100);
+        }
+        .instr-slide {
+            display: none;
+            padding: 0;
+        }
+        .instr-slide.active {
+            display: block;
+            animation: slideIn 0.35s cubic-bezier(0.4,0,0.2,1);
+        }
+        .instr-slide.slide-out {
+            animation: slideOut 0.35s cubic-bezier(0.4,0,0.2,1) forwards;
+        }
+        @keyframes slideIn {
+            from { opacity:0; transform: translateX(40px); }
+            to   { opacity:1; transform: translateX(0); }
+        }
+        @keyframes slideOut {
+            from { opacity:1; transform: translateX(0); }
+            to   { opacity:0; transform: translateX(-40px); }
+        }
+        .instr-slide img {
+            width: 100%;
+            height: auto;
+            display: block;
+            max-height: 72vh;
+            object-fit: contain;
+            background: #f3f4f6;
+        }
+
+        /* Dots */
+        .instr-dots {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.875rem 0 0.25rem;
+        }
+        .instr-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--neutral-300);
+            transition: background 0.25s, width 0.25s;
+            cursor: pointer;
+            border: none;
+        }
+        .instr-dot.active {
+            background: var(--nu-blue);
+            width: 22px;
+            border-radius: 4px;
+        }
+
+        /* Footer nav */
+        .instr-modal-footer {
+            padding: 0.875rem 1.5rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+        }
+        .instr-step-label {
+            font-size: 0.78rem;
+            color: var(--neutral-400);
+            font-weight: 500;
+        }
+        .instr-nav-btns {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .instr-btn-prev, .instr-btn-next {
+            padding: 0.5rem 1.1rem;
+            border-radius: var(--border-radius-lg);
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 2px solid var(--neutral-200);
+            background: #fff;
+            color: var(--neutral-700);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        .instr-btn-prev:hover { background: var(--neutral-100); }
+        .instr-btn-next {
+            background: var(--nu-blue);
+            border-color: var(--nu-blue);
+            color: #fff;
+        }
+        .instr-btn-next:hover { background: #002277; border-color: #002277; }
+        .instr-btn-prev:disabled { opacity: 0.35; cursor: not-allowed; }
+
+        /* Don't show again */
+        .instr-skip {
+            font-size: 0.75rem;
+            color: var(--neutral-400);
+            text-decoration: underline;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+        .instr-skip:hover { color: var(--neutral-600); }
+
+        @media (max-width: 480px) {
+            .instr-modal-box { border-radius: 1rem; }
+            .instr-slide img { max-height: 45vh; }
+            .instr-modal-footer { padding: 0.75rem 1rem 1rem; }
+        }
     </style>
 </head>
 <body>
@@ -907,7 +1097,136 @@
 
     <!-- Bootstrap JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- ====== INSTRUCTION SLIDESHOW MODAL (auto-show on first visit) ====== -->
+    <div class="instr-modal-overlay" id="instrOverlay">
+        <div class="instr-modal-box" role="dialog" aria-modal="true" aria-labelledby="instrModalTitle">
+
+            <!-- Header -->
+            <div class="instr-modal-header">
+                <span class="instr-modal-title" id="instrModalTitle">
+                    <i class="bi bi-book-fill"></i> How to Use the System
+                </span>
+                <button class="instr-modal-close" id="instrClose" aria-label="Close instructions">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            <!-- Slides -->
+            <div class="instr-slides">
+                <div class="instr-slide active" data-slide="0">
+                    <img src="<?php echo e(asset('images/instructions/INSTRUCTION1.png')); ?>" alt="Step 1 - Login Instructions">
+                </div>
+                <div class="instr-slide" data-slide="1">
+                    <img src="<?php echo e(asset('images/instructions/INSTRUCTION2.png')); ?>" alt="Step 2 - Request Instructions">
+                </div>
+                <div class="instr-slide" data-slide="2">
+                    <img src="<?php echo e(asset('images/instructions/INSTRUCTION3.png')); ?>" alt="Step 3 - Tracking Instructions">
+                </div>
+            </div>
+
+            <!-- Dots -->
+            <div class="instr-dots">
+                <button class="instr-dot active" data-dot="0" aria-label="Slide 1"></button>
+                <button class="instr-dot" data-dot="1" aria-label="Slide 2"></button>
+                <button class="instr-dot" data-dot="2" aria-label="Slide 3"></button>
+            </div>
+
+            <!-- Footer nav -->
+            <div class="instr-modal-footer">
+                <button class="instr-skip" id="instrSkip">Don't show again</button>
+                <div class="instr-nav-btns">
+                    <button class="instr-btn-prev" id="instrPrev" disabled>
+                        <i class="bi bi-chevron-left"></i> Back
+                    </button>
+                    <button class="instr-btn-next" id="instrNext">
+                        Next <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
     
+    <!-- Instruction Slideshow JS -->
+    <script>
+    (function () {
+        var STORAGE_KEY = 'nu_instr_seen';
+        var overlay   = document.getElementById('instrOverlay');
+        var closeBtn  = document.getElementById('instrClose');
+        var skipBtn   = document.getElementById('instrSkip');
+        var prevBtn   = document.getElementById('instrPrev');
+        var nextBtn   = document.getElementById('instrNext');
+        var slides    = document.querySelectorAll('.instr-slide');
+        var dots      = document.querySelectorAll('.instr-dot');
+        var current   = 0;
+        var total     = slides.length;
+
+        // Hide if user clicked "Don't show again"
+        if (localStorage.getItem(STORAGE_KEY)) {
+            overlay.style.display = 'none';
+            return;
+        }
+
+        function goTo(index) {
+            slides[current].classList.remove('active');
+            dots[current].classList.remove('active');
+            current = index;
+            slides[current].classList.add('active');
+            dots[current].classList.add('active');
+            prevBtn.disabled = current === 0;
+            nextBtn.innerHTML = current === total - 1
+                ? '<i class="bi bi-check2"></i> Got It!'
+                : 'Next <i class="bi bi-chevron-right"></i>';
+        }
+
+        function closeModal() {
+            overlay.classList.add('hide');
+            overlay.addEventListener('animationend', function () {
+                overlay.style.display = 'none';
+            }, { once: true });
+        }
+
+        nextBtn.addEventListener('click', function () {
+            if (current < total - 1) {
+                goTo(current + 1);
+            } else {
+                closeModal();
+            }
+        });
+
+        prevBtn.addEventListener('click', function () {
+            if (current > 0) goTo(current - 1);
+        });
+
+        dots.forEach(function (dot) {
+            dot.addEventListener('click', function () {
+                goTo(parseInt(this.dataset.dot));
+            });
+        });
+
+        closeBtn.addEventListener('click', closeModal);
+
+        skipBtn.addEventListener('click', function () {
+            localStorage.setItem(STORAGE_KEY, '1');
+            closeModal();
+        });
+
+        // Close on overlay background click
+        overlay.addEventListener('click', function (e) {
+            if (e.target === overlay) closeModal();
+        });
+
+        // Keyboard nav
+        document.addEventListener('keydown', function (e) {
+            if (!overlay || overlay.style.display === 'none') return;
+            if (e.key === 'ArrowRight') nextBtn.click();
+            if (e.key === 'ArrowLeft' && !prevBtn.disabled) prevBtn.click();
+            if (e.key === 'Escape') closeModal();
+        });
+    })();
+    </script>
+
     <!-- Custom JavaScript for enhanced interactions -->
     <script>
         // Enhanced button interactions and accessibility
