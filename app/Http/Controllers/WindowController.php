@@ -84,58 +84,22 @@ class WindowController extends Controller
             ->sortBy('created_at')
             ->values();
 
-        // Categorize requests based on registrar workload:
-        // - In Queue: requests that are actively being processed (first request per registrar)
-        // - Waiting: requests that are assigned to registrars who already have active requests
-        $inQueueRequests = collect();
-        $waitingRequests = collect();
+        // Categorize requests by their actual status field:
+        // - In Queue:      status === 'in_queue'  → being served at a window
+        // - Waiting Queue: status === 'waiting'   → waiting before reaching a window
+        $inQueueRequests = $allKioskRequests
+            ->where('status', 'in_queue')
+            ->sortBy('created_at')
+            ->values();
 
-        // Group requests by assigned registrar
-        $requestsByRegistrar = $allKioskRequests->groupBy('assigned_registrar_id');
-
-        foreach ($requestsByRegistrar as $registrarId => $registrarRequests) {
-            if ($registrarId) {
-                // Sort requests by creation time for this registrar
-                $sortedRequests = $registrarRequests->sortBy('created_at');
-
-                // First request for this registrar goes to "In Queue" if it's in_queue status
-                $firstRequest = $sortedRequests->first();
-                if ($firstRequest && $firstRequest['status'] === 'in_queue') {
-                    $inQueueRequests->push($firstRequest);
-                } elseif ($firstRequest && in_array($firstRequest['status'], ['in_queue', 'waiting'])) {
-                    // If first request is waiting, it should be in queue
-                    $inQueueRequests->push($firstRequest);
-                }
-
-                // All subsequent requests for this registrar go to "Waiting"
-                $remainingRequests = $sortedRequests->skip(1);
-                $waitingRequests = $waitingRequests->merge($remainingRequests);
-            } else {
-                // Requests not assigned to any registrar go to waiting
-                $waitingRequests = $waitingRequests->merge($registrarRequests);
-            }
-        }
-
-        // Handle unassigned requests (no registrar assigned) - put them in waiting
-        $unassignedRequests = $allKioskRequests->where('assigned_registrar_id', null);
-        $waitingRequests = $waitingRequests->merge($unassignedRequests);
-
-        // Sort all waiting requests by creation time and assign sequential positions
-        $waitingRequests = $waitingRequests->sortBy('created_at')->values()->map(function ($request, $index) {
-            $request['position'] = $index + 1; // Position 1, 2, 3, etc. for all waiting requests
-            
-            // DEBUG: Log position assignment
-            \Log::info('WEB POSITION DEBUG', [
-                'queue_number' => $request['queue_number'],
-                'index' => $index,
-                'position' => $request['position'],
-                'status' => $request['status'],
-                'created_at' => $request['created_at'],
-                'assigned_registrar_id' => $request['assigned_registrar_id'] ?? null
-            ]);
-            
-            return $request;
-        });
+        $waitingRequests = $allKioskRequests
+            ->where('status', 'waiting')
+            ->sortBy('created_at')
+            ->values()
+            ->map(function ($request, $index) {
+                $request['position'] = $index + 1;
+                return $request;
+            });
 
         // For Ready for Pickup, keep the current logic (requests ready for pickup)
         $readyForPickupRequests = collect()
