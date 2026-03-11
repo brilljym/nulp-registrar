@@ -1,0 +1,379 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Artisan;
+use App\Http\Controllers\Api\StudentLookupController;
+use App\Http\Controllers\Api\ReferenceController;
+use App\Http\Controllers\Api\QueueController;
+use App\Http\Controllers\OnsiteRequestController;
+use App\Http\Controllers\TwoFactorController;
+
+// Queue Management API Routes
+Route::prefix('queue')->group(function () {
+    Route::post('/join', [QueueController::class, 'joinQueue']);
+    Route::get('/status', [QueueController::class, 'getQueueStatus']);
+    Route::get('/customer/{customerId}', [QueueController::class, 'getCustomerStatus']);
+    Route::put('/customer/{customerId}/status', [QueueController::class, 'updateCustomerStatus']);
+    Route::delete('/customer/{customerId}', [QueueController::class, 'removeFromQueue']);
+    Route::get('/estimate', [QueueController::class, 'getWaitTimeEstimate']);
+    Route::get('/analytics', [QueueController::class, 'getAnalytics']);
+    Route::get('/next-customer', [QueueController::class, 'getNextCustomer']);
+    Route::post('/settings/counters', [QueueController::class, 'updateServiceCounters']);
+    Route::get('/health', [QueueController::class, 'healthCheck']);
+    Route::get('/real-time-updates', [QueueController::class, 'getRealTimeUpdates']);
+});
+
+Route::get('/students/search', [OnsiteRequestController::class, 'searchStudent']);
+Route::get('/students/test', [OnsiteRequestController::class, 'testStudentSearch']);
+
+// 2FA Test Route
+Route::middleware('auth')->get('/test-2fa', function () {
+    $user = Auth::user();
+    return response()->json([
+        'user_id' => $user->id,
+        'email' => $user->school_email,
+        'role_id' => $user->role_id,
+        'role_name' => $user->role ? $user->role->name : null,
+        'two_factor_enabled' => $user->two_factor_enabled,
+        'should_redirect_to_2fa' => ($user->role && $user->role->name === 'student' && $user->two_factor_enabled),
+        'session_otp_verified' => session('otp_verified', false),
+        'session_otp_verified_at' => session('otp_verified_at'),
+        'current_route' => request()->route() ? request()->route()->getName() : 'unknown'
+    ]);
+});
+
+// Clear 2FA Session Route (for debugging)
+Route::middleware('auth')->post('/clear-2fa-session', function () {
+    session()->forget(['otp_verified', 'otp_verified_at']);
+    return response()->json([
+        'success' => true,
+        'message' => '2FA session data cleared'
+    ]);
+});
+
+// 2FA Status API Route
+Route::middleware('auth')->get('/user-2fa-status', function () {
+    $user = Auth::user();
+    Log::info('2FA Status Check', [
+        'user_id' => $user->id,
+        'email' => $user->school_email,
+        'role' => $user->role ? $user->role->name : 'no_role',
+        'two_factor_enabled' => $user->two_factor_enabled ?? false
+    ]);
+    
+    return response()->json([
+        'two_factor_enabled' => $user->two_factor_enabled ?? false,
+        'user_role' => $user->role ? $user->role->name : null,
+        'debug' => true
+    ]);
+});
+
+// Debug 2FA Route
+Route::middleware('auth')->get('/debug-2fa', function () {
+    $user = Auth::user();
+    
+    return response()->json([
+        'user' => [
+            'id' => $user->id,
+            'email' => $user->school_email,
+            'role' => $user->role ? $user->role->name : null,
+            'two_factor_enabled' => $user->two_factor_enabled,
+            'personal_email' => $user->personal_email,
+        ],
+        'session' => [
+            'otp_verified' => session('otp_verified', false),
+            'otp_verified_at' => session('otp_verified_at'),
+        ],
+        'routes' => [
+            'toggle_url' => route('student.2fa.toggle'),
+            'send_otp_url' => route('student.2fa.send-otp'),
+            'verify_url' => route('student.2fa.verify'),
+        ]
+    ]);
+});
+
+// Fallback search with better error handling for production
+Route::get('/students/search-simple', function (Illuminate\Http\Request $request) {
+    try {
+        // Set content type header immediately
+        header('Content-Type: application/json');
+        
+        $query = $request->get('query');
+        $searchBy = $request->get('search_by', 'student_id');
+        
+        if (!$query || strlen($query) < 2) {
+            return response()->json([], 200);
+        }
+        
+        $students = collect();
+        
+        if ($searchBy === 'student_id') {
+            // Simple search by student_id
+            $students = \App\Models\Student::where('student_id', 'LIKE', "%{$query}%")
+                ->limit(5)
+                ->get();
+        } elseif ($searchBy === 'full_name') {
+            // Simple search by full name
+            $students = \App\Models\Student::whereHas('user', function ($userQuery) use ($query) {
+                $userQuery->where(function ($nameQuery) use ($query) {
+                    $nameQuery->where('first_name', 'LIKE', "%{$query}%")
+                             ->orWhere('last_name', 'LIKE', "%{$query}%");
+                });
+            })->limit(5)->get();
+        }
+        
+        $results = [];
+        foreach ($students as $student) {
+            $fullName = 'Student ID: ' . $student->student_id;
+            
+            // Try to get user info safely
+            try {
+                if ($student->user_id) {
+                    $user = \App\Models\User::find($student->user_id);
+                    if ($user) {
+                        $firstName = $user->first_name ?? '';
+                        $lastName = $user->last_name ?? '';
+                        if (!empty($firstName) || !empty($lastName)) {
+                            $fullName = trim($firstName . ' ' . $lastName);
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                // Keep default full name
+            }
+            
+            $results[] = [
+                'id' => $student->id,
+                'student_id' => $student->student_id,
+                'full_name' => $fullName,
+                'course' => $student->course ?? '',
+                'year_level' => $student->year_level ?? '',
+                'department' => $student->department ?? '',
+            ];
+        }
+        
+        return response()->json($results);
+        
+    } catch (\Exception $e) {
+        // Log error but return valid JSON
+        error_log('Simple student search error: ' . $e->getMessage());
+        return response()->json(['error' => 'Search failed', 'message' => $e->getMessage()], 500);
+    }
+});
+
+// Reference ID endpoints
+Route::get('/transactions/search', [ReferenceController::class, 'searchTransactions']);
+Route::get('/onsite-requests/search', [ReferenceController::class, 'searchOnsiteRequests']);
+Route::get('/transactions/reference/{reference}', [ReferenceController::class, 'getTransactionByReference']);
+Route::get('/onsite-requests/reference/{refCode}', [ReferenceController::class, 'getOnsiteRequestByReference']);
+Route::get('/kiosk/{kioskNumber}', [ReferenceController::class, 'getKioskRequest']);
+
+// Debug endpoint to see transaction statuses
+Route::get('/debug/transactions', [ReferenceController::class, 'debugTransactions']);
+
+// Simple test endpoint
+Route::get('/test', function() {
+    return response()->json(['message' => 'API is working', 'timestamp' => now()]);
+});
+
+// Cache clearing endpoint for production debugging
+Route::get('/clear-cache', function() {
+    try {
+        Artisan::call('config:clear');
+        Artisan::call('cache:clear');
+        Artisan::call('config:cache');
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Cache cleared successfully',
+            'timestamp' => now()
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to clear cache: ' . $e->getMessage()
+        ], 500);
+    }
+});
+
+// Test OneSignal API credentials directly
+Route::get('/test-onesignal-creds', function() {
+    try {
+        $appId = config('onesignal.app_id');
+        $restApiKey = config('onesignal.rest_api_key');
+        
+        if (!$appId || !$restApiKey) {
+            return response()->json([
+                'success' => false,
+                'message' => 'OneSignal credentials not configured',
+                'app_id_set' => !empty($appId),
+                'rest_api_key_set' => !empty($restApiKey)
+            ]);
+        }
+        
+        // Test basic API connectivity
+        $client = new \GuzzleHttp\Client();
+        $response = $client->get('https://api.onesignal.com/apps/' . $appId, [
+            'headers' => [
+                'Authorization' => 'Basic ' . $restApiKey,
+                'Content-Type' => 'application/json'
+            ]
+        ]);
+        
+        $data = json_decode($response->getBody(), true);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'OneSignal API credentials are valid',
+            'app_info' => [
+                'id' => $data['id'] ?? null,
+                'name' => $data['name'] ?? null,
+                'created_at' => $data['created_at'] ?? null
+            ]
+        ]);
+        
+    } catch (\GuzzleHttp\Exception\ClientException $e) {
+        $response = $e->getResponse();
+        $statusCode = $response->getStatusCode();
+        $body = json_decode($response->getBody(), true);
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'OneSignal API authentication failed',
+            'error_code' => $statusCode,
+            'error_details' => $body
+        ], $statusCode);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'OneSignal API test failed: ' . $e->getMessage(),
+            'error_type' => get_class($e)
+        ], 500);
+    }
+});
+
+// Print Job Management API Routes (for local print service)
+Route::prefix('print-jobs')->group(function () {
+    Route::get('/pending', [App\Http\Controllers\Api\PrintJobController::class, 'getPendingJobs']);
+    Route::put('/{jobId}/completed', [App\Http\Controllers\Api\PrintJobController::class, 'markCompleted']);
+    Route::put('/{jobId}/failed', [App\Http\Controllers\Api\PrintJobController::class, 'markFailed']);
+    Route::get('/status', [App\Http\Controllers\Api\PrintJobController::class, 'getStatus']);
+});
+
+// Debug OneSignal notification test (temporary for local testing)
+Route::get('/debug/test-notification', function () {
+    try {
+        $oneSignalService = app(\App\Services\OneSignalNotificationService::class);
+
+        // Test different notification types
+        $results = [];
+        $errors = [];
+
+        // Test waiting notification with position
+        try {
+            $result1 = $oneSignalService->sendQueueWaitingNotification('TEST123', 5, 'test request');
+            $results['waiting'] = $result1;
+        } catch (\Exception $e) {
+            $results['waiting'] = null;
+            $errors['waiting'] = $e->getMessage();
+        }
+
+        // Test in queue notification
+        try {
+            $result2 = $oneSignalService->sendQueueStatusNotification('TEST123', 'in queue');
+            $results['in_queue'] = $result2;
+        } catch (\Exception $e) {
+            $results['in_queue'] = null;
+            $errors['in_queue'] = $e->getMessage();
+        }
+
+        // Test ready for pickup notification
+        try {
+            $result3 = $oneSignalService->sendQueueStatusNotification('TEST123', 'ready for pickup');
+            $results['ready_for_pickup'] = $result3;
+        } catch (\Exception $e) {
+            $results['ready_for_pickup'] = null;
+            $errors['ready_for_pickup'] = $e->getMessage();
+        }
+
+        // Debug OneSignal configuration
+        $debug = [
+            'app_id' => config('onesignal.app_id'),
+            'rest_api_key' => config('onesignal.rest_api_key') ? 'SET' : 'NOT SET',
+            'user_auth_key' => config('onesignal.user_auth_key') ? 'SET' : 'NOT SET',
+            'rest_api_url' => config('onesignal.rest_api_url'),
+        ];
+
+        return response()->json([
+            'success' => true,
+            'message' => 'OneSignal test notifications attempted',
+            'results' => $results,
+            'errors' => $errors,
+            'debug' => $debug
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'OneSignal test failed: ' . $e->getMessage(),
+            'debug' => [
+                'app_id' => config('onesignal.app_id'),
+                'rest_api_key' => config('onesignal.rest_api_key') ? 'SET' : 'NOT SET',
+                'user_auth_key' => config('onesignal.user_auth_key') ? 'SET' : 'NOT SET',
+            ]
+        ], 500);
+    }
+});
+
+// Debug endpoint to check queue positions
+Route::get('/debug/queue-positions', function () {
+    $studentRequests = \App\Models\StudentRequest::whereIn('status', ['in_queue', 'waiting'])
+        ->orderBy('created_at', 'asc')
+        ->get(['id', 'queue_number', 'status', 'assigned_registrar_id', 'created_at', 'reference_no']);
+    
+    $onsiteRequests = \App\Models\OnsiteRequest::whereIn('status', ['in_queue', 'waiting'])
+        ->orderBy('created_at', 'asc')
+        ->get(['id', 'queue_number', 'status', 'assigned_registrar_id', 'created_at', 'ref_code']);
+    
+    $studentList = $studentRequests->map(function($req, $index) {
+        return [
+            'position' => $index + 1,
+            'queue_number' => $req->queue_number,
+            'status' => $req->status,
+            'registrar_id' => $req->assigned_registrar_id,
+            'created_at' => $req->created_at->format('Y-m-d H:i:s'),
+            'reference_no' => $req->reference_no,
+            'type' => 'student'
+        ];
+    });
+    
+    $onsiteList = $onsiteRequests->map(function($req, $index) {
+        return [
+            'position' => $index + 1,
+            'queue_number' => $req->queue_number,
+            'status' => $req->status,
+            'registrar_id' => $req->assigned_registrar_id,
+            'created_at' => $req->created_at->format('Y-m-d H:i:s'),
+            'ref_code' => $req->ref_code,
+            'type' => 'onsite'
+        ];
+    });
+    
+    return response()->json([
+        'student_requests' => $studentList,
+        'onsite_requests' => $onsiteList,
+        'total_waiting' => $studentRequests->count() + $onsiteRequests->count()
+    ]);
+});
+
+// Version check endpoint
+Route::get('/debug/version-check', function () {
+    return response()->json([
+        'version' => 'v2.0-registrar-based-position',
+        'timestamp' => now()->toIso8601String(),
+        'logic' => 'Position calculated per registrar (first=0, rest=1,2,3...)',
+        'updated' => '2026-02-07'
+    ]);
+});

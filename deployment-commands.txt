@@ -1,0 +1,26 @@
+# Commands to run after deploying to Hostinger
+
+# 1. Generate Application Key
+php artisan key:generate
+
+# 2. Clear all caches
+php artisan cache:clear
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+
+# 3. Run migrations (create database tables)
+php artisan migrate --force
+
+# 4. Create sessions table specifically
+php artisan session:table
+php artisan migrate --force
+
+# 5. Set proper permissions
+chmod -R 755 storage/
+chmod -R 755 bootstrap/cache/
+
+# 6. Cache configuration for production
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
