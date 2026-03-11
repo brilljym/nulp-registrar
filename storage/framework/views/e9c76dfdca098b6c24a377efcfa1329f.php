@@ -728,5 +728,4 @@ window.addEventListener('resize', function() {
 </script>
 
 </body>
-</html>
-<?php /**PATH C:\Users\Brill\nu-regis\resources\views/layouts/admin.blade.php ENDPATH**/ ?>
+</html><?php /**PATH C:\Users\Brill\nu-regis\resources\views/layouts/admin.blade.php ENDPATH**/ ?>
