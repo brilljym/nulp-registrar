@@ -17,6 +17,24 @@ use App\Http\Controllers\FeedbackController; // ✅ Added for feedback functiona
 use App\Http\Controllers\WindowController; // ✅ Already added
 use App\Http\Controllers\TwoFactorController;
 
+// Storage file serving (fallback for shared hosting where symlinks are disabled)
+Route::get('/storage/{path}', function (string $path) {
+    $fullPath = storage_path('app/public/' . $path);
+
+    if (!file_exists($fullPath) || !is_file($fullPath)) {
+        abort(404);
+    }
+
+    // Resolve any directory traversal attempts
+    $realBase = realpath(storage_path('app/public'));
+    $realFile = realpath($fullPath);
+    if ($realFile === false || strncmp($realFile, $realBase, strlen($realBase)) !== 0) {
+        abort(403);
+    }
+
+    return response()->file($realFile);
+})->where('path', '.*')->name('storage.serve');
+
 // Home/Splash Screen Route
 Route::get('/', function () {
     return view('welcome');
