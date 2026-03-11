@@ -76,12 +76,6 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('pia-reports', [\App\Http\Controllers\Admin\PIAReportsController::class, 'index'])->name('pia.reports');
     Route::get('pia-reports/export-compliance', [\App\Http\Controllers\Admin\PIAReportsController::class, 'exportCompliance'])->name('pia.export-compliance');
     Route::get('pia-reports/export-operational', [\App\Http\Controllers\Admin\PIAReportsController::class, 'exportOperational'])->name('pia.export-operational');
-
-    // Queue Display Media Management
-    Route::get('display-media', [\App\Http\Controllers\Admin\DisplayMediaController::class, 'index'])->name('display-media.index');
-    Route::post('display-media/slide', [\App\Http\Controllers\Admin\DisplayMediaController::class, 'uploadSlide'])->name('display-media.slide.upload');
-    Route::delete('display-media/slide/{id}', [\App\Http\Controllers\Admin\DisplayMediaController::class, 'deleteSlide'])->name('display-media.slide.delete');
-    Route::post('display-media/video', [\App\Http\Controllers\Admin\DisplayMediaController::class, 'uploadVideo'])->name('display-media.video.upload');
 });
 
 // Student Routes
