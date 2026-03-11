@@ -12,6 +12,6 @@ class DisplayMedia extends Model
     /** Public URL for the stored file. */
     public function getUrlAttribute(): string
     {
-        return Storage::url($this->stored_path);
+        return Storage::disk('public')->url($this->stored_path);
     }
 }
