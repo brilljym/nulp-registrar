@@ -104,6 +104,13 @@ class WindowController extends Controller
                 $seenWindows[] = $window;
                 $inQueueRequests->push($request);
             } else {
+                // Correct the DB status to 'waiting' since no window is free for this request
+                if ($request['type'] === 'student') {
+                    StudentRequest::where('id', $request['id'])->update(['status' => 'waiting']);
+                } else {
+                    OnsiteRequest::where('id', $request['id'])->update(['status' => 'waiting']);
+                }
+                $request['status'] = 'waiting';
                 $overflowRequests->push($request);
             }
         }
