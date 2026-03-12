@@ -527,6 +527,18 @@
                                     <div class="col-md-4">
                                         <input type="number" class="form-control quantity-input" name="documents[0][quantity]" placeholder="Qty" min="1" max="10" value="1" required>
                                     </div>
+                                    <div class="col-12 mt-2">
+                                        <label class="form-label">Reason for this document *</label>
+                                        <select class="form-select reason-select" name="documents[0][reason_select]" required disabled>
+                                            <option value="" disabled selected>-- Please select a document first --</option>
+                                        </select>
+                                        <small class="text-muted">Select a document type to load available reasons</small>
+                                    </div>
+                                    <div class="col-12 mt-2 other-reason-container" style="display:none;">
+                                        <label class="form-label">Please specify your reason</label>
+                                        <textarea class="form-control other-reason" name="documents[0][other_reason]" rows="2" placeholder="Type your reason here..." disabled></textarea>
+                                    </div>
+                                    <input type="hidden" class="reason-hidden" name="documents[0][reason]" value="">
                                 </div>
                             </div>
                         </div>
@@ -541,32 +553,6 @@
                             <h5 class="mb-0">Total Cost: <span id="total-cost" class="text-success fw-bold">₱0.00</span></h5>
                             <div id="cost-breakdown" class="mt-2 small text-muted"></div>
                         </div>
-                    </div>
-
-                    <!-- Reason for Request Section -->
-                    <div class="form-section mt-4">
-                        <h5 class="section-title">
-                            <i class="bi bi-clipboard-check me-2"></i>
-                            Reason for Request
-                        </h5>
-                        
-                        <div class="mb-3">
-                            <label for="reason_select" class="form-label">Reason for Request *</label>
-                            <select name="reason_select" id="reason_select" class="form-select" required disabled>
-                                <option value="" disabled selected>-- Please select a document first --</option>
-                            </select>
-                            <small class="text-muted">Select a document type above to see available reasons</small>
-                        </div>
-
-                        <!-- Show textarea if Other is selected -->
-                        <div class="mb-3" id="other_reason_container" style="display:none;">
-                            <label for="other_reason" class="form-label">Please specify your reason</label>
-                            <textarea name="other_reason" id="other_reason" class="form-control" rows="3" 
-                                      placeholder="Type your reason here..." disabled></textarea>
-                        </div>
-
-                        <!-- Hidden field for final reason -->
-                        <input type="hidden" id="reason" name="reason" value="">
                     </div>
 
                     <!-- Privacy Notice and Terms Agreement -->
@@ -889,45 +875,35 @@
             const select = item.querySelector('.document-select');
             const quantity = item.querySelector('.quantity-input');
             const removeBtn = item.querySelector('.remove-document');
+            const reasonSelect = item.querySelector('.reason-select');
+            const otherReasonTextarea = item.querySelector('.other-reason');
 
             select.addEventListener('change', function() {
                 updateTotalCost();
-                
-                // Update reason dropdown based on first selected document
-                const firstDocumentSelect = document.querySelector('.document-select');
-                const selectedOption = firstDocumentSelect.options[firstDocumentSelect.selectedIndex];
-                
+
+                const selectedOption = this.options[this.selectedIndex];
                 if (selectedOption && selectedOption.value) {
-                    const documentName = selectedOption.text.split(' - ')[0].trim();
-                    updateReasonOptions(documentName);
+                    updateReasonOptionsForItem(item, selectedOption.dataset.name || selectedOption.text.split(' - ')[0].trim());
+                } else {
+                    updateReasonOptionsForItem(item, '');
                 }
             });
             
             quantity.addEventListener('input', updateTotalCost);
 
+            reasonSelect.addEventListener('change', function() {
+                syncReasonForItem(item);
+            });
+
+            otherReasonTextarea.addEventListener('input', function() {
+                syncReasonForItem(item);
+            });
+
             removeBtn.addEventListener('click', function() {
                 item.remove();
                 updateTotalCost();
                 updateRemoveButtons();
-                // Re-index the remaining items
-                document.querySelectorAll('.document-item').forEach((item, index) => {
-                    item.querySelector('.document-select').name = `documents[${index}][document_id]`;
-                    item.querySelector('.quantity-input').name = `documents[${index}][quantity]`;
-                    item.querySelector('strong').textContent = `Document ${index + 1}`;
-                });
-                documentIndex = document.querySelectorAll('.document-item').length;
-                
-                // Update reason dropdown if this was the first document
-                const firstDocumentSelect = document.querySelector('.document-select');
-                if (firstDocumentSelect) {
-                    const selectedOption = firstDocumentSelect.options[firstDocumentSelect.selectedIndex];
-                    if (selectedOption && selectedOption.value) {
-                        const documentName = selectedOption.text.split(' - ')[0].trim();
-                        updateReasonOptions(documentName);
-                    } else {
-                        updateReasonOptions('');
-                    }
-                }
+                reindexDocumentItems();
             });
         }
 
@@ -956,6 +932,18 @@
                     <div class="col-md-4">
                         <input type="number" class="form-control quantity-input" name="documents[${documentIndex}][quantity]" placeholder="Qty" min="1" max="10" value="1" required>
                     </div>
+                    <div class="col-12 mt-2">
+                        <label class="form-label">Reason for this document *</label>
+                        <select class="form-select reason-select" name="documents[${documentIndex}][reason_select]" required disabled>
+                            <option value="" disabled selected>-- Please select a document first --</option>
+                        </select>
+                        <small class="text-muted">Select a document type to load available reasons</small>
+                    </div>
+                    <div class="col-12 mt-2 other-reason-container" style="display:none;">
+                        <label class="form-label">Please specify your reason</label>
+                        <textarea class="form-control other-reason" name="documents[${documentIndex}][other_reason]" rows="2" placeholder="Type your reason here..." disabled></textarea>
+                    </div>
+                    <input type="hidden" class="reason-hidden" name="documents[${documentIndex}][reason]" value="">
                 </div>
             `;
             container.appendChild(newItem);
@@ -963,6 +951,19 @@
             updateRemoveButtons();
             attachDocumentEvents(newItem);
         });
+
+        function reindexDocumentItems() {
+            const items = document.querySelectorAll('.document-item');
+            items.forEach((item, index) => {
+                item.querySelector('strong').textContent = `Document ${index + 1}`;
+                item.querySelector('.document-select').name = `documents[${index}][document_id]`;
+                item.querySelector('.quantity-input').name = `documents[${index}][quantity]`;
+                item.querySelector('.reason-select').name = `documents[${index}][reason_select]`;
+                item.querySelector('.other-reason').name = `documents[${index}][other_reason]`;
+                item.querySelector('.reason-hidden').name = `documents[${index}][reason]`;
+            });
+            documentIndex = items.length;
+        }
 
         // Attach events to initial document item
         document.querySelectorAll('.document-item').forEach(item => {
@@ -1130,9 +1131,12 @@
             return null;
         }
 
-        // Function to update reason dropdown based on selected document
-        function updateReasonOptions(documentName) {
-            const reasonSelect = document.getElementById('reason_select');
+        // Function to update reason dropdown for a specific document item
+        function updateReasonOptionsForItem(item, documentName) {
+            const reasonSelect = item.querySelector('.reason-select');
+            const otherReasonContainer = item.querySelector('.other-reason-container');
+            const otherReasonTextarea = item.querySelector('.other-reason');
+            const reasonHidden = item.querySelector('.reason-hidden');
             const reasons = findDocumentReasons(documentName);
             
             // Clear existing options
@@ -1155,47 +1159,32 @@
                 reasonSelect.innerHTML = '<option value="" disabled selected>-- Please select a document first --</option>';
             }
             
-            // Reset hidden reason field
-            document.getElementById('reason').value = '';
-            
-            // Hide other reason container
-            document.getElementById('other_reason_container').style.display = 'none';
-            document.getElementById('other_reason').disabled = true;
-            document.getElementById('other_reason').value = '';
+            reasonSelect.required = !!documentName;
+            reasonHidden.value = '';
+            otherReasonContainer.style.display = 'none';
+            otherReasonTextarea.disabled = true;
+            otherReasonTextarea.required = false;
+            otherReasonTextarea.value = '';
         }
 
-        // Reason field functionality
-        const reasonSelect = document.getElementById('reason_select');
-        const otherReasonContainer = document.getElementById('other_reason_container');
-        const otherReasonTextarea = document.getElementById('other_reason');
-        const hiddenReasonField = document.getElementById('reason');
+        function syncReasonForItem(item) {
+            const reasonSelect = item.querySelector('.reason-select');
+            const otherReasonContainer = item.querySelector('.other-reason-container');
+            const otherReasonTextarea = item.querySelector('.other-reason');
+            const reasonHidden = item.querySelector('.reason-hidden');
 
-        if (reasonSelect) {
-            reasonSelect.addEventListener('change', function() {
-                const selectedReason = this.value;
-                
-                if (selectedReason === 'Other') {
-                    otherReasonContainer.style.display = 'block';
-                    otherReasonTextarea.disabled = false;
-                    otherReasonTextarea.required = true;
-                    hiddenReasonField.value = '';
-                } else {
-                    otherReasonContainer.style.display = 'none';
-                    otherReasonTextarea.disabled = true;
-                    otherReasonTextarea.required = false;
-                    otherReasonTextarea.value = '';
-                    hiddenReasonField.value = selectedReason;
-                }
-            });
-
-            // Handle other reason textarea
-            otherReasonTextarea.addEventListener('input', function() {
-                if (reasonSelect.value === 'Other' && this.value.trim() !== '') {
-                    hiddenReasonField.value = this.value.trim();
-                } else if (reasonSelect.value === 'Other') {
-                    hiddenReasonField.value = '';
-                }
-            });
+            if (reasonSelect.value === 'Other') {
+                otherReasonContainer.style.display = 'block';
+                otherReasonTextarea.disabled = false;
+                otherReasonTextarea.required = true;
+                reasonHidden.value = otherReasonTextarea.value.trim();
+            } else {
+                otherReasonContainer.style.display = 'none';
+                otherReasonTextarea.disabled = true;
+                otherReasonTextarea.required = false;
+                otherReasonTextarea.value = '';
+                reasonHidden.value = reasonSelect.value || '';
+            }
         }
 
         // Form validation and UX before submit
@@ -1216,28 +1205,36 @@
                 return;
             }
 
-            // Check if reason is selected
-            const reasonSelect = document.getElementById('reason_select');
-            const hiddenReasonField = document.getElementById('reason');
-            
-            if (!reasonSelect.value) {
-                e.preventDefault();
-                alert('Please select a reason for your document request.');
-                reasonSelect.focus();
-                return;
-            }
+            // Check reason for each selected document
+            const documentItems = document.querySelectorAll('.document-item');
+            for (const item of documentItems) {
+                const docSelect = item.querySelector('.document-select');
+                if (!docSelect.value) {
+                    continue;
+                }
 
-            // If "Other" is selected, check if other reason is provided
-            if (reasonSelect.value === 'Other') {
-                const otherReasonTextarea = document.getElementById('other_reason');
-                if (!otherReasonTextarea.value.trim()) {
+                const reasonSelect = item.querySelector('.reason-select');
+                const otherReasonTextarea = item.querySelector('.other-reason');
+                const reasonHidden = item.querySelector('.reason-hidden');
+
+                if (!reasonSelect.value) {
                     e.preventDefault();
-                    alert('Please specify your reason for the document request.');
-                    otherReasonTextarea.focus();
+                    alert('Please select a reason for each document.');
+                    reasonSelect.focus();
                     return;
                 }
-                // Update hidden field with the other reason
-                hiddenReasonField.value = otherReasonTextarea.value.trim();
+
+                if (reasonSelect.value === 'Other') {
+                    if (!otherReasonTextarea.value.trim()) {
+                        e.preventDefault();
+                        alert('Please specify your reason when selecting Other.');
+                        otherReasonTextarea.focus();
+                        return;
+                    }
+                    reasonHidden.value = otherReasonTextarea.value.trim();
+                } else {
+                    reasonHidden.value = reasonSelect.value;
+                }
             }
 
             // Check if privacy agreement is checked

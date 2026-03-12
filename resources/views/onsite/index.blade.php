@@ -874,7 +874,7 @@
                                             <select class="form-select document-select" name="documents[0][document_id]" required>
                                                 <option value="" disabled selected>-- Select Document Type --</option>
                                                 @foreach($documents as $document)
-                                                    <option value="{{ $document->id }}" data-price="{{ $document->price }}">
+                                                    <option value="{{ $document->id }}" data-price="{{ $document->price }}" data-name="{{ $document->type_document }}">
                                                         {{ $document->type_document }} @if($document->price > 0) (₱{{ $document->price }}) @endif
                                                     </option>
                                                 @endforeach
@@ -890,6 +890,19 @@
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </div>
+                                        <div class="col-12">
+                                            <label class="form-label">Reason for this document *</label>
+                                            <select class="form-select reason-select" name="documents[0][reason_select]" required disabled>
+                                                <option value="" disabled selected>-- Please select a document first --</option>
+                                            </select>
+                                            <small class="text-muted">Select a document type to load available reasons</small>
+                                        </div>
+                                        <div class="col-12 other-reason-container" style="display:none;">
+                                            <label class="form-label">Please specify your reason</label>
+                                            <textarea class="form-control other-reason" name="documents[0][other_reason]" rows="3"
+                                                      placeholder="Type your reason here..." disabled></textarea>
+                                        </div>
+                                        <input type="hidden" class="reason-hidden" name="documents[0][reason]" value="">
                                     </div>
                                 </div>
                             </div>
@@ -908,24 +921,6 @@
                                     <strong>Total Cost: <span id="total-cost">₱0.00</span></strong>
                                 </div>
                             </div>
-
-                            <div class="mb-3">
-                                <label for="reason_select" class="form-label">Reason for Request *</label>
-                                <select name="reason_select" id="reason_select" class="form-select" required disabled>
-                                    <option value="" disabled selected>-- Please select a document first --</option>
-                                </select>
-                                <small class="text-muted">Select a document type above to see available reasons</small>
-                            </div>
-
-                            <!-- Show textarea if Other is selected -->
-                            <div class="mb-3" id="other_reason_container" style="display:none;">
-                                <label for="other_reason" class="form-label">Please specify your reason</label>
-                                <textarea name="other_reason" id="other_reason" class="form-control" rows="3" 
-                                          placeholder="Type your reason here..." disabled></textarea>
-                            </div>
-
-                            <!-- Hidden field for final reason -->
-                            <input type="hidden" id="reason" name="reason" value="">
                         </div>
 
                         <!-- Privacy Notice and Terms Agreement -->
@@ -1599,8 +1594,11 @@
             }
 
             // Function to update reason dropdown based on selected document
-            function updateReasonOptions(documentName) {
-                const reasonSelect = document.getElementById('reason_select');
+            function updateReasonOptionsForItem(item, documentName) {
+                const reasonSelect = item.querySelector('.reason-select');
+                const otherReasonContainer = item.querySelector('.other-reason-container');
+                const otherReasonTextarea = item.querySelector('.other-reason');
+                const reasonHidden = item.querySelector('.reason-hidden');
                 const reasons = findDocumentReasons(documentName);
                 
                 // Clear existing options
@@ -1623,39 +1621,34 @@
                     reasonSelect.innerHTML = '<option value="" disabled selected>-- Please select a document first --</option>';
                 }
                 
-                // Reset hidden reason field
-                document.getElementById('reason').value = '';
-                
-                // Hide other reason container
-                document.getElementById('other_reason_container').style.display = 'none';
-                document.getElementById('other_reason').disabled = true;
-                document.getElementById('other_reason').value = '';
+                reasonSelect.required = !!documentName;
+                reasonHidden.value = '';
+
+                otherReasonContainer.style.display = 'none';
+                otherReasonTextarea.disabled = true;
+                otherReasonTextarea.required = false;
+                otherReasonTextarea.value = '';
             }
 
-            // Reason for Request logic
-            document.getElementById('reason_select').addEventListener('change', function() {
-                const otherContainer = document.getElementById('other_reason_container');
-                const otherTextarea = document.getElementById('other_reason');
-                const reasonHidden = document.getElementById('reason');
-                
-                if (this.value === 'Other') {
-                    otherContainer.style.display = 'block';
-                    otherTextarea.disabled = false;
-                    otherTextarea.required = true;
-                    reasonHidden.value = '';
-                } else {
-                    otherContainer.style.display = 'none';
-                    otherTextarea.disabled = true;
-                    otherTextarea.required = false;
-                    otherTextarea.value = '';
-                    reasonHidden.value = this.value;
-                }
-            });
+            function syncReasonForItem(item) {
+                const reasonSelect = item.querySelector('.reason-select');
+                const otherReasonContainer = item.querySelector('.other-reason-container');
+                const otherReasonTextarea = item.querySelector('.other-reason');
+                const reasonHidden = item.querySelector('.reason-hidden');
 
-            // Update hidden reason field when typing in other_reason
-            document.getElementById('other_reason').addEventListener('input', function() {
-                document.getElementById('reason').value = this.value.trim();
-            });
+                if (reasonSelect.value === 'Other') {
+                    otherReasonContainer.style.display = 'block';
+                    otherReasonTextarea.disabled = false;
+                    otherReasonTextarea.required = true;
+                    reasonHidden.value = otherReasonTextarea.value.trim();
+                } else {
+                    otherReasonContainer.style.display = 'none';
+                    otherReasonTextarea.disabled = true;
+                    otherReasonTextarea.required = false;
+                    otherReasonTextarea.value = '';
+                    reasonHidden.value = reasonSelect.value || '';
+                }
+            }
 
             // Document management functionality
             let documentIndex = 1;
@@ -1716,7 +1709,7 @@
                             <select class="form-select document-select" name="documents[${documentIndex}][document_id]" required>
                                 <option value="" disabled selected>-- Select Document Type --</option>
                                 @foreach($documents as $document)
-                                    <option value="{{ $document->id }}" data-price="{{ $document->price }}">
+                                    <option value="{{ $document->id }}" data-price="{{ $document->price }}" data-name="{{ $document->type_document }}">
                                         {{ $document->type_document }} @if($document->price > 0) (₱{{ $document->price }}) @endif
                                     </option>
                                 @endforeach
@@ -1732,6 +1725,19 @@
                                 <i class="bi bi-trash"></i>
                             </button>
                         </div>
+                        <div class="col-12">
+                            <label class="form-label">Reason for this document *</label>
+                            <select class="form-select reason-select" name="documents[${documentIndex}][reason_select]" required disabled>
+                                <option value="" disabled selected>-- Please select a document first --</option>
+                            </select>
+                            <small class="text-muted">Select a document type to load available reasons</small>
+                        </div>
+                        <div class="col-12 other-reason-container" style="display:none;">
+                            <label class="form-label">Please specify your reason</label>
+                            <textarea class="form-control other-reason" name="documents[${documentIndex}][other_reason]" rows="3"
+                                      placeholder="Type your reason here..." disabled></textarea>
+                        </div>
+                        <input type="hidden" class="reason-hidden" name="documents[${documentIndex}][reason]" value="">
                     </div>
                 `;
                 container.appendChild(newItem);
@@ -1740,42 +1746,51 @@
                 attachDocumentEvents(newItem);
             });
 
+            function reindexDocumentItems() {
+                const items = document.querySelectorAll('.document-item');
+                items.forEach((item, index) => {
+                    item.querySelector('.document-select').name = `documents[${index}][document_id]`;
+                    item.querySelector('.quantity-input').name = `documents[${index}][quantity]`;
+                    item.querySelector('.reason-select').name = `documents[${index}][reason_select]`;
+                    item.querySelector('.other-reason').name = `documents[${index}][other_reason]`;
+                    item.querySelector('.reason-hidden').name = `documents[${index}][reason]`;
+                });
+                documentIndex = items.length;
+            }
+
             function attachDocumentEvents(item) {
                 const select = item.querySelector('.document-select');
                 const quantity = item.querySelector('.quantity-input');
                 const removeBtn = item.querySelector('.remove-document');
+                const reasonSelect = item.querySelector('.reason-select');
+                const otherReasonTextarea = item.querySelector('.other-reason');
 
                 select.addEventListener('change', function() {
                     updateTotalCost();
-                    
-                    // Update reason dropdown based on first selected document
-                    const firstDocumentSelect = document.querySelector('.document-select');
-                    const selectedOption = firstDocumentSelect.options[firstDocumentSelect.selectedIndex];
-                    
+
+                    const selectedOption = this.options[this.selectedIndex];
                     if (selectedOption && selectedOption.value) {
-                        const documentName = selectedOption.text.split(' (₱')[0].trim();
-                        updateReasonOptions(documentName);
+                        updateReasonOptionsForItem(item, selectedOption.dataset.name || selectedOption.text.split(' (₱')[0].trim());
+                    } else {
+                        updateReasonOptionsForItem(item, '');
                     }
                 });
                 
                 quantity.addEventListener('input', updateTotalCost);
 
+                reasonSelect.addEventListener('change', function() {
+                    syncReasonForItem(item);
+                });
+
+                otherReasonTextarea.addEventListener('input', function() {
+                    syncReasonForItem(item);
+                });
+
                 removeBtn.addEventListener('click', function() {
                     item.remove();
                     updateTotalCost();
                     updateRemoveButtons();
-                    
-                    // Update reason dropdown if this was the first document
-                    const firstDocumentSelect = document.querySelector('.document-select');
-                    if (firstDocumentSelect) {
-                        const selectedOption = firstDocumentSelect.options[firstDocumentSelect.selectedIndex];
-                        if (selectedOption && selectedOption.value) {
-                            const documentName = selectedOption.text.split(' (₱')[0].trim();
-                            updateReasonOptions(documentName);
-                        } else {
-                            updateReasonOptions('');
-                        }
-                    }
+                    reindexDocumentItems();
                 });
             }
 
@@ -1790,12 +1805,36 @@
 
             // Form validation and UX before submit
             document.getElementById('onsiteForm').addEventListener('submit', function(e) {
-                // Sync reason: either the selected option or the other_reason textarea
-                const sel = document.getElementById('reason_select').value;
-                if (sel === 'Other') {
-                    document.getElementById('reason').value = document.getElementById('other_reason').value.trim();
-                } else {
-                    document.getElementById('reason').value = sel;
+                // Sync and validate reasons per selected document
+                const documentItems = document.querySelectorAll('.document-item');
+                for (const item of documentItems) {
+                    const docSelect = item.querySelector('.document-select');
+                    if (!docSelect.value) {
+                        continue;
+                    }
+
+                    const reasonSelect = item.querySelector('.reason-select');
+                    const otherReasonTextarea = item.querySelector('.other-reason');
+                    const reasonHidden = item.querySelector('.reason-hidden');
+
+                    if (!reasonSelect.value) {
+                        e.preventDefault();
+                        alert('Please select a reason for each document.');
+                        reasonSelect.focus();
+                        return false;
+                    }
+
+                    if (reasonSelect.value === 'Other') {
+                        if (!otherReasonTextarea.value.trim()) {
+                            e.preventDefault();
+                            alert('Please specify your reason when selecting Other.');
+                            otherReasonTextarea.focus();
+                            return false;
+                        }
+                        reasonHidden.value = otherReasonTextarea.value.trim();
+                    } else {
+                        reasonHidden.value = reasonSelect.value;
+                    }
                 }
 
                 const studentId = document.getElementById('student-search').value.trim();

@@ -14,6 +14,7 @@ class StudentRequestItem extends Model
         'document_id',
         'quantity',
         'price',
+        'reason',
     ];
 
     public function studentRequest()

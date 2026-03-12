@@ -75,7 +75,7 @@ class DocumentRequestController extends Controller
             'documents' => 'required|array|min:1',
             'documents.*.document_id' => 'required|exists:documents,id',
             'documents.*.quantity' => 'required|integer|min:1|max:10',
-            'reason' => 'required|string|max:500',
+            'documents.*.reason' => 'required|string|max:1000',
         ]);
 
         $documents = $request->documents;
@@ -85,10 +85,12 @@ class DocumentRequestController extends Controller
         }
 
         $totalCost = 0;
+        $reasonSummaryParts = [];
         foreach ($documents as $doc) {
             $document = Document::find($doc['document_id']);
             if ($document) {
                 $totalCost += $document->price * $doc['quantity'];
+                $reasonSummaryParts[] = $document->type_document . ': ' . trim($doc['reason']);
             }
         }
 
@@ -96,7 +98,7 @@ class DocumentRequestController extends Controller
             'student_id' => Auth::user()->student->id,
             'reference_no' => StudentRequest::generateReferenceNumber(),
             'status' => 'pending',
-            'reason' => $request->reason,
+            'reason' => implode(' | ', $reasonSummaryParts),
             'total_cost' => $totalCost,
             'expected_release_date' => now()->addDays(rand(3, 5)),
         ]);
@@ -108,6 +110,7 @@ class DocumentRequestController extends Controller
                     'document_id' => $doc['document_id'],
                     'quantity' => $doc['quantity'],
                     'price' => $document->price,
+                    'reason' => trim($doc['reason']),
                 ]);
             }
         }

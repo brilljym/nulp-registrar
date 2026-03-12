@@ -13,6 +13,7 @@ class OnsiteRequestItem extends Model
         'onsite_request_id',
         'document_id',
         'quantity',
+        'reason',
     ];
 
     public function onsiteRequest()

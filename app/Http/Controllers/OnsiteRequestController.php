@@ -49,6 +49,7 @@ class OnsiteRequestController extends Controller
             'documents'    => 'required|array|min:1',
             'documents.*.document_id' => 'required|exists:documents,id',
             'documents.*.quantity' => 'required|integer|min:1|max:150',
+            'documents.*.reason' => 'required|string|max:1000',
             'reason'       => 'nullable|string|max:1000',
         ]);
 
@@ -79,6 +80,15 @@ class OnsiteRequestController extends Controller
         $documents = $validated['documents'];
         unset($validated['documents']);
 
+        $reasonSummaryParts = [];
+        foreach ($documents as $docData) {
+            $document = Document::find($docData['document_id']);
+            if ($document) {
+                $reasonSummaryParts[] = $document->type_document . ': ' . trim($docData['reason']);
+            }
+        }
+        $validated['reason'] = implode(' | ', $reasonSummaryParts);
+
         $onsiteRequest = OnsiteRequest::create($validated);
 
         // Create request items for each document
@@ -87,6 +97,7 @@ class OnsiteRequestController extends Controller
                 'onsite_request_id' => $onsiteRequest->id,
                 'document_id' => $docData['document_id'],
                 'quantity' => $docData['quantity'],
+                'reason' => trim($docData['reason']),
             ]);
         }
 
@@ -148,6 +159,7 @@ class OnsiteRequestController extends Controller
             'documents'    => 'required|array|min:1',
             'documents.*.document_id' => 'required|exists:documents,id',
             'documents.*.quantity' => 'required|integer|min:1|max:150',
+            'documents.*.reason' => 'required|string|max:1000',
             'reason'       => 'nullable|string|max:1000',
         ]);
 
@@ -173,6 +185,15 @@ class OnsiteRequestController extends Controller
         $documents = $validated['documents'];
         unset($validated['documents']);
 
+        $reasonSummaryParts = [];
+        foreach ($documents as $docData) {
+            $document = Document::find($docData['document_id']);
+            if ($document) {
+                $reasonSummaryParts[] = $document->type_document . ': ' . trim($docData['reason']);
+            }
+        }
+        $validated['reason'] = implode(' | ', $reasonSummaryParts);
+
         // Update the onsite request
         $onsiteRequest->update($validated);
 
@@ -183,6 +204,7 @@ class OnsiteRequestController extends Controller
                 'onsite_request_id' => $onsiteRequest->id,
                 'document_id' => $docData['document_id'],
                 'quantity' => $docData['quantity'],
+                'reason' => trim($docData['reason']),
             ]);
         }
 

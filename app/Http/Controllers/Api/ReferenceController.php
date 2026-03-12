@@ -184,28 +184,18 @@ class ReferenceController extends Controller
                 $displayStatus = 'pending';
             }
             
-            // For waiting: rank by waiting-only queue order across student + onsite requests.
-            if ($studentRequest->status === 'waiting') {
-                $studentsAhead = StudentRequest::where('status', 'waiting')
-                    ->where('updated_at', '<', $studentRequest->updated_at)
-                    ->count();
-                $onsiteAhead = OnsiteRequest::where('status', 'waiting')
-                    ->where('updated_at', '<', $studentRequest->updated_at)
-                    ->count();
-                $position = $studentsAhead + $onsiteAhead + 1;
-                $displayStatus = $studentRequest->status;
-            }
-
-            // In-queue requests are actively being served, not part of waiting rank.
-            if ($studentRequest->status === 'in_queue') {
-                $position = 1;
+            // For in_queue and waiting: rank by global creation time (matches kiosk board order)
+            if (in_array($studentRequest->status, ['in_queue', 'waiting'])) {
+                $position = StudentRequest::whereIn('status', ['in_queue', 'waiting'])
+                    ->where('created_at', '<', $studentRequest->created_at)
+                    ->count() + 1;
                 $displayStatus = $studentRequest->status;
 
                 \Log::info('API POSITION DEBUG (StudentRequest)', [
                     'reference_no' => $studentRequest->reference_no,
                     'queue_number' => $studentRequest->queue_number,
                     'status' => $studentRequest->status,
-                    'updated_at' => $studentRequest->updated_at,
+                    'created_at' => $studentRequest->created_at,
                     'final_position' => $position,
                 ]);
             }
@@ -270,21 +260,11 @@ class ReferenceController extends Controller
             $displayStatus = 'pending';
         }
         
-        // For waiting: rank by waiting-only queue order across student + onsite requests.
-        if ($request->status === 'waiting') {
-            $studentsAhead = StudentRequest::where('status', 'waiting')
-                ->where('updated_at', '<', $request->updated_at)
-                ->count();
-            $onsiteAhead = OnsiteRequest::where('status', 'waiting')
-                ->where('updated_at', '<', $request->updated_at)
-                ->count();
-            $position = $studentsAhead + $onsiteAhead + 1;
-            $displayStatus = $request->status;
-        }
-
-        // In-queue requests are actively being served, not part of waiting rank.
-        if ($request->status === 'in_queue') {
-            $position = 1;
+        // For in_queue and waiting: rank by global creation time (matches kiosk board order)
+        if (in_array($request->status, ['in_queue', 'waiting'])) {
+            $position = OnsiteRequest::whereIn('status', ['in_queue', 'waiting'])
+                ->where('created_at', '<', $request->created_at)
+                ->count() + 1;
             $displayStatus = $request->status;
         }
 
@@ -400,21 +380,11 @@ class ReferenceController extends Controller
             $position = 0;
             $displayStatus = $studentRequest->status;
             
-            // For waiting: rank by waiting-only queue order across student + onsite requests.
-            if ($studentRequest->status === 'waiting') {
-                $studentsAhead = StudentRequest::where('status', 'waiting')
-                    ->where('updated_at', '<', $studentRequest->updated_at)
-                    ->count();
-                $onsiteAhead = OnsiteRequest::where('status', 'waiting')
-                    ->where('updated_at', '<', $studentRequest->updated_at)
-                    ->count();
-                $position = $studentsAhead + $onsiteAhead + 1;
-                $displayStatus = $studentRequest->status;
-            }
-
-            // In-queue requests are actively being served, not part of waiting rank.
-            if ($studentRequest->status === 'in_queue') {
-                $position = 1;
+            // For in_queue and waiting: rank by global creation time (matches kiosk board order)
+            if (in_array($studentRequest->status, ['in_queue', 'waiting'])) {
+                $position = StudentRequest::whereIn('status', ['in_queue', 'waiting'])
+                    ->where('created_at', '<', $studentRequest->created_at)
+                    ->count() + 1;
                 $displayStatus = $studentRequest->status;
             }
 
@@ -496,21 +466,11 @@ class ReferenceController extends Controller
         $position = 0;
         $displayStatus = $onsiteRequest->status;
         
-        // For waiting: rank by waiting-only queue order across student + onsite requests.
-        if ($onsiteRequest->status === 'waiting') {
-            $studentsAhead = StudentRequest::where('status', 'waiting')
-                ->where('updated_at', '<', $onsiteRequest->updated_at)
-                ->count();
-            $onsiteAhead = OnsiteRequest::where('status', 'waiting')
-                ->where('updated_at', '<', $onsiteRequest->updated_at)
-                ->count();
-            $position = $studentsAhead + $onsiteAhead + 1;
-            $displayStatus = $onsiteRequest->status;
-        }
-
-        // In-queue requests are actively being served, not part of waiting rank.
-        if ($onsiteRequest->status === 'in_queue') {
-            $position = 1;
+        // For in_queue and waiting: rank by global creation time (matches kiosk board order)
+        if (in_array($onsiteRequest->status, ['in_queue', 'waiting'])) {
+            $position = OnsiteRequest::whereIn('status', ['in_queue', 'waiting'])
+                ->where('created_at', '<', $onsiteRequest->created_at)
+                ->count() + 1;
             $displayStatus = $onsiteRequest->status;
         }
 
