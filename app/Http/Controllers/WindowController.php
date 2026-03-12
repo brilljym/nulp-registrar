@@ -87,14 +87,34 @@ class WindowController extends Controller
         // Categorize requests by their actual status field:
         // - In Queue:      status === 'in_queue'  → being served at a window
         // - Waiting Queue: status === 'waiting'   → waiting before reaching a window
-        $inQueueRequests = $allKioskRequests
+        $rawInQueueRequests = $allKioskRequests
             ->where('status', 'in_queue')
             ->sortBy('created_at')
             ->values();
 
-        $waitingRequests = $allKioskRequests
-            ->where('status', 'waiting')
-            ->sortBy('created_at')
+        // A window can only serve one person at a time.
+        // Keep only the earliest in_queue request per window; overflow extras into waiting.
+        $seenWindows = [];
+        $inQueueRequests = collect();
+        $overflowRequests = collect();
+
+        foreach ($rawInQueueRequests as $request) {
+            $window = $request['window_assignment'] ?? 'Unassigned';
+            if (!in_array($window, $seenWindows)) {
+                $seenWindows[] = $window;
+                $inQueueRequests->push($request);
+            } else {
+                $overflowRequests->push($request);
+            }
+        }
+
+        $waitingRequests = $overflowRequests
+            ->merge(
+                $allKioskRequests
+                    ->where('status', 'waiting')
+                    ->sortBy('created_at')
+                    ->values()
+            )
             ->values()
             ->map(function ($request, $index) {
                 $request['position'] = $index + 1;
