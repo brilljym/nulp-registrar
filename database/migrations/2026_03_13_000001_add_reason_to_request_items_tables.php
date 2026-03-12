@@ -11,13 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('onsite_request_items', function (Blueprint $table) {
-            $table->text('reason')->nullable()->after('quantity');
-        });
+        if (! Schema::hasColumn('onsite_request_items', 'reason')) {
+            Schema::table('onsite_request_items', function (Blueprint $table) {
+                $table->text('reason')->nullable()->after('quantity');
+            });
+        }
 
-        Schema::table('student_request_items', function (Blueprint $table) {
-            $table->text('reason')->nullable()->after('price');
-        });
+        if (! Schema::hasColumn('student_request_items', 'reason')) {
+            Schema::table('student_request_items', function (Blueprint $table) {
+                $table->text('reason')->nullable()->after('price');
+            });
+        }
     }
 
     /**
@@ -25,12 +29,16 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('onsite_request_items', function (Blueprint $table) {
-            $table->dropColumn('reason');
-        });
+        if (Schema::hasColumn('onsite_request_items', 'reason')) {
+            Schema::table('onsite_request_items', function (Blueprint $table) {
+                $table->dropColumn('reason');
+            });
+        }
 
-        Schema::table('student_request_items', function (Blueprint $table) {
-            $table->dropColumn('reason');
-        });
+        if (Schema::hasColumn('student_request_items', 'reason')) {
+            Schema::table('student_request_items', function (Blueprint $table) {
+                $table->dropColumn('reason');
+            });
+        }
     }
 };

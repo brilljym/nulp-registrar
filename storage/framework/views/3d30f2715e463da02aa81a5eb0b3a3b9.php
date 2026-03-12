@@ -859,13 +859,6 @@
                                         <div class="position-number"><?php echo e($request['position'] ?? ($index + 1)); ?></div>
                                         <div>
                                             <span class="queue-number"><?php echo e($request['queue_number']); ?></span>
-                                            <!-- DEBUG INFO -->
-                                            <small style="display:block; font-size:10px; color:#666; margin-top:2px;">
-                                                Pos: <?php echo e($request['position'] ?? 'N/A'); ?> | 
-                                                Status: <?php echo e($request['status'] ?? 'N/A'); ?> | 
-                                                Created: <?php echo e(isset($request['created_at']) ? \Carbon\Carbon::parse($request['created_at'])->format('H:i:s') : 'N/A'); ?>
-
-                                            </small>
                                         </div>
                                     </div>
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
