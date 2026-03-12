@@ -184,69 +184,20 @@ class ReferenceController extends Controller
                 $displayStatus = 'pending';
             }
             
-            // For both in_queue and waiting status, calculate position matching web display logic
+            // For in_queue and waiting: rank by global creation time (matches kiosk board order)
             if (in_array($studentRequest->status, ['in_queue', 'waiting'])) {
-                // Get requests for THIS registrar only, sorted by creation time
-                if ($studentRequest->assigned_registrar_id) {
-                    $registrarRequests = StudentRequest::where('assigned_registrar_id', $studentRequest->assigned_registrar_id)
-                        ->whereIn('status', ['in_queue', 'waiting'])
-                        ->orderBy('created_at', 'asc')
-                        ->get();
-                    
-                    // Check if this is the first request for this registrar
-                    $isFirst = $registrarRequests->first()->id === $studentRequest->id;
-                    
-                    if ($isFirst) {
-                        // First request is "in queue" being processed - position 0
-                        $position = 0;
-                        $displayStatus = 'in_queue';
-                    } else {
-                        // Calculate position among waiting requests for this registrar (excluding the first)
-                        $waitingForRegistrar = $registrarRequests->skip(1)->values(); // Re-index after skip
-                        $position = $waitingForRegistrar->search(function($req) use ($studentRequest) {
-                            return $req->id === $studentRequest->id;
-                        });
-                        
-                        // Convert from 0-based index to 1-based position
-                        $position = $position !== false ? $position + 1 : 0;
-                        $displayStatus = 'waiting';
-                    }
-                } else {
-                    // No registrar assigned - just use simple position among all unassigned
-                    $unassignedRequests = StudentRequest::whereNull('assigned_registrar_id')
-                        ->whereIn('status', ['in_queue', 'waiting'])
-                        ->orderBy('created_at', 'asc')
-                        ->get();
-                    
-                    $position = $unassignedRequests->search(function($req) use ($studentRequest) {
-                        return $req->id === $studentRequest->id;
-                    });
-                    
-                    $position = $position !== false ? $position + 1 : 0;
-                    $displayStatus = 'waiting';
-                }
-                
-                // DEBUG: Log API position calculation
+                $position = StudentRequest::whereIn('status', ['in_queue', 'waiting'])
+                    ->where('created_at', '<', $studentRequest->created_at)
+                    ->count() + 1;
+                $displayStatus = $studentRequest->status;
+
                 \Log::info('API POSITION DEBUG (StudentRequest)', [
                     'reference_no' => $studentRequest->reference_no,
                     'queue_number' => $studentRequest->queue_number,
                     'status' => $studentRequest->status,
-                    'display_status' => $displayStatus,
-                    'assigned_registrar_id' => $studentRequest->assigned_registrar_id,
                     'created_at' => $studentRequest->created_at,
-                    'total_for_registrar' => $registrarRequests ? $registrarRequests->count() : 0,
-                    'is_first' => $registrarRequests ? ($registrarRequests->first()->id === $studentRequest->id) : null,
                     'final_position' => $position,
-                    'registrar_queue_numbers' => $registrarRequests ? $registrarRequests->pluck('queue_number')->toArray() : []
                 ]);
-                
-                // Get registrar-specific info for debug
-                if ($studentRequest->assigned_registrar_id) {
-                    $registrarRequests = StudentRequest::where('assigned_registrar_id', $studentRequest->assigned_registrar_id)
-                        ->whereIn('status', ['in_queue', 'waiting'])
-                        ->orderBy('created_at', 'asc')
-                        ->get();
-                }
             }
         return response()->json([
             'id' => $studentRequest->id,
@@ -309,47 +260,12 @@ class ReferenceController extends Controller
             $displayStatus = 'pending';
         }
         
-        // For both in_queue and waiting status, calculate position matching web display logic
+        // For in_queue and waiting: rank by global creation time (matches kiosk board order)
         if (in_array($request->status, ['in_queue', 'waiting'])) {
-            // Get requests for THIS registrar only, sorted by creation time
-            if ($request->assigned_registrar_id) {
-                $registrarRequests = OnsiteRequest::where('assigned_registrar_id', $request->assigned_registrar_id)
-                    ->whereIn('status', ['in_queue', 'waiting'])
-                    ->orderBy('created_at', 'asc')
-                    ->get();
-                
-                // Check if this is the first request for this registrar
-                $isFirst = $registrarRequests->first()->id === $request->id;
-                
-                if ($isFirst) {
-                    // First request is "in queue" being processed - position 0
-                    $position = 0;
-                    $displayStatus = 'in_queue';
-                } else {
-                    // Calculate position among waiting requests for this registrar (excluding the first)
-                    $waitingForRegistrar = $registrarRequests->skip(1)->values(); // Re-index after skip
-                    $position = $waitingForRegistrar->search(function($req) use ($request) {
-                        return $req->id === $request->id;
-                    });
-                    
-                    // Convert from 0-based index to 1-based position
-                    $position = $position !== false ? $position + 1 : 0;
-                    $displayStatus = 'waiting';
-                }
-            } else {
-                // No registrar assigned - just use simple position among all unassigned
-                $unassignedRequests = OnsiteRequest::whereNull('assigned_registrar_id')
-                    ->whereIn('status', ['in_queue', 'waiting'])
-                    ->orderBy('created_at', 'asc')
-                    ->get();
-                
-                $position = $unassignedRequests->search(function($req) use ($request) {
-                    return $req->id === $request->id;
-                });
-                
-                $position = $position !== false ? $position + 1 : 0;
-                $displayStatus = 'waiting';
-            }
+            $position = OnsiteRequest::whereIn('status', ['in_queue', 'waiting'])
+                ->where('created_at', '<', $request->created_at)
+                ->count() + 1;
+            $displayStatus = $request->status;
         }
 
         return response()->json([
@@ -464,47 +380,12 @@ class ReferenceController extends Controller
             $position = 0;
             $displayStatus = $studentRequest->status;
             
-            // For both in_queue and waiting status, calculate position matching web display logic
+            // For in_queue and waiting: rank by global creation time (matches kiosk board order)
             if (in_array($studentRequest->status, ['in_queue', 'waiting'])) {
-                // Get requests for THIS registrar only, sorted by creation time
-                if ($studentRequest->assigned_registrar_id) {
-                    $registrarRequests = StudentRequest::where('assigned_registrar_id', $studentRequest->assigned_registrar_id)
-                        ->whereIn('status', ['in_queue', 'waiting'])
-                        ->orderBy('created_at', 'asc')
-                        ->get();
-                    
-                    // Check if this is the first request for this registrar
-                    $isFirst = $registrarRequests->first()->id === $studentRequest->id;
-                    
-                    if ($isFirst) {
-                        // First request is "in queue" being processed - position 0
-                        $position = 0;
-                        $displayStatus = 'in_queue';
-                    } else {
-                        // Calculate position among waiting requests for this registrar (excluding the first)
-                        $waitingForRegistrar = $registrarRequests->skip(1)->values(); // Re-index after skip
-                        $position = $waitingForRegistrar->search(function($req) use ($studentRequest) {
-                            return $req->id === $studentRequest->id;
-                        });
-                        
-                        // Convert from 0-based index to 1-based position
-                        $position = $position !== false ? $position + 1 : 0;
-                        $displayStatus = 'waiting';
-                    }
-                } else {
-                    // No registrar assigned - just use simple position among all unassigned
-                    $unassignedRequests = StudentRequest::whereNull('assigned_registrar_id')
-                        ->whereIn('status', ['in_queue', 'waiting'])
-                        ->orderBy('created_at', 'asc')
-                        ->get();
-                    
-                    $position = $unassignedRequests->search(function($req) use ($studentRequest) {
-                        return $req->id === $studentRequest->id;
-                    });
-                    
-                    $position = $position !== false ? $position + 1 : 0;
-                    $displayStatus = 'waiting';
-                }
+                $position = StudentRequest::whereIn('status', ['in_queue', 'waiting'])
+                    ->where('created_at', '<', $studentRequest->created_at)
+                    ->count() + 1;
+                $displayStatus = $studentRequest->status;
             }
 
             return response()->json([
@@ -585,47 +466,12 @@ class ReferenceController extends Controller
         $position = 0;
         $displayStatus = $onsiteRequest->status;
         
-        // For both in_queue and waiting status, calculate position matching web display logic
+        // For in_queue and waiting: rank by global creation time (matches kiosk board order)
         if (in_array($onsiteRequest->status, ['in_queue', 'waiting'])) {
-            // Get requests for THIS registrar only, sorted by creation time
-            if ($onsiteRequest->assigned_registrar_id) {
-                $registrarRequests = OnsiteRequest::where('assigned_registrar_id', $onsiteRequest->assigned_registrar_id)
-                    ->whereIn('status', ['in_queue', 'waiting'])
-                    ->orderBy('created_at', 'asc')
-                    ->get();
-                
-                // Check if this is the first request for this registrar
-                $isFirst = $registrarRequests->first()->id === $onsiteRequest->id;
-                
-                if ($isFirst) {
-                    // First request is "in queue" being processed - position 0
-                    $position = 0;
-                    $displayStatus = 'in_queue';
-                } else {
-                    // Calculate position among waiting requests for this registrar (excluding the first)
-                    $waitingForRegistrar = $registrarRequests->skip(1)->values(); // Re-index after skip
-                    $position = $waitingForRegistrar->search(function($req) use ($onsiteRequest) {
-                        return $req->id === $onsiteRequest->id;
-                    });
-                    
-                    // Convert from 0-based index to 1-based position
-                    $position = $position !== false ? $position + 1 : 0;
-                    $displayStatus = 'waiting';
-                }
-            } else {
-                // No registrar assigned - just use simple position among all unassigned
-                $unassignedRequests = OnsiteRequest::whereNull('assigned_registrar_id')
-                    ->whereIn('status', ['in_queue', 'waiting'])
-                    ->orderBy('created_at', 'asc')
-                    ->get();
-                
-                $position = $unassignedRequests->search(function($req) use ($onsiteRequest) {
-                    return $req->id === $onsiteRequest->id;
-                });
-                
-                $position = $position !== false ? $position + 1 : 0;
-                $displayStatus = 'waiting';
-            }
+            $position = OnsiteRequest::whereIn('status', ['in_queue', 'waiting'])
+                ->where('created_at', '<', $onsiteRequest->created_at)
+                ->count() + 1;
+            $displayStatus = $onsiteRequest->status;
         }
 
         return response()->json([
