@@ -147,7 +147,7 @@
                                                 <th>Full Name</th>
                                                 <th>Total Amount</th>
                                                 <th>Approved By</th>
-                                                <th>Approved Date</th>
+                                                <th>Payment Date</th>
                                                 <th>Receipt</th>
                                             </tr>
                                         </thead>
@@ -205,7 +205,7 @@
                                                 <th>Reference No.</th>
                                                 <th>Total Amount</th>
                                                 <th>Approved By</th>
-                                                <th>Approved Date</th>
+                                                <th>Payment Date</th>
                                                 <th>Receipt</th>
                                             </tr>
                                         </thead>
