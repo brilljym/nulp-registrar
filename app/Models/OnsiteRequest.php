@@ -28,6 +28,7 @@ class OnsiteRequest extends Model
         'ref_code',   // Corrected to match DB column
         'queue_number', // Added queue number field
         'payment_receipt_path',
+        'qr_code_path',
         'payment_approved',
         'approved_by_accounting_id',
         'payment_approved_at',

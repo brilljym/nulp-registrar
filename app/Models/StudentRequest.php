@@ -22,6 +22,7 @@ class StudentRequest extends Model
         'registrar_approved_at',
         'expected_release_date',
         'payment_receipt_path',
+        'qr_code_path',
         'payment_approved',
         'approved_by_accounting_id',
         'payment_approved_at',

@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>@yield('title', 'Accounting Dashboard - NU Lipa')</title>
+    <title><?php echo $__env->yieldContent('title', 'Accounting Dashboard - NU Lipa'); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
 
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -492,33 +492,33 @@
         <button class="sidebar-toggle" onclick="toggleSidebar()">
             <span id="toggle-icon">☰</span>
         </button>
-        <img src="{{ asset('images/NU_shield.svg.png') }}" alt="NU Shield" class="nu-shield">
+        <img src="<?php echo e(asset('images/NU_shield.svg.png')); ?>" alt="NU Shield" class="nu-shield">
         <div class="d-flex align-items-center gap-2">
             <span class="nu-title">NU LIPA - ACCOUNTING</span>
             <span class="admin-badge">Accounting Panel</span>
         </div>
     </div>
     <div class="d-flex align-items-center gap-3">
-        @auth
+        <?php if(auth()->guard()->check()): ?>
             <div class="user-dropdown" id="userDropdown">
                 <button class="user-dropdown-toggle" onclick="toggleUserDropdown()">
                     <i class="bi bi-cash-coin"></i>
-                    <span>{{ Auth::user()->first_name }}</span>
+                    <span><?php echo e(Auth::user()->first_name); ?></span>
                     <i class="bi bi-chevron-down" style="font-size: 12px;"></i>
                 </button>
                 <div class="user-dropdown-menu">
-                    <a href="{{ route('logout') }}" class="user-dropdown-item logout-item">
+                    <a href="<?php echo e(route('logout')); ?>" class="user-dropdown-item logout-item">
                         <i class="bi bi-box-arrow-right"></i>
                         <span>Logout</span>
                     </a>
                 </div>
             </div>
-        @else
-            <a href="{{ route('logout') }}" class="user-dropdown-toggle">
+        <?php else: ?>
+            <a href="<?php echo e(route('logout')); ?>" class="user-dropdown-toggle">
                 <i class="bi bi-box-arrow-right"></i>
                 <span>Logout</span>
             </a>
-        @endauth
+        <?php endif; ?>
     </div>
     <div class="header-accent"></div>
 </div>
@@ -534,7 +534,7 @@
             <!-- Payment Verification Section -->
             <div class="nav-section">
                 <div class="nav-section-title">Payment Management</div>
-                <a href="{{ route('accounting.dashboard') }}" class="{{ request()->is('accounting/dashboard*') ? 'active' : '' }}">
+                <a href="<?php echo e(route('accounting.dashboard')); ?>" class="<?php echo e(request()->is('accounting/dashboard*') ? 'active' : ''); ?>">
                     <i class="bi bi-receipt"></i>
                     <span class="nav-text">Payment Verification & Approval</span>
                 </a>
@@ -543,7 +543,7 @@
             <!-- QR Code Management Section -->
             <div class="nav-section">
                 <div class="nav-section-title">QR Code Management</div>
-                <a href="{{ route('accounting.qr.manage') }}" class="{{ request()->is('accounting/qr*') ? 'active' : '' }}">
+                <a href="<?php echo e(route('accounting.qr.manage')); ?>" class="<?php echo e(request()->is('accounting/qr*') ? 'active' : ''); ?>">
                     <i class="bi bi-qr-code"></i>
                     <span class="nav-text">Upload/Replace QR Codes</span>
                 </a>
@@ -552,7 +552,7 @@
             <!-- Transaction History Section -->
             <div class="nav-section">
                 <div class="nav-section-title">Reports</div>
-                <a href="{{ route('accounting.history') }}" class="{{ request()->is('accounting/history*') ? 'active' : '' }}">
+                <a href="<?php echo e(route('accounting.history')); ?>" class="<?php echo e(request()->is('accounting/history*') ? 'active' : ''); ?>">
                     <i class="bi bi-clock-history"></i>
                     <span class="nav-text">Transaction History</span>
                 </a>
@@ -563,7 +563,7 @@
     <!-- Main Content -->
     <div class="main-content-wrapper">
         <div class="main-content">
-            @yield('content')
+            <?php echo $__env->yieldContent('content'); ?>
         </div>
     </div>
 </div>
@@ -648,8 +648,8 @@
 <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
 <script>
     // Initialize Pusher
-    const pusher = new Pusher('{{ config('broadcasting.connections.pusher.key') }}', {
-        cluster: '{{ config('broadcasting.connections.pusher.options.cluster') }}',
+    const pusher = new Pusher('<?php echo e(config('broadcasting.connections.pusher.key')); ?>', {
+        cluster: '<?php echo e(config('broadcasting.connections.pusher.options.cluster')); ?>',
         encrypted: true
     });
 
@@ -763,3 +763,4 @@
 
 </body>
 </html>
+<?php /**PATH C:\Users\Brill\nu-regis\resources\views/layouts/accounting.blade.php ENDPATH**/ ?>

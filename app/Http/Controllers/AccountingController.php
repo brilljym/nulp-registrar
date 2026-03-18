@@ -350,4 +350,116 @@ class AccountingController extends Controller
 
         return view("accounting.history", compact("approvedOnsiteRequests", "approvedStudentRequests"));
     }
+
+    public function manageQRCodes()
+    {
+        // Get onsite requests in payment step so accounting can set QR code before receipt upload
+        $pendingOnsiteRequests = OnsiteRequest::where("current_step", "payment")
+            ->where("payment_approved", false)
+            ->where("status", "registrar_approved")
+            ->with(["requestItems.document", "student"])
+            ->orderBy("created_at", "asc")
+            ->get();
+
+        // Get student requests awaiting payment confirmation
+        $pendingStudentRequests = StudentRequest::where("status", "registrar_approved")
+            ->where("payment_approved", false)
+            ->with(["requestItems.document", "student.user"])
+            ->orderBy("created_at", "asc")
+            ->get();
+
+        $defaultQrUrl = $this->getDefaultQrUrl();
+
+        return view("accounting.qr-manage", compact("pendingOnsiteRequests", "pendingStudentRequests", "defaultQrUrl"));
+    }
+
+    public function uploadDefaultQRCode(Request $request)
+    {
+        $request->validate([
+            'default_qr_code' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120'
+        ]);
+
+        try {
+            $imagesPath = public_path('images');
+            if (!is_dir($imagesPath)) {
+                mkdir($imagesPath, 0755, true);
+            }
+
+            // Remove old default QR files with common extensions.
+            foreach (['jpg', 'jpeg', 'png', 'gif', 'webp'] as $ext) {
+                $oldFile = $imagesPath . DIRECTORY_SEPARATOR . "qr-display.{$ext}";
+                if (file_exists($oldFile)) {
+                    @unlink($oldFile);
+                }
+            }
+
+            $extension = strtolower($request->file('default_qr_code')->getClientOriginalExtension());
+            $fileName = "qr-display.{$extension}";
+            $request->file('default_qr_code')->move($imagesPath, $fileName);
+
+            return redirect()->route('accounting.qr.manage')->with('success', 'Default payment QR code updated successfully.');
+        } catch (\Exception $e) {
+            return redirect()->route('accounting.qr.manage')->with('error', 'Failed to update default payment QR code.');
+        }
+    }
+
+    private function getDefaultQrUrl(): string
+    {
+        foreach (['jpg', 'jpeg', 'png', 'gif', 'webp'] as $ext) {
+            if (file_exists(public_path("images/qr-display.{$ext}"))) {
+                return asset("images/qr-display.{$ext}");
+            }
+        }
+
+        return asset('images/qr-display.jpg');
+    }
+
+    public function uploadQRCode(Request $request, $type, $id)
+    {
+        // Validate request
+        $request->validate([
+            'qr_code' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
+        ]);
+
+        try {
+            // Get the request based on type
+            if ($type === 'onsite') {
+                $requestModel = OnsiteRequest::findOrFail($id);
+            } elseif ($type === 'student') {
+                $requestModel = StudentRequest::findOrFail($id);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid request type'
+                ], 400);
+            }
+
+            // Delete old QR code file if exists
+            if ($requestModel->qr_code_path) {
+                $oldPath = str_replace('/storage/', '', $requestModel->qr_code_path);
+                if (Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
+            }
+
+            // Store the new QR code
+            $path = $request->file('qr_code')->store('qr-codes/' . $type, 'public');
+
+            // Update the model
+            $requestModel->qr_code_path = Storage::url($path);
+            $requestModel->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'QR code uploaded successfully',
+                'qr_code_url' => $requestModel->qr_code_path
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error uploading QR code: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
+

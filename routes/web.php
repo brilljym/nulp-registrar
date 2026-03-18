@@ -201,6 +201,9 @@ Route::middleware(['auth'])->prefix('registrar')->name('registrar.')->group(func
 Route::middleware(['auth'])->prefix('accounting')->name('accounting.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\AccountingController::class, 'index'])->name('dashboard');
     Route::get('/history', [App\Http\Controllers\AccountingController::class, 'history'])->name('history');
+    Route::get('/qr-codes', [App\Http\Controllers\AccountingController::class, 'manageQRCodes'])->name('qr.manage');
+    Route::post('/qr-code/default-upload', [App\Http\Controllers\AccountingController::class, 'uploadDefaultQRCode'])->name('qr.default.upload');
+    Route::post('/qr-code/upload/{type}/{id}', [App\Http\Controllers\AccountingController::class, 'uploadQRCode'])->name('qr.upload');
     Route::post('/approve/onsite/{onsiteRequest}', [App\Http\Controllers\AccountingController::class, 'approveOnsite'])->name('approve.onsite');
     Route::post('/approve/student/{studentRequest}', [App\Http\Controllers\AccountingController::class, 'approveStudent'])->name('approve.student');
     Route::post('/reject/onsite/{onsiteRequest}', [App\Http\Controllers\AccountingController::class, 'rejectOnsite'])->name('reject.onsite');

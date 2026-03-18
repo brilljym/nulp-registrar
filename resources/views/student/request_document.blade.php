@@ -445,7 +445,16 @@
                                 <br><strong>Total Quantity:</strong> {{ $pendingRequest->requestItems->sum('quantity') }}
                                 <br><br>
                                 <div class="text-center">
-                                    <img src="{{ asset('images/qr-display.jpg') }}" alt="Payment QR Code" class="img-fluid" style="max-width: 200px; max-height: 200px;">
+                                    @php
+                                        $defaultQrPath = 'images/qr-display.jpg';
+                                        foreach (['jpg', 'jpeg', 'png', 'gif', 'webp'] as $ext) {
+                                            if (file_exists(public_path("images/qr-display.{$ext}"))) {
+                                                $defaultQrPath = "images/qr-display.{$ext}";
+                                                break;
+                                            }
+                                        }
+                                    @endphp
+                                    <img src="{{ $pendingRequest->qr_code_path ?: asset($defaultQrPath) }}" alt="Payment QR Code" class="img-fluid" style="max-width: 200px; max-height: 200px;">
                                     <p class="text-muted mt-2 small">Scan QR code for payment</p>
                                 </div>
                             </div>
